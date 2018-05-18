@@ -10,7 +10,7 @@ API client:
 -Pubblish(Message, Topic)                                   // Pubblucazione di un messaggio per un topic
 -SetServerIp(ip)                                            // Impostare l'indirizzo del server
 -readAllMessage()                                           // Lettura di tutti i messaggi che sono in sospeso
--suspenNotify()                                             // Sospende la visualizazione dei messaggi
+-suspendNotify()                                             // Sospende la visualizazione dei messaggi
 -riactiveNotify()                                           // Riattiva la visualizazione dei messaggi, (da decidere se i messeggi in sospeso vengono mostrati)
 -ping(Server)                                               //
 -getTopicList(Server)                                       // Richiesta al server della lista dei topic che gestisce
