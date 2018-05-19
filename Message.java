@@ -3,11 +3,11 @@ package sheredInterface;
 import java.util.Date;
 
 public class Message {
-    private String title;
-    private String author;
-    private String text;
-    private String topic;
-    private Date date;
+    final private String title;
+    final private String author;
+    final private String text;
+    final private String topic;
+    final private Date date;
 
     public Message(String title, String author, String text, String topic)
     {
