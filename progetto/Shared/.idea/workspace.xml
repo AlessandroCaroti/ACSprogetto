@@ -24,7 +24,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Message.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="Message.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/utility/Message.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="85">
@@ -39,6 +39,15 @@
                 <element signature="e#718#719#0" expanded="true" />
                 <element signature="e#745#746#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ResponseCode.java" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/utility/ResponseCode.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="85">
+              <caret line="5" lean-forward="true" selection-start-line="5" selection-end-line="5" />
             </state>
           </provider>
         </entry>
@@ -71,6 +80,7 @@
         <option value="$PROJECT_DIR$/src/Interfaces/ClientInterface.java" />
         <option value="$PROJECT_DIR$/src/Interfaces/ServerInterface.java" />
         <option value="$PROJECT_DIR$/src/utility/Message.java" />
+        <option value="$PROJECT_DIR$/src/utility/ResponseCode.java" />
       </list>
     </option>
   </component>
@@ -98,12 +108,7 @@
           <expand>
             <path>
               <item name="Shared" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Shared" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Shared" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Shared" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="Server" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -163,12 +168,12 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1526975311742</updated>
-      <workItem from="1526975314875" duration="420000" />
+      <workItem from="1526975314875" duration="878000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="420000" />
+    <option name="totallyTimeSpent" value="878000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
@@ -239,6 +244,13 @@
             <element signature="e#718#719#0" expanded="true" />
             <element signature="e#745#746#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/utility/ResponseCode.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="85">
+          <caret line="5" lean-forward="true" selection-start-line="5" selection-end-line="5" />
         </state>
       </provider>
     </entry>
