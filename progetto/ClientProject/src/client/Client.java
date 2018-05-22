@@ -20,6 +20,10 @@ public class Client implements ClientInterface {
     /*************************************************************************************************************/
     //API
 
+    /*TODO
+    aggiungere i metodi elencari nel file che spcifica le API del client
+     */
+
 
 
 
@@ -34,7 +38,7 @@ public class Client implements ClientInterface {
 
     @Override
     public boolean isAlive() throws RemoteException {
-        return false;
+        return true;
     }
 
     /*************************************************************************************************************/

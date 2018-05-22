@@ -9,7 +9,12 @@ import java.rmi.RemoteException;
 
 public class Server implements ServerInterface{
     //STRUTTURE DATI
-
+    /*
+    *   lista dei topic
+    *   hashMap topic,client
+    *   lista dei client che si sono registrati
+    *
+     */
 
 
 
@@ -18,6 +23,9 @@ public class Server implements ServerInterface{
     /*************************************************************************************************************/
     //API
 
+    /*TODO
+        aggiungere i metodi elencari nel file che spcifica le API del server
+     */
 
 
 
