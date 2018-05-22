@@ -17,7 +17,7 @@ public interface ServerInterface extends Remote,Serializable
 
     void unsubscribe() throws RemoteException;
 
-    void pubblish() throws RemoteException;
+    void publish() throws RemoteException;
 
     void ping() throws RemoteException;
 

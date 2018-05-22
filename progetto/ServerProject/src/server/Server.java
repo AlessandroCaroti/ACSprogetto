@@ -1,4 +1,4 @@
-package client;
+package server;
 
 import Interfaces.ClientInterface;
 import Interfaces.ServerInterface;
@@ -7,15 +7,13 @@ import utility.ResponseCode;
 
 import java.rmi.RemoteException;
 
-public class Client implements ClientInterface {
+public class Server implements ServerInterface{
     //STRUTTURE DATI
-    private String username;
-    private String light_password;
-    private ClientInterface stub;
-    private ServerInterface skeleton;//broker stub
-    private static long cookie;
-    private String bp_key; //broker public key
-    private String my_private_key;
+
+
+
+
+
 
     /*************************************************************************************************************/
     //API
@@ -28,13 +26,43 @@ public class Client implements ClientInterface {
     //METODI REMOTI
 
     @Override
-    public ResponseCode notify(Message m) throws RemoteException {
-        return null;
+    public void register() throws RemoteException {
+
     }
 
     @Override
-    public boolean isAlive() throws RemoteException {
-        return false;
+    public void connect() throws RemoteException {
+
+    }
+
+    @Override
+    public void disconnect() throws RemoteException {
+
+    }
+
+    @Override
+    public void subscribe() throws RemoteException {
+
+    }
+
+    @Override
+    public void unsubscribe() throws RemoteException {
+
+    }
+
+    @Override
+    public void publish() throws RemoteException {
+
+    }
+
+    @Override
+    public void ping() throws RemoteException {
+
+    }
+
+    @Override
+    public void getTopicList() throws RemoteException {
+
     }
 
     /*************************************************************************************************************/
