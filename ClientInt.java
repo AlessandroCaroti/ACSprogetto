@@ -8,6 +8,6 @@ public interface ClientInt extends Remote,Serializable
 {
     void notify(int resp) throws RemoteException;
 
-    void isAlive()  throws RemoteException;
+    boolean isAlive()  throws RemoteException;
 
 }

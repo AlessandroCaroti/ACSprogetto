@@ -18,15 +18,6 @@ public class Message {
         this.topic = topic;
     }
 
-    public Message(String title, String text, String topic)
-    {
-        this.date = new Date();
-        this.title = title;
-        this.author = "<Anonymous>";
-        this.text = text;
-        this.topic = topic;
-    }
-
     public String getTitle()
     {
         return title;
