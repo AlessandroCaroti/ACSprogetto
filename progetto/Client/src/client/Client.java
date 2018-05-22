@@ -1,6 +1,10 @@
 package client;
 
+
+import java.rmi.RemoteException;
+
 public class Client implements ClientInterface{
+
     private String username;
     private String light_password;
     private ClientInterface stub;
@@ -11,4 +15,5 @@ public class Client implements ClientInterface{
 
     public ResponseCode notify(Message m) throws RemoteException;
     boolean isAlive() throws RemoteException;
+
 }
