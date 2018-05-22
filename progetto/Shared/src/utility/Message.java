@@ -39,5 +39,4 @@ public class Message
     }
 
     public String getTopic() { return  topic; }
-
 }

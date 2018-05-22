@@ -1,12 +1,15 @@
 package Interfaces;
 
+import utility.Message;
+import utility.ResponseCode;
+
 import java.io.Serializable;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 public interface ClientInterface extends Remote,Serializable
 {
-    void notify(int resp) throws RemoteException;
+    ResponseCode notify(Message m) throws RemoteException;
 
     boolean isAlive()  throws RemoteException;
 
