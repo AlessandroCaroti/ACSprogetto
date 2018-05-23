@@ -22,15 +22,18 @@ public class ResponseCode {
 
     /**
      * Crea il codice di risposta
-     * @param codiceRisposta , classeGeneratriceMessaggio, devono essere diversi da null, messaggio informativo può essere null
+     * @param codiceRisposta  deve essere diverso da null
+     * @param classeGeneratriceMessaggio deve essere diversi da null
+     * @param messaggioInformativo informativo può essere null
      * @throws NullPointerException se codice o classegeneratrice corrispondono a null
      */
+
     public ResponseCode(Codici codiceRisposta,TipoClasse classeGeneratriceMessaggio,String messaggioInformativo)
             throws NullPointerException
     {
         if(codice==null || classeGeneratrice==null)
         {
-            throw new NullPointerException();
+            throw new NullPointerException("codice o classeGeneratrice ==null");
         }
         if(messaggioInformativo==null)
         {
