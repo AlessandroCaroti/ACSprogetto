@@ -12,6 +12,9 @@ public class Message
 
     public Message(String title, String author, String text, Topic topic)
     {
+        if(title==null||author==null||text==null||topic==null)
+            throw new NullPointerException();
+
         this.date = new Date();
         this.title = title;
         this.author = author;

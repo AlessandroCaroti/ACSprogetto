@@ -24,7 +24,7 @@ public class Server implements ServerInterface{
     //API
 
     /*TODO
-        aggiungere i metodi elencari nel file che spcifica le API del server
+        aggiungere i metodi elencari nel file che specifica le API del server
      */
 
 
