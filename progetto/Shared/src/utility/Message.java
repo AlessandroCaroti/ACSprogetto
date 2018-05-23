@@ -10,13 +10,13 @@ public class Message
     final private String topic;
     final private Date date;
 
-    public Message(String title, String author, String text, String topic)
+    public Message(String title, String author, String text, Topic topic)
     {
         this.date = new Date();
         this.title = title;
         this.author = author;
         this.text = text;
-        this.topic = topic;
+        this.topic = topic.getTopicName();
     }
 
     public String getTitle()
