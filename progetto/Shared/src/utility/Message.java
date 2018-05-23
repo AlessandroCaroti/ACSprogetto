@@ -7,10 +7,10 @@ public class Message
     final private String title;
     final private String author;
     final private String text;
-    final private String topic;
+    final private Topic topic;
     final private Date date;
 
-    public Message(String title, String author, String text, String topic)
+    public Message(String title, String author, String text, Topic topic)
     {
         this.date = new Date();
         this.title = title;
@@ -38,5 +38,5 @@ public class Message
         return date;
     }
 
-    public String getTopic() { return  topic; }
+    public Topic getTopic() { return  topic; }
 }
