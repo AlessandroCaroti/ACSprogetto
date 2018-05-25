@@ -6,11 +6,11 @@ API client:
 
 -Connect(Server, UserName, Password)                        // Connessione ad un server a cui si è già registrati
 
--AnonymousConnect(Server)                                   // Connessione ad un server in maniera anonima(permette sono di isciversi 								ai topic, non permette di postare messaggi)
+-AnonymousConnect(Server)                                   // Connessione ad un server in maniera anonima(permette sono di iscriversi 														ai topic, non permette di postare messaggi)
 
 -Subscribe(Topic)                                           // Iscrizione ad un topic al server a cui si è connessi
 
--Unsubscribe(Topic)                                         // Dis-iscrizione ad un topic al server a cui si è connessi
+-Unsubscribe(Topic)                                         // Disiscrizione ad un topic al server a cui si è connessi
 
 -Publish(Message, Topic)                                   // Pubblicazione di un messaggio per un topic
 
@@ -30,7 +30,7 @@ API client:
 
 -getSubscribedTopic()                                       // La lista dei topic a cui il client è inscritto
 
--help()                                                     // Visualizza le informazioni approposito dei comandi disponibili
+-help()                                                     // Visualizza le informazioni aproposito dei comandi disponibili
 
 
 
