@@ -3,12 +3,14 @@ package utility;
 
 import Interfaces.ClientInterface;
 
+import static utility.hashFunctions.compareHashandString;
+import static utility.hashFunctions.stringHash;
+
 public class Account {
     private String username;
     private int password;//hash password
     private ClientInterface stub;
     private String publicKey;
-    private static hashFunctions hashClass=new hashFunctions();
 
 
     /**
@@ -25,7 +27,7 @@ public class Account {
             throw new NullPointerException("username o plainpassword == null");
         } else {
             this.username = userName;
-            this.password = hashClass.stringHash(plainPassword);
+            this.password = stringHash(plainPassword);
             this.stub = stub;
             this.publicKey = publicKey;
         }
@@ -43,7 +45,7 @@ public class Account {
         {
             plainPassword="";
         }
-        return this.password==hashClass.stringHash(plainPassword);
+        return compareHashandString(this.password,plainPassword);
 
     }
 }
