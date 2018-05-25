@@ -2,7 +2,6 @@ package utility;
 
 
 import Interfaces.ClientInterface;
-import Interfaces.ServerInterface;
 
 public class Account {
     private String username;
@@ -12,7 +11,6 @@ public class Account {
     private static hashFunctions hashClass=new hashFunctions();
 
 
-    /* TODO */
     /**
      * Crea un nuovo account
      * @param userName l'username :D
