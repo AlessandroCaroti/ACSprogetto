@@ -12,7 +12,8 @@ public class ResponseCode {
     }
      public enum Codici{
         R200,
-        R400//bad request
+        R400,//bad request
+         R500//null message
 
     }
 

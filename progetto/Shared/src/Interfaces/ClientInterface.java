@@ -9,9 +9,9 @@ import java.rmi.RemoteException;
 
 public interface ClientInterface extends Remote,Serializable
 {
-    ResponseCode notify(Message m) throws RemoteException;
+    ResponseCode notify(Message m) /*throws RemoteException*/;
 
-    boolean isAlive()  throws RemoteException;
+    boolean isAlive() /* throws RemoteException*/;
 
 }
 

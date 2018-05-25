@@ -7,8 +7,9 @@ import utility.ResponseCode;
 import utility.Topic;
 
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 
-public class Client implements ClientInterface {
+public class Client  extends UnicastRemoteObject implements ClientInterface {
 
     //Variabili di istanza
 
@@ -21,11 +22,11 @@ public class Client implements ClientInterface {
     private String my_private_key;
     private static long last_cookie;
 
-    /*************************************************************************************************************/
+    // ************************************************************************************************************
     //Costruttore
 
-    public Client(String username, String light_password, ClientInterface stub, ServerInterface skeleton,
-                  String bp_key, String my_private_key)
+    public Client(String username, String light_password, ClientInterface stub, ServerInterface skeleton, String bp_key, String my_private_key)
+            throws RemoteException
     {
         if(username==null||light_password==null||stub==null||skeleton==null||bp_key==null||my_private_key==null)
             throw new NullPointerException();
@@ -39,7 +40,7 @@ public class Client implements ClientInterface {
         this.my_private_key=my_private_key;
     }
 
-    /*************************************************************************************************************/
+    // *************************************************************************************************************
     //API
 
     /*TODO
@@ -47,26 +48,28 @@ public class Client implements ClientInterface {
      */
 
 
-    /*************************************************************************************************************/
+    // *************************************************************************************************************
     //METODI REMOTI
 
     @Override
-    public ResponseCode notify(Message m) throws RemoteException {
+    public ResponseCode notify(Message m) /*throws RemoteException*/ {
+        ResponseCode rc;
         if(m==null) {
-            ResponseCode rc=new ResponseCode(ResponseCode.Codici.R400, ResponseCode.TipoClasse.CLIENT,
+             rc=new ResponseCode(ResponseCode.Codici.R500, ResponseCode.TipoClasse.CLIENT,
                     "NOT OK Il server ha ricevuto un messaggio vuoto");
             return rc;
         }
-        ResponseCode rc=new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.CLIENT,
+         rc=new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.CLIENT,
                 "OK il server ha ricevuto il messaggio");
         return rc;
     }
 
+    /* is throw remoteException necessary?*/
     @Override
-    public boolean isAlive() throws RemoteException {
+    public boolean isAlive()/* throws RemoteException*/ {
         return true;
     }
 
-    /*************************************************************************************************************/
+    // *************************************************************************************************************
     //METODI PRIVATI
 }
