@@ -3,12 +3,14 @@ package utility;
 
 import Interfaces.ClientInterface;
 
+import java.security.NoSuchAlgorithmException;
+
 import static utility.hashFunctions.compareHashandString;
 import static utility.hashFunctions.stringHash;
 
 public class Account {
     private String username;
-    private int password;//hash password
+    private byte[] password;//hash password
     private ClientInterface stub;
     private String publicKey;
 
@@ -22,7 +24,7 @@ public class Account {
      * @throws NullPointerException() se username o password corrispondono a null;gli altri possono essere passati come null
      */
     public Account(String userName, String plainPassword, ClientInterface stub, String publicKey)
-    throws  NullPointerException {
+    throws  NullPointerException,NoSuchAlgorithmException {
         if (userName == null || plainPassword == null) {
             throw new NullPointerException("username o plainpassword == null");
         } else {
@@ -39,13 +41,14 @@ public class Account {
      * @param plainPassword password in chiaro, se null viene settata come stringa vuota
      * @return true se corrispondono, false altrimenti
      */
-    public boolean cmpPassword(String plainPassword)
+    public boolean cmpPassword(String plainPassword) throws NoSuchAlgorithmException
     {
         if(plainPassword==null)
         {
             plainPassword="";
         }
-        return compareHashandString(this.password,plainPassword);
+        return compareHashandString(this.password, plainPassword);
+
 
     }
 }

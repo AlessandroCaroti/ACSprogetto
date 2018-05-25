@@ -1,5 +1,8 @@
 package utility;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 public class hashFunctions {
     protected hashFunctions(){
     }
@@ -9,17 +12,28 @@ public class hashFunctions {
      * @return l'hash della stringa passata
      * @throws NullPointerException se plainText è null
      */
-     static int stringHash(String plainText) throws NullPointerException
+     static byte[] stringHash(String plainText) throws NullPointerException,NoSuchAlgorithmException
     {
+        MessageDigest md;
         if(plainText==null)
         {
             throw new NullPointerException("plainText == null");
         }
-        return plainText.hashCode();
+        md = MessageDigest.getInstance("SHA-256");
+        md.update(plainText.getBytes());
+        return md.digest();
     }
-     static boolean compareHashandString(int hash,String string)
+     static boolean compareHashandString(byte[] hash,String string) throws NullPointerException,NoSuchAlgorithmException
     {
-        return hash==stringHash(string) ;
+        byte[] hash2=stringHash(string);
+        for(int i=0;i<hash.length;i++)
+        {
+            if(hash[i]!=hash2[i])
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
 
