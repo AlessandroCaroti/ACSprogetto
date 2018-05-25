@@ -1,5 +1,7 @@
 package Interfaces;
 
+import utility.ResponseCode;
+
 import java.io.Serializable;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -7,9 +9,9 @@ import java.rmi.RemoteException;
 public interface ServerInterface extends Remote,Serializable
 {
 
-    void register() throws RemoteException;
+    ResponseCode register(String usn, String pwd) throws RemoteException;
 
-    void connect() throws RemoteException;
+    ResponseCode connect(String usn,String pwd) throws RemoteException;
 
     void disconnect() throws RemoteException;
 

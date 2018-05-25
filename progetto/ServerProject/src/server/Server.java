@@ -1,8 +1,6 @@
 package server;
 
-import Interfaces.ClientInterface;
 import Interfaces.ServerInterface;
-import utility.Message;
 import utility.ResponseCode;
 
 import java.rmi.RemoteException;
@@ -34,13 +32,19 @@ public class Server implements ServerInterface{
     //METODI REMOTI
 
     @Override
-    public void register() throws RemoteException {
-
+    public ResponseCode register(String usn, String pwd) throws RemoteException {
+        ResponseCode rc;
+        rc=new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER,
+                "OK Il client"+usn+ "è stato registrato correttamente");
+        return rc;
     }
 
     @Override
-    public void connect() throws RemoteException {
-
+    public ResponseCode connect(String usn,String pwd) throws RemoteException {
+        ResponseCode rc;
+        rc=new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER,
+                "OK Il client"+usn+ "si è connesso correttamente");
+        return rc;
     }
 
     @Override

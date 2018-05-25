@@ -6,7 +6,10 @@ import utility.Message;
 import utility.ResponseCode;
 import utility.Topic;
 
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
 public class Client  extends UnicastRemoteObject implements ClientInterface {
@@ -21,6 +24,7 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
     private String bp_key; //broker public key
     private String my_private_key;
     private static long last_cookie;
+    private static final int port=8000;
 
     // ************************************************************************************************************
     //Costruttore
@@ -46,6 +50,26 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
     /*TODO
     aggiungere i metodi elencari nel file che specifica le API del client
      */
+    // Registrazione su un server
+    public void Register(ServerInterface skeleton ,String Username,String Password) throws RemoteException,NotBoundException
+    {
+        Registry r = LocateRegistry.getRegistry(port);
+        skeleton= (ServerInterface) r.lookup("REG");
+        //r.rebind("ClientReg",stub);
+        ResponseCode response =skeleton.register(Username,Password);
+    }
+
+    public void Connect(ServerInterface skeleton,String Username,String Password) throws RemoteException,NotBoundException
+    {
+        Registry r = LocateRegistry.getRegistry(port);
+        skeleton= (ServerInterface) r.lookup("REG");
+        ResponseCode response= skeleton.connect(Username,Password);
+        if(!response.IsOK())
+        {
+
+        }
+
+    }
 
 
     // *************************************************************************************************************
@@ -72,4 +96,5 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
 
     // *************************************************************************************************************
     //METODI PRIVATI
+
 }

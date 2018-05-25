@@ -3,20 +3,34 @@
 API client:
 
 -Register(Server, UserName, Password)                       // Registrazione su un server
+
 -Connect(Server, UserName, Password)                        // Connessione ad un server a cui si è già registrati
--AnonymousConnect(Server)                                   // Connessione ad un server in maniera anonima(permette sono di insciversi ai topic, non permette di postare messaggi)
+
+-AnonymousConnect(Server)                                   // Connessione ad un server in maniera anonima(permette sono di isciversi 								ai topic, non permette di postare messaggi)
+
 -Subscribe(Topic)                                           // Iscrizione ad un topic al server a cui si è connessi
--Unsubscribe(Topic)                                         // Disiscrizione ad un topic al server a cui si è connessi
--Pubblish(Message, Topic)                                   // Pubblucazione di un messaggio per un topic
+
+-Unsubscribe(Topic)                                         // Dis-iscrizione ad un topic al server a cui si è connessi
+
+-Publish(Message, Topic)                                   // Pubblicazione di un messaggio per un topic
+
 -SetServerIp(ip, port)                                      // Impostare l'indirizzo del server utilizzando la porta standard
+
 -SetServerIp(ip)                                            // Impostare l'indirizzo e la porta del server
+
 -readAllMessage()                                           // Lettura di tutti i messaggi che sono in sospeso
--suspendNotify()                                            // Sospende la visualizazione dei messaggi
--riactiveNotify()                                           // Riattiva la visualizazione dei messaggi, (da decidere se i messeggi in sospeso vengono mostrati)
+
+-suspendNotify()                                            // Sospende la visualizzazione dei messaggi
+
+-riactiveNotify()                                           // Riattiva la visualizzazione dei messaggi, (da decidere se i messaggi in sospeso vengono mostrati)
+
 -ping(Server)                                               //
+
 -getTopicList(Server)                                       // Richiesta al server della lista dei topic che gestisce
+
 -getSubscribedTopic()                                       // La lista dei topic a cui il client è inscritto
--help()                                                     // Visualizza le informazioni apporposito dei comandi disponibili
+
+-help()                                                     // Visualizza le informazioni approposito dei comandi disponibili
 
 
 
@@ -25,16 +39,27 @@ API client:
 API server:
 
 -start()                                                    // Attiva il server
+
 -shutdown()                                                 // Spegni il server
+
 -getLocalIp()                                               // Restituisce l'ip locale della macchina
+
 -getPubblicIp()                                             // Restituisce l'ip pubblico della macchina
--notifyAll(Topic, Message)                                  // Invia una notifica a tutti i client che sono iscritti al topic specificato
+
+-notifyAll(Topic, Message)                                  // Invia una notifica a tutti i client che sono iscritti al topic 									specificato
 -getTopics()                                                // La lista con tutti i topic
+
 -getClients()                                               // La lista dei client
+
 -getCountMessage()                                          // Il numero dei messaggi pubblicati dell'apertura del server
--getContMessage(Topic)                                      // Il numero dei messaggi per un certo topic pubblicati dell'apertura del server
+
+-getContMessage(Topic)                                      // Il numero dei messaggi per un certo topic pubblicati dell'apertura del 								server
 -getCountClientRegistered()                                 // Il numero di client che si sono registrati
+
 -getCountClientOnline()                                     // Il numero di client online
+
 -getCountClient(Topic)                                      // Il numero di client iscritti ad un certo topic
+
 -getAcrivityTime()                                          // Da quanto è attivo il server
+
 -help()                                                     // Visualizza le informazioni apporposito dei comandi disponibili

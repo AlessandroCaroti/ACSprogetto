@@ -11,9 +11,11 @@ public class ResponseCode {
         SERVER_CLIENT
     }
      public enum Codici{
-        R200,
+        R200,//OK
         R400,//bad request
-         R500//null message
+         R500,//null message
+         R600,//bad registry
+         R650//bad connection
 
     }
 
@@ -56,5 +58,6 @@ public class ResponseCode {
     {
         return classeGeneratrice;
     }
+    public boolean IsOK(){ return Codici.R200==codice; }
 }
 
