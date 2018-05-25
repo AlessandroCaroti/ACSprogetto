@@ -25,7 +25,7 @@ public class Account {
             throw new NullPointerException("username o plainpassword == null");
         } else {
             this.username = userName;
-            this.password = hashClass.stringHashThreadSafe(plainPassword);
+            this.password = hashClass.stringHash(plainPassword);
             this.stub = stub;
             this.publicKey = publicKey;
         }
@@ -43,7 +43,7 @@ public class Account {
         {
             plainPassword="";
         }
-        return this.password==hashClass.stringHashThreadSafe(plainPassword);
+        return this.password==hashClass.stringHash(plainPassword);
 
     }
 }
