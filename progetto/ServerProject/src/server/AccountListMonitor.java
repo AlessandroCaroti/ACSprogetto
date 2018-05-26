@@ -1,9 +1,10 @@
-package utility;
+package server;
 
 import Interfaces.ClientInterface;
 
 import java.util.concurrent.locks.*;
 import CustomException.*;
+import utility.Account;
 
 /**
  * Implementazione con multiple reader single writer lock
