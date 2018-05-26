@@ -51,8 +51,7 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
     // *************************************************************************************************************
     //API
 
-    /*TODO
-    aggiungere i metodi elencari nel file che specifica le API del client
+    /*TODO aggiungere i metodi elencari nel file che specifica le API del client
      */
     // Registrazione su un server
     public void Register(ServerInterface skeleton ,String Username,String Password) throws RemoteException,NotBoundException
