@@ -4,6 +4,7 @@ import Interfaces.ServerInterface;
 import utility.ResponseCode;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 
 public class Server implements ServerInterface{
     //STRUTTURE DATI
@@ -13,6 +14,8 @@ public class Server implements ServerInterface{
     *   lista dei client che si sono registrati
     *
      */
+    private ArrayList accountList=new ArrayList();
+
 
 
 
@@ -79,4 +82,10 @@ public class Server implements ServerInterface{
 
     /*************************************************************************************************************/
     //METODI PRIVATI
+
+
+
+
+
+
 }
