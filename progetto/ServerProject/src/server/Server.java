@@ -2,9 +2,7 @@ package server;
 
 import Interfaces.ServerInterface;
 import utility.ResponseCode;
-
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Properties;
@@ -39,6 +37,7 @@ public class Server implements ServerInterface{
             this.accountList=new AccountListMonitor();//usa il default
         }
     }
+
 
 
     /* ********************************************************************************************************** **/
