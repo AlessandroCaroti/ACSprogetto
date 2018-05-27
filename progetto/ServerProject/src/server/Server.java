@@ -3,8 +3,11 @@ package server;
 import Interfaces.ServerInterface;
 import utility.ResponseCode;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
+import java.util.Properties;
 
 public class Server implements ServerInterface{
     //STRUTTURE DATI
@@ -14,14 +17,31 @@ public class Server implements ServerInterface{
     *   lista dei client che si sono registrati
     *
      */
-    private ArrayList accountList=new ArrayList();
+    private AccountCollectionInterface accountList;//monitor della lista contente tutti gli account salvati
+    private Properties serverSettings=new Properties();//setting del server
 
 
+    /**Costruttore
+     *carica automaticamente i setting da file.
+     * Se il file non viene trovato vengono usati i costruttori di default
+     *  se il file di config non viene trovato
+     */
+    public Server()
+    {
+        try {
+            FileInputStream in = new FileInputStream("config.serverSettings");
+            serverSettings.load(in);
+            in.close();
+            this.accountList=new AccountListMonitor(Integer.parseInt(serverSettings.getProperty("maxaccountnumber")));
+                    //TODO aggiungere i costruttori con i loro setting
+
+        }catch (IOException exc){
+            this.accountList=new AccountListMonitor();//usa il default
+        }
+    }
 
 
-
-
-    /*************************************************************************************************************/
+    /* ********************************************************************************************************** **/
     //API
 
     /*TODO
@@ -31,7 +51,7 @@ public class Server implements ServerInterface{
 
 
 
-    /*************************************************************************************************************/
+    /* ************************************************************************************************************/
     //METODI REMOTI
 
     @Override
@@ -80,7 +100,7 @@ public class Server implements ServerInterface{
 
     }
 
-    /*************************************************************************************************************/
+    /* ************************************************************************************************************/
     //METODI PRIVATI
 
 
