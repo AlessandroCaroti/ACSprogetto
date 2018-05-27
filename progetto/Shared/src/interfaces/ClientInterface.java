@@ -1,11 +1,10 @@
-package Interfaces;
+package interfaces;
 
 import utility.Message;
 import utility.ResponseCode;
 
 import java.io.Serializable;
 import java.rmi.Remote;
-import java.rmi.RemoteException;
 
 public interface ClientInterface extends Remote,Serializable
 {

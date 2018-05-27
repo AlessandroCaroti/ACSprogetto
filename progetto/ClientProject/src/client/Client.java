@@ -1,11 +1,9 @@
 package client;
 
-import Interfaces.ClientInterface;
-import Interfaces.ServerInterface;
-import utility.GuiInterfaceStream;
+import interfaces.ClientInterface;
+import interfaces.ServerInterface;
 import utility.Message;
 import utility.ResponseCode;
-import utility.Topic;
 
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -26,7 +24,6 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
     private String my_private_key;
     private static long last_cookie;
     private static final int port=8000;
-    private GuiInterfaceStream gui;
 
     // ************************************************************************************************************
     //Costruttore
@@ -44,7 +41,6 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
         this.cookie=last_cookie++;
         this.bp_key=bp_key;
         this.my_private_key=my_private_key;
-        this.gui=new GuiInterfaceStream(true);
 
     }
 
@@ -61,7 +57,7 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
         //r.rebind("ClientReg",stub);
         ResponseCode response =skeleton.register(Username,Password);
         if(!response.IsOK())
-            gui.stdErrStream.println(response);
+            System.err.println(response);
 
     }
 
@@ -71,7 +67,7 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
         skeleton= (ServerInterface) r.lookup("REG");
         ResponseCode response= skeleton.connect(Username,Password);
         if(!response.IsOK())
-            gui.stdErrStream.println(response);
+            System.err.println(response);
     }
 
 

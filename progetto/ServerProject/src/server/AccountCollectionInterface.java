@@ -1,7 +1,7 @@
 package server;
 
-import CustomException.MaxNumberAccountReached;
-import Interfaces.ClientInterface;
+import customException.MaxNumberAccountReached;
+import interfaces.ClientInterface;
 import utility.Account;
 
 public interface AccountCollectionInterface {
