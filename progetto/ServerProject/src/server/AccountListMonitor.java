@@ -17,14 +17,15 @@ public class AccountListMonitor implements AccountCollectionInterface {
     private ReentrantReadWriteLock listLock=new ReentrantReadWriteLock();
 
     /**
-     * @param MAXACCOUNTNUMBER il numero massimo di account
+     * @param maxAccountNumber il numero massimo di account
      * @throws IllegalArgumentException se MAXACCOUNTNUMBER <=0
      */
-    public AccountListMonitor(int MAXACCOUNTNUMBER) throws  IllegalArgumentException
+    public AccountListMonitor(int maxAccountNumber) throws  IllegalArgumentException
     {
         if(MAXACCOUNTNUMBER<=0){
             throw new IllegalArgumentException("maxaccountnumber<=0");
         }
+        this.MAXACCOUNTNUMBER=maxAccountNumber;
     }
 
     /**
@@ -103,8 +104,8 @@ public class AccountListMonitor implements AccountCollectionInterface {
     /**
      * Aggiunge o sovrascrive un account in posizione posizione
      * Nota:account.accountId viene settato automaticamente
-     * @param account
-     * @param accountId
+     * @param account l'istanza della classe Account
+     * @param accountId l'identificativo dell'account
      * @throws NullPointerException se account==null
      * @throws IndexOutOfBoundsException se accountId>=MAXNUMBERACCOUNT
      */
