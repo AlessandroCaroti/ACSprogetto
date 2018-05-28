@@ -1,5 +1,6 @@
 package server;
 
+import Interfaces.ClientInterface;
 import Interfaces.ServerInterface;
 import utility.ResponseCode;
 import java.io.FileInputStream;
@@ -54,7 +55,7 @@ public class Server implements ServerInterface{
     //METODI REMOTI
 
     @Override
-    public ResponseCode register(String usn, String pwd) throws RemoteException {
+    public ResponseCode register(ClientInterface skeleton,String usn, String pwd) throws RemoteException {
         ResponseCode rc;
         rc=new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER,
                 "OK Il client"+usn+ "è stato registrato correttamente");
@@ -62,7 +63,7 @@ public class Server implements ServerInterface{
     }
 
     @Override
-    public ResponseCode connect(String usn,String pwd) throws RemoteException {
+    public ResponseCode connect(ClientInterface skeleton,String usn,String pwd) throws RemoteException {
         ResponseCode rc;
         rc=new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER,
                 "OK Il client"+usn+ "si è connesso correttamente");

@@ -9,9 +9,9 @@ import java.rmi.RemoteException;
 public interface ServerInterface extends Remote,Serializable
 {
 
-    ResponseCode register(String usn, String pwd) throws RemoteException;
+    ResponseCode register(ClientInterface skeleton, String usn, String pwd) throws RemoteException;
 
-    ResponseCode connect(String usn,String pwd) throws RemoteException;
+    ResponseCode connect(ClientInterface skeleton, String usn, String pwd) throws RemoteException;
 
     void disconnect() throws RemoteException;
 
