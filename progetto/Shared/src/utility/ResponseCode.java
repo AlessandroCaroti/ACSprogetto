@@ -21,7 +21,7 @@ public class ResponseCode {
     }
 
     private Codici codice;
-    private  TipoClasse classeGeneratrice;
+    private TipoClasse classeGeneratrice;
     private String messaggioInfo;
 
     /**
