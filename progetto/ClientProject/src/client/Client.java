@@ -4,6 +4,7 @@ import interfaces.ClientInterface;
 import interfaces.ServerInterface;
 import utility.Message;
 import utility.ResponseCode;
+import utility.Topic;
 
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -22,7 +23,6 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
     private long cookie;
     private String bp_key; //broker's public key
     private String my_private_key;
-    private static long last_cookie;
     private static final int port=8000;
 
     // ************************************************************************************************************
@@ -39,7 +39,6 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
         this.username=username;
         this.light_password=light_password;
         this.skeleton=skeleton;
-        this.cookie=last_cookie++;
         this.bp_key=bp_key;
         this.my_private_key=my_private_key;
 
@@ -55,7 +54,6 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
 
         this.username=username;
         this.skeleton=skeleton;
-        this.cookie=last_cookie++;
         this.bp_key=bp_key;
         this.my_private_key=my_private_key;
     }
@@ -64,18 +62,22 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
     // *************************************************************************************************************
     //API
 
-    /*TODO aggiungere i metodi elencari nel file che specifica le API del client
-     */
+    //TODO aggiungere i metodi elencati nel file che specifica le API del client
+
     //Registration on a server
     public void Register() throws RemoteException,NotBoundException
     {
         Registry r = LocateRegistry.getRegistry(port);
         this.server_stub = (ServerInterface) r.lookup("REG");
         ResponseCode response =server_stub.register(this.skeleton,username,light_password);
+        if(response.IsSetCookie())
+        {
+            //this.cookie=;
+        }
         if(!response.IsOK())
             System.err.println(response);
-
     }
+
     //Connection on a server
     public void Connect() throws RemoteException,NotBoundException
     {
@@ -84,6 +86,23 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
         ResponseCode response= server_stub.connect(this.skeleton,username,light_password);
         if(!response.IsOK())
             System.err.println(response);
+    }
+
+    //Anonymous connection on a server
+    public void AnonymousConnect() throws RemoteException,NotBoundException
+    {
+        Registry r = LocateRegistry.getRegistry(port);
+        this.server_stub= (ServerInterface) r.lookup("REG");
+
+        //TODO anonymous server's connect
+        ResponseCode response= server_stub.connect(this.skeleton,null,null);
+
+        if(!response.IsOK())
+            System.err.println(response);
+    }
+
+    public void Subscribe(Topic topic)
+    {
     }
 
 
@@ -95,11 +114,11 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
         ResponseCode rc;
         if(m==null) {
              rc=new ResponseCode(ResponseCode.Codici.R500, ResponseCode.TipoClasse.CLIENT,
-                    "NOT OK Il server ha ricevuto un messaggio vuoto");
+                    "(-) NOT OK Il server ha ricevuto un messaggio vuoto");
             return rc;
         }
          rc=new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.CLIENT,
-                "OK il server ha ricevuto il messaggio");
+                "(+) OK il server ha ricevuto il messaggio");
         return rc;
     }
 

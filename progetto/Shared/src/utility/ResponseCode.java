@@ -11,6 +11,7 @@ public class ResponseCode {
         SERVER_CLIENT
     }
      public enum Codici{
+        R100,//Set Cookie
         R200,//OK
         R400,//bad request
          R500,//null message
@@ -59,5 +60,6 @@ public class ResponseCode {
         return classeGeneratrice;
     }
     public boolean IsOK(){ return Codici.R200==codice; }
+    public boolean IsSetCookie(){ return Codici.R100==codice;}
 }
 
