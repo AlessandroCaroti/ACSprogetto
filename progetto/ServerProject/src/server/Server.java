@@ -14,13 +14,12 @@ public class Server implements ServerInterface,Callable<Integer> {
     //STRUTTURE DATI
     /*
     *   lista dei topic
-    *   hashMap topic,client
-    *   lista dei client che si sono registrati
+    *   lista dei client anonimi
     *
      */
-    private AccountCollectionInterface accountList;//monitor della lista contente tutti gli account salvati
-    private Properties serverSettings=new Properties();//setting del server
-    private ConcurrentHashMap<byte[],Integer> topicClientAssociation; //aca gennaro
+    private AccountCollectionInterface accountList;         //monitor della lista contente tutti gli account salvati
+    private Properties serverSettings=new Properties();     //setting del server
+    private ConcurrentHashMap<byte[],Integer> topicClientAssociation;   //aca gennaro hashMap contenete le associazioni topic->clientOnlie
 
 
     /**Costruttore
@@ -70,8 +69,9 @@ public class Server implements ServerInterface,Callable<Integer> {
     @Override
     public ResponseCode register(ClientInterface skeleton,String usn, String pwd) throws RemoteException {
         ResponseCode rc;
-        rc=new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER,
+        rc=new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER,
                 "OK Il client"+usn+ "è stato registrato correttamente");
+
         return rc;
     }
 

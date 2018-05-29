@@ -70,12 +70,17 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
         Registry r = LocateRegistry.getRegistry(port);
         this.server_stub = (ServerInterface) r.lookup("REG");
         ResponseCode response =server_stub.register(this.skeleton,username,light_password);
-        if(response.IsSetCookie())
-        {
-            //this.cookie=;
+        switch (response.getCodice()) {
+            case R100:
+                
+                break;
+            case R600:
+                System.err.println(response.getCodice() + response.getMessaggioInfo());
+                break;
+
+                default:
+
         }
-        if(!response.IsOK())
-            System.err.println(response);
     }
 
     //Connection on a server
@@ -85,7 +90,7 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
         this.server_stub= (ServerInterface) r.lookup("REG");
         ResponseCode response= server_stub.connect(this.skeleton,username,light_password);
         if(!response.IsOK())
-            System.err.println(response);
+            System.err.println(response.getCodice()+response.getMessaggioInfo());
     }
 
     //Anonymous connection on a server
