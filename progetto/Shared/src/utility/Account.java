@@ -9,6 +9,7 @@ import static utility.hashFunctions.compareHashandString;
 import static utility.hashFunctions.stringHash;
 
 public class Account {
+
     private String username;
     private byte[] password;//hash password
     private ClientInterface stub;
