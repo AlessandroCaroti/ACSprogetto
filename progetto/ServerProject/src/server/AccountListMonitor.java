@@ -1,9 +1,8 @@
 package server;
 
-import Interfaces.ClientInterface;
-
+import interfaces.ClientInterface;
 import java.util.concurrent.locks.*;
-import CustomException.*;
+import customException.*;
 import utility.Account;
 
 /**
@@ -20,7 +19,7 @@ public class AccountListMonitor implements AccountCollectionInterface {
      * @param maxAccountNumber il numero massimo di account
      * @throws IllegalArgumentException se MAXACCOUNTNUMBER <=0
      */
-    public AccountListMonitor(int maxAccountNumber) throws  IllegalArgumentException
+     AccountListMonitor(int maxAccountNumber) throws  IllegalArgumentException
     {
         if(MAXACCOUNTNUMBER<=0){
             throw new IllegalArgumentException("maxaccountnumber<=0");
@@ -31,7 +30,7 @@ public class AccountListMonitor implements AccountCollectionInterface {
     /**
      * Setta il numero massimo di account con il valore di dafault
      */
-    public AccountListMonitor(){
+     AccountListMonitor(){
         this.MAXACCOUNTNUMBER=this.MAXACCOUNTNUMBERDEFAULT;
     }
 

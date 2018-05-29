@@ -1,14 +1,15 @@
 package server;
 
-import Interfaces.ClientInterface;
-import Interfaces.ServerInterface;
+import interfaces.ServerInterface;
+import interfaces.ClientInterface;
 import utility.ResponseCode;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Properties;
+import java.util.concurrent.Callable;
 
-public class Server implements ServerInterface{
+public class Server implements ServerInterface,Callable<Integer> {
     //STRUTTURE DATI
     /*
     *   lista dei topic
@@ -25,7 +26,7 @@ public class Server implements ServerInterface{
      * Se il file non viene trovato vengono usati i costruttori di default
      *  se il file di config non viene trovato
      */
-    public Server()
+    Server()
     {
         try {
             FileInputStream in = new FileInputStream("config.serverSettings");
@@ -39,7 +40,17 @@ public class Server implements ServerInterface{
         }
     }
 
+    /**
+     * Avvia il server
+     * @return 0 quando l'utente vuole spegnere l'host,1 in caso di errore dell'interfaccia grafica
+     */
+    public Integer call(){
 
+
+
+
+        return 0;
+    }
 
     /* ********************************************************************************************************** **/
     //API

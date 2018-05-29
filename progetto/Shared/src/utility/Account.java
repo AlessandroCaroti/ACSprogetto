@@ -1,7 +1,7 @@
 package utility;
 
 
-import Interfaces.ClientInterface;
+import interfaces.ClientInterface;
 
 import java.security.NoSuchAlgorithmException;
 
