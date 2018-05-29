@@ -1,4 +1,6 @@
 package server;
 
-public class SClient {
+import client.Client;
+
+public class SClient extends Client {
 }
