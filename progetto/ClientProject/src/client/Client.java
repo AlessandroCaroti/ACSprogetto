@@ -1,5 +1,6 @@
 package client;
 
+import com.sun.jdi.IntegerValue;
 import interfaces.ClientInterface;
 import interfaces.ServerInterface;
 import utility.Message;
@@ -72,7 +73,8 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
         ResponseCode response =server_stub.register(this.skeleton,username,light_password);
         switch (response.getCodice()) {
             case R100:
-                
+                this.cookie=Long.valueOf(response.getMessaggioInfo());
+                System.out.println("Sono stato registrato!");
                 break;
             case R600:
                 System.err.println(response.getCodice() + response.getMessaggioInfo());
@@ -89,8 +91,17 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
         Registry r = LocateRegistry.getRegistry(port);
         this.server_stub= (ServerInterface) r.lookup("REG");
         ResponseCode response= server_stub.connect(this.skeleton,username,light_password);
-        if(!response.IsOK())
-            System.err.println(response.getCodice()+response.getMessaggioInfo());
+        switch (response.getCodice()) {
+            case R100:
+                this.cookie=Long.valueOf(response.getMessaggioInfo());
+                System.out.println("Connesso con successo!");
+                break;
+            case R600:
+                System.err.println(response.getCodice() + response.getMessaggioInfo());
+                break;
+
+            default:
+        }
     }
 
     //Anonymous connection on a server
@@ -101,9 +112,17 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
 
         //TODO anonymous server's connect
         ResponseCode response= server_stub.connect(this.skeleton,null,null);
+        switch (response.getCodice()) {
+            case R100:
+                this.cookie=Long.valueOf(response.getMessaggioInfo());
+                System.out.println("Connesso anonimamente con successo!");
+                break;
+            case R600:
+                System.err.println(response.getCodice() + response.getMessaggioInfo());
+                break;
 
-        if(!response.IsOK())
-            System.err.println(response);
+            default:
+        }
     }
 
     public void Subscribe(Topic topic)
