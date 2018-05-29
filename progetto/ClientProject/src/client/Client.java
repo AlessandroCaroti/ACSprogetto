@@ -58,8 +58,6 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
         this.cookie=last_cookie++;
         this.bp_key=bp_key;
         this.my_private_key=my_private_key;
-        this.gui=new GuiInterfaceStream(true);
-
     }
 
 
