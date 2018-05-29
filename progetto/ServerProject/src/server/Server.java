@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Properties;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Server implements ServerInterface,Callable<Integer> {
     //STRUTTURE DATI
@@ -19,6 +20,7 @@ public class Server implements ServerInterface,Callable<Integer> {
      */
     private AccountCollectionInterface accountList;//monitor della lista contente tutti gli account salvati
     private Properties serverSettings=new Properties();//setting del server
+    private ConcurrentHashMap<byte[],Integer> topicClientAssociation; //aca gennaro
 
 
     /**Costruttore
