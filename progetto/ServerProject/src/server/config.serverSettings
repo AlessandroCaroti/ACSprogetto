@@ -1,2 +1,3 @@
 #serverSettings
 maxaccountnumber=300
+maxbrokerconnection=300
