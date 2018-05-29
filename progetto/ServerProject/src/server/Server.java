@@ -70,8 +70,9 @@ public class Server implements ServerInterface,Callable<Integer> {
     @Override
     public ResponseCode register(ClientInterface skeleton,String usn, String pwd) throws RemoteException {
         ResponseCode rc;
-        rc=new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER,
+        rc=new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER,
                 "OK Il client"+usn+ "è stato registrato correttamente");
+
         return rc;
     }
 
