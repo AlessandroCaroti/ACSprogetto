@@ -13,30 +13,31 @@ import java.rmi.server.UnicastRemoteObject;
 
 public class Client  extends UnicastRemoteObject implements ClientInterface {
 
-    //Variabili di istanza
+    //Instance variables
 
     private String username;
     private String light_password;
-    private ClientInterface stub;
-    private ServerInterface skeleton;//broker stub
+    private ClientInterface skeleton;//client's stub
+    private ServerInterface server_stub;//broker's stub
     private long cookie;
-    private String bp_key; //broker public key
+    private String bp_key; //broker's public key
     private String my_private_key;
     private static long last_cookie;
     private static final int port=8000;
 
     // ************************************************************************************************************
-    //Costruttore
+    //CONSTRUCTORS
 
-    public Client(String username, String light_password, ClientInterface stub, ServerInterface skeleton, String bp_key, String my_private_key)
+    //User's constructor
+
+    public Client(String username, String light_password, ClientInterface skeleton, String bp_key, String my_private_key)
             throws RemoteException
     {
-        if(username==null||light_password==null||stub==null||skeleton==null||bp_key==null||my_private_key==null)
+        if(username==null||light_password==null||skeleton==null||bp_key==null||my_private_key==null)
             throw new NullPointerException();
 
         this.username=username;
         this.light_password=light_password;
-        this.stub=stub;
         this.skeleton=skeleton;
         this.cookie=last_cookie++;
         this.bp_key=bp_key;
@@ -44,35 +45,52 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
 
     }
 
+    //Anonymous user's constructor
+
+    public Client(String username, ClientInterface skeleton, String bp_key, String my_private_key)
+            throws RemoteException
+    {
+        if(username==null||skeleton==null||bp_key==null||my_private_key==null)
+            throw new NullPointerException();
+
+        this.username=username;
+        this.skeleton=skeleton;
+        this.cookie=last_cookie++;
+        this.bp_key=bp_key;
+        this.my_private_key=my_private_key;
+        this.gui=new GuiInterfaceStream(true);
+
+    }
+
+
     // *************************************************************************************************************
     //API
 
     /*TODO aggiungere i metodi elencari nel file che specifica le API del client
      */
-    // Registrazione su un server
-    public void Register(ServerInterface skeleton ,String Username,String Password) throws RemoteException,NotBoundException
+    //Registration on a server
+    public void Register() throws RemoteException,NotBoundException
     {
         Registry r = LocateRegistry.getRegistry(port);
-        skeleton= (ServerInterface) r.lookup("REG");
-        //r.rebind("ClientReg",stub);
-        ResponseCode response =skeleton.register(Username,Password);
+        this.server_stub = (ServerInterface) r.lookup("REG");
+        ResponseCode response =server_stub.register(this.skeleton,username,light_password);
         if(!response.IsOK())
             System.err.println(response);
 
     }
-
-    public void Connect(ServerInterface skeleton,String Username,String Password) throws RemoteException,NotBoundException
+    //Connection on a server
+    public void Connect() throws RemoteException,NotBoundException
     {
         Registry r = LocateRegistry.getRegistry(port);
-        skeleton= (ServerInterface) r.lookup("REG");
-        ResponseCode response= skeleton.connect(Username,Password);
+        this.server_stub= (ServerInterface) r.lookup("REG");
+        ResponseCode response= server_stub.connect(this.skeleton,username,light_password);
         if(!response.IsOK())
             System.err.println(response);
     }
 
 
     // *************************************************************************************************************
-    //METODI REMOTI
+    //REMOTE METHOD
 
     @Override
     public ResponseCode notify(Message m) /*throws RemoteException*/ {
@@ -94,6 +112,6 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
     }
 
     // *************************************************************************************************************
-    //METODI PRIVATI
+    //PRIVATE METHOD
 
 }
