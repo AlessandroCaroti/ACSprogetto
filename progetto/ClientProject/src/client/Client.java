@@ -113,7 +113,7 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
         ResponseCode response= server_stub.connect(this.skeleton,null,null);
         switch (response.getCodice()) {
             case R100:
-                this.cookie=Long.valueOf(response.getMessaggioInfo());
+                this.cookie=Long.valueOf(response.getMessaggioInfo());//per la connect anonima il cookie non viene settato
                 System.out.println("Connesso anonimamente con successo!");
                 break;
             case R600:
