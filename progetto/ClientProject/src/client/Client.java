@@ -18,44 +18,55 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
 
     private String username;
     private String plainPassword;
-    private ClientInterface skeleton;//client's stub
-    private ServerInterface server_stub;//broker's stub
+    private ClientInterface skeleton;//my stub
     private long cookie;
+    private String myPrivateKey;
+    private String myPublicKey;
+
+
+    private String broker;
+    private ServerInterface server_stub;//broker's stub
+    private static final int defaultPort=8000;
+    private int port;
     private String bp_key; //broker's public key
-    private String my_private_key;
-    private static final int port=8000;
 
     // ************************************************************************************************************
     //CONSTRUCTORS
 
-    //User's constructor
-
-    public Client(String username, String light_password, ClientInterface skeleton, String bp_key, String my_private_key)
+    //Client's constructor
+    public Client(String username, String plainPassword, ClientInterface skeleton, String my_public_key, String my_private_key )
             throws RemoteException
     {
-        if(username==null||light_password==null||skeleton==null||bp_key==null||my_private_key==null)
+        if(username==null||plainPassword==null||skeleton==null||my_public_key==null||my_private_key==null)
             throw new NullPointerException();
 
         this.username=username;
-        this.plainPassword=light_password;
+        this.plainPassword=plainPassword;
         this.skeleton=skeleton;
-        this.bp_key=bp_key;
-        this.my_private_key=my_private_key;
+        this.myPublicKey=bp_key;
+        this.myPrivateKey=my_private_key;
 
     }
 
     //Anonymous user's constructor
 
-    public Client(String username, ClientInterface skeleton, String bp_key, String my_private_key)
+    /**
+     * @param username il mio username
+     * @param skeleton il mio stub
+     * @param my_private_key la mia chiave privata
+     * @param my_public_key la mia chiave pubblica
+     * @throws RemoteException
+     */
+    public Client(String username, ClientInterface skeleton, String my_private_key, String my_public_key)
             throws RemoteException
     {
-        if(username==null||skeleton==null||bp_key==null||my_private_key==null)
+        if(username==null||skeleton==null||my_public_key==null||my_private_key==null)
             throw new NullPointerException();
 
         this.username=username;
         this.skeleton=skeleton;
-        this.bp_key=bp_key;
-        this.my_private_key=my_private_key;
+        this.myPublicKey=bp_key;
+        this.myPrivateKey=my_private_key;
     }
 
 
@@ -63,36 +74,57 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
     //API
 
     //TODO aggiungere i metodi elencati nel file che specifica le API del client
+    //Registration on the server
+    /**
+     *
+     * @throws RemoteException
+     * @throws NotBoundException
+     */
+    public void Register() throws RemoteException,NotBoundException {
 
-    //Registration on a server
-    public void Register() throws RemoteException,NotBoundException
-    {
-        Registry r = LocateRegistry.getRegistry(port);
-        this.server_stub = (ServerInterface) r.lookup("REG");
-        ResponseCode response =server_stub.register(this.skeleton,username,plainPassword);
-        switch (response.getCodice()) {
-            case R100:
-                this.cookie=Long.valueOf(response.getMessaggioInfo());
-                System.out.println("Sono stato registrato!");
-                break;
-            case R600:
-                System.err.println(response.getCodice() + response.getMessaggioInfo());
-                break;
-
-                default:
-
-        }
     }
 
-    //Connection on a server
-    public void Connect() throws RemoteException,NotBoundException
+    public void AnonymousRegister(){
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+    /**
+     * Si connette al server specificato dalla stringa broker e dalla porta port facendo il lookup
+     * sul registry dell'host
+     * @param broker il broker su cui connettersi
+     * @param port se null viene usata defaultport
+     * @throws RemoteException
+     * @throws NotBoundException
+     * @throws NullPointerException se broker == null
+     */
+    public void Connect(String broker,Integer port) throws RemoteException,NotBoundException,NullPointerException
     {
-        Registry r = LocateRegistry.getRegistry(port);
+        if(broker==null){
+            throw new NullPointerException("broker string == null");
+        }
+        this.broker=broker;
+        if(port==null){
+            this.port=defaultPort;
+        }else{
+            this.port=port;
+        }
+
+        Registry r = LocateRegistry.getRegistry(this.broker,this.port);
         this.server_stub= (ServerInterface) r.lookup("REG");
         ResponseCode response= server_stub.connect(this.skeleton,username,plainPassword);
         switch (response.getCodice()) {
             case R100:
-                this.cookie=Long.valueOf(response.getMessaggioInfo());
                 System.out.println("Connesso con successo!");
                 break;
             case R600:
@@ -100,11 +132,12 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
                 break;
 
             default:
+                //TODO add something here
         }
     }
 
     //Anonymous connection on a server
-    public void AnonymousConnect() throws RemoteException,NotBoundException
+   /* public void AnonymousConnect(String broker,Integer port) throws RemoteException,NotBoundException,NullPointerException
     {
         Registry r = LocateRegistry.getRegistry(port);
         this.server_stub= (ServerInterface) r.lookup("REG");
@@ -122,7 +155,8 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
 
             default:
         }
-    }
+
+    }*/
 
     public void Subscribe(Topic topic)
     {
