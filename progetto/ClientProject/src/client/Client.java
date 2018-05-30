@@ -73,10 +73,14 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
     // *************************************************************************************************************
     //API
 
-    //TODO aggiungere i metodi elencati nel file che specifica le API del client
+    //TODO aggiungere i metodi elencati nel file che specifica le API del
+
+
+
+
     //Registration on the server
     /**
-     *
+     *Si registra e viene restituito cookie
      * @throws RemoteException
      * @throws NotBoundException
      */
@@ -84,6 +88,9 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
 
     }
 
+    /**
+     * Si registra ma non viene restituito il cookie
+     */
     public void AnonymousRegister(){
 
 
@@ -136,27 +143,6 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
         }
     }
 
-    //Anonymous connection on a server
-   /* public void AnonymousConnect(String broker,Integer port) throws RemoteException,NotBoundException,NullPointerException
-    {
-        Registry r = LocateRegistry.getRegistry(port);
-        this.server_stub= (ServerInterface) r.lookup("REG");
-
-        //TODO anonymous server's connect
-        ResponseCode response= server_stub.connect(this.skeleton,null,null);
-        switch (response.getCodice()) {
-            case R100:
-                this.cookie=Long.valueOf(response.getMessaggioInfo());//per la connect anonima il cookie non viene settato
-                System.out.println("Connesso anonimamente con successo!");
-                break;
-            case R600:
-                System.err.println(response.getCodice() + response.getMessaggioInfo());
-                break;
-
-            default:
-        }
-
-    }*/
 
     public void Subscribe(Topic topic)
     {
