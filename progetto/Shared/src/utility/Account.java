@@ -44,7 +44,7 @@ public class Account {
 
 
     /**
-     * Crea un nuovo account
+     * Crea un nuovo account differenza con il precente sulla password (già hashata)
      * @param userName l'username :D
      * @param password (password hashata)
      * @param stub lo del client

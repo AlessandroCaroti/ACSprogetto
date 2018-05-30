@@ -10,10 +10,11 @@ import utility.Account;
  */
 public class AccountListMonitor implements AccountCollectionInterface {
     private  int MAXACCOUNTNUMBER;
-    private final int MAXACCOUNTNUMBERDEFAULT=30;
-    private  Account[] accountList=new Account[MAXACCOUNTNUMBER];
+    private final int MAXACCOUNTNUMBERDEFAULT=300;
+    private  Account[] accountList;
     private int length=0;
     private ReentrantReadWriteLock listLock=new ReentrantReadWriteLock();
+
 
     /**
      * @param maxAccountNumber il numero massimo di account
@@ -25,13 +26,16 @@ public class AccountListMonitor implements AccountCollectionInterface {
             throw new IllegalArgumentException("maxaccountnumber<=0");
         }
         this.MAXACCOUNTNUMBER=maxAccountNumber;
+        this.accountList=new Account[MAXACCOUNTNUMBER];
     }
 
     /**
      * Setta il numero massimo di account con il valore di dafault
      */
      public  AccountListMonitor(){
-        this.MAXACCOUNTNUMBER=this.MAXACCOUNTNUMBERDEFAULT;
+
+         this.MAXACCOUNTNUMBER=this.MAXACCOUNTNUMBERDEFAULT;
+         this.accountList=new Account[MAXACCOUNTNUMBER];
     }
 
     /**
@@ -53,19 +57,12 @@ public class AccountListMonitor implements AccountCollectionInterface {
 
         this.listLock.writeLock().lock();
         try{
-            posizione=0;
-            while(posizione<MAXACCOUNTNUMBER){
-                if(accountList[posizione]==null){
-                    accountList[posizione]=account;
-                    account.setAccountId(posizione);
-                    break;
-                }
-                posizione++;
-            }
-            if(posizione==MAXACCOUNTNUMBER){
+            if(this.length==MAXACCOUNTNUMBER){
                 throw new MaxNumberAccountReached();
             }
-            this.length++;
+            accountList[this.length]=account;
+            account.setAccountId(this.length);
+            posizione=this.length++;
         }finally{
             listLock.writeLock().unlock();
         }
@@ -77,13 +74,15 @@ public class AccountListMonitor implements AccountCollectionInterface {
     /**
      * Ritorna uno snapshot della classe account nella posizione id della lista degli account
      * @param accountId posizione all'interno dell'array
-     * @return null  se non trovato
+     * @return null  se non trovato o se index outofbounds
      * @throws NullPointerException  deriva dal costruttore di Account
      * @throws IllegalArgumentException deriva dal costruttore di Account
      */
     public Account getAccountCopy(int accountId){
+        if(accountId>=this.getLength()){
+            return null;
+        }
         Account snapShot;
-
         this.listLock.readLock().lock();
         Account curr;
         try {
@@ -107,9 +106,10 @@ public class AccountListMonitor implements AccountCollectionInterface {
      * @param accountId l'identificativo dell'account
      * @throws NullPointerException se account==null
      * @throws IndexOutOfBoundsException se accountId>=MAXNUMBERACCOUNT
+     * @return true se aggiunto correttamente ,false se index outofbounds
      */
 
-    public void addAccount(Account account,int accountId)throws NullPointerException,IndexOutOfBoundsException
+    public boolean addAccount(Account account,int accountId)throws NullPointerException,IndexOutOfBoundsException
     {
         if(account==null)
         {
@@ -118,16 +118,24 @@ public class AccountListMonitor implements AccountCollectionInterface {
         if(accountId>=MAXACCOUNTNUMBER){
             throw new IndexOutOfBoundsException("accountId>=MAXACCOUNTNUMBER");
         }
-        account.setAccountId(accountId);
+
         listLock.writeLock().lock();
-        accountList[accountId]=account;
-        this.length++;
+            if(accountId>this.length){
+                listLock.writeLock().unlock();
+                return false;
+            }
+            account.setAccountId(accountId);
+            accountList[accountId]=account;
+            if(accountId==this.length)
+            {this.length++;}
         listLock.writeLock().unlock();
+
+        return true;
     }
 
     /**Elimina e ritorna l'istanza precedente alla posizione "posizione"
-     * @param accountId deve essere >=0 AND <MAXNUMBERACCOUNT
-     * @return l'istanza di account tolta dalla posizione "posizione"
+     * @param accountId deve essere >=0 AND <MAXNUMBERACCOUNT AND <length
+     * @return l'istanza di account tolta dalla posizione "posizione" oppure null se accountid >=length
      * @throws IndexOutOfBoundsException se posizione>=MAXNUMBERACCOUNT
      */
     public Account removeAccount(int accountId) throws IndexOutOfBoundsException
@@ -136,16 +144,39 @@ public class AccountListMonitor implements AccountCollectionInterface {
         if(accountId>=MAXACCOUNTNUMBER){
             throw new IndexOutOfBoundsException("accountId>=MAXACCOUNTNUMBER");
         }
+
+
         listLock.writeLock().lock();
-        account=accountList[accountId];
-        accountList[accountId]=null;
-        this.length--;
+            if(accountId>this.length){
+                listLock.writeLock().unlock();
+                return null;
+            }
+            account=accountList[accountId];
+            accountList[accountId]=null;
+
         listLock.writeLock().unlock();
+
         return account;
     }
 
+    /*TODO
+        1)se la remove account non fa shiftare l'array allora in addaccount(account)
+            bisogna fare la scansione dell'array per trovare una cella ==null
+
+
+
+     */
+
+    /**
+     * Torna la chiave pubblica dell'account o null
+     * @param accountId l'identificativo dell'account
+     * @return null se accountId >=length
+     */
 
     public String getPublicKey(int accountId) {
+        if(accountId>=this.getLength()){
+            return null;
+        }
         Account curr;
         String pk;
         listLock.readLock().lock();
@@ -159,7 +190,15 @@ public class AccountListMonitor implements AccountCollectionInterface {
         return pk;
     }
 
+    /**
+     * Torna la password hashata o null
+     * @param accountId
+     * @return null se accountid>=length
+     */
     public byte[] getPassword(int accountId) {
+        if(accountId>=this.getLength()){
+            return null;
+        }
         Account curr;
         byte[] passw;
         listLock.readLock().lock();
@@ -174,6 +213,9 @@ public class AccountListMonitor implements AccountCollectionInterface {
     }
 
     public String getUsername(int accountId) {
+        if(accountId>=this.getLength()){
+            return null;
+        }
         Account curr;
         String username;
         listLock.readLock().lock();
@@ -188,6 +230,9 @@ public class AccountListMonitor implements AccountCollectionInterface {
     }
 
     public ClientInterface getStub(int accountId) {
+        if(accountId>=this.getLength()){
+            return null;
+        }
         Account curr;
         ClientInterface stub;
         listLock.readLock().lock();
@@ -207,6 +252,11 @@ public class AccountListMonitor implements AccountCollectionInterface {
          l=this.length;
          listLock.readLock().unlock();
          return l;
+    }
+
+    public int getMaxLength()
+    {
+        return this.MAXACCOUNTNUMBER;
     }
 
 }

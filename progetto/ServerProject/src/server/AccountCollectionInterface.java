@@ -19,7 +19,7 @@ public interface AccountCollectionInterface {
     /**
      * Ritorna uno snapshot della classe account nella posizione id della lista degli account
      * @param accountId posizione all'interno dell'array
-     * @return null  se non trovato
+     * @return null  se non trovato o se index outofbounds
      * @throws NullPointerException  deriva dal costruttore di Account
      * @throws IllegalArgumentException deriva dal costruttore di Account
      */
@@ -28,10 +28,11 @@ public interface AccountCollectionInterface {
 
     /**
      * Aggiunge o sovrascrive un account in posizione posizione
+     * @return true se aggiunto correttamente ,false se index outofbounds
      * Nota:account.accountId viene settato automaticamente
      */
 
-     void addAccount(Account account,int accountId);
+     boolean addAccount(Account account,int accountId);
 
 
     /**Elimina e ritorna l'istanza precedente alla posizione "posizione"
@@ -52,4 +53,6 @@ public interface AccountCollectionInterface {
      ClientInterface getStub(int accountId);
 
      int getLength();
+
+    public int getMaxLength();
 }
