@@ -1,6 +1,5 @@
 package client;
 
-import com.sun.jdi.IntegerValue;
 import interfaces.ClientInterface;
 import interfaces.ServerInterface;
 import utility.Message;
@@ -18,7 +17,7 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
     //Instance variables
 
     private String username;
-    private String light_password;
+    private String plainPassword;
     private ClientInterface skeleton;//client's stub
     private ServerInterface server_stub;//broker's stub
     private long cookie;
@@ -38,7 +37,7 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
             throw new NullPointerException();
 
         this.username=username;
-        this.light_password=light_password;
+        this.plainPassword=light_password;
         this.skeleton=skeleton;
         this.bp_key=bp_key;
         this.my_private_key=my_private_key;
@@ -70,7 +69,7 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
     {
         Registry r = LocateRegistry.getRegistry(port);
         this.server_stub = (ServerInterface) r.lookup("REG");
-        ResponseCode response =server_stub.register(this.skeleton,username,light_password);
+        ResponseCode response =server_stub.register(this.skeleton,username,plainPassword);
         switch (response.getCodice()) {
             case R100:
                 this.cookie=Long.valueOf(response.getMessaggioInfo());
@@ -90,7 +89,7 @@ public class Client  extends UnicastRemoteObject implements ClientInterface {
     {
         Registry r = LocateRegistry.getRegistry(port);
         this.server_stub= (ServerInterface) r.lookup("REG");
-        ResponseCode response= server_stub.connect(this.skeleton,username,light_password);
+        ResponseCode response= server_stub.connect(this.skeleton,username,plainPassword);
         switch (response.getCodice()) {
             case R100:
                 this.cookie=Long.valueOf(response.getMessaggioInfo());
