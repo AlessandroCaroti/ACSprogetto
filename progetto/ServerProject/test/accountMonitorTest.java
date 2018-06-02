@@ -1,7 +1,5 @@
-package test;
 
-import customException.MaxNumberAccountReached;
-import interfaces.ClientInterface;
+
 import server.AccountCollectionInterface;
 import server.AccountListMonitor;
 import utility.Account;
@@ -11,8 +9,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class accountMonitorTest {
-    public  ExecutorService executors= Executors.newCachedThreadPool();
-    public AccountCollectionInterface accountMonitor=new AccountListMonitor();
+    private  ExecutorService executors= Executors.newCachedThreadPool();
+    private AccountCollectionInterface accountMonitor=new AccountListMonitor();
 
 
     public static void main(String[] args)
