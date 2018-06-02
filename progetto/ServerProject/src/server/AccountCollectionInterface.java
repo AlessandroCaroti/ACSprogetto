@@ -1,5 +1,6 @@
 package server;
 
+import customException.AccountMonitorRuntimeException;
 import customException.MaxNumberAccountReached;
 import interfaces.ClientInterface;
 import utility.Account;
@@ -13,7 +14,7 @@ public interface AccountCollectionInterface {
      * @param account diverso da null
      * @return l'accountId (la posizione nella lista)
      */
-     int addAccount(Account account)throws MaxNumberAccountReached;
+     int addAccount(Account account)throws MaxNumberAccountReached, AccountMonitorRuntimeException;
 
 
     /**
@@ -28,11 +29,11 @@ public interface AccountCollectionInterface {
 
     /**
      * Aggiunge o sovrascrive un account in posizione posizione
-     * @return true se aggiunto correttamente ,false se index outofbounds
+     * @return Account l'account eliminato(null se non era presente)
      * Nota:account.accountId viene settato automaticamente
      */
 
-     boolean addAccount(Account account,int accountId);
+     Account addAccount(Account account,int accountId);
 
 
     /**Elimina e ritorna l'istanza precedente alla posizione "posizione"
@@ -41,18 +42,22 @@ public interface AccountCollectionInterface {
      */
      Account removeAccount(int accountId);
 
+    /**
+     *Tutti i getter tornano il valore (null o qualcosa di definito) oppure una delle due eccezioni
+     * @param accountId la posizione dove è stato salvato
+     * @return null or Something
+     * @throws ArrayIndexOutOfBoundsException se viene richiesto un accountId>=MAxnumberofaccount
+     * @throws NullPointerException se nella posizione accountId non è salvato alcun account
+     */
      String getPublicKey(int accountId);
 
-    /**
-     * @return torna l'hash salvato in account
-     */
      byte[] getPassword(int accountId);
 
      String getUsername(int accountId) ;
 
      ClientInterface getStub(int accountId);
 
-     int getLength();
+     int getNumberOfAccount();
 
-    public int getMaxLength();
+     int getMAXACCOUNTNUMBER();
 }
