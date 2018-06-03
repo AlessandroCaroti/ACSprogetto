@@ -107,10 +107,8 @@ public class Client  implements ClientInterface {
      *Il client si registra sul server su cui si era connesso con il metodo connect() e viene settato il cookie
      * @return true se registrazione andata a buon fine, false altrimenti
      */
-    private boolean register()  {
-        try {
+    private boolean register() {
             ResponseCode responseCode = server_stub.register(this.username, this.plainPassword, this.skeleton, this.myPublicKey);
-
             if (responseCode.getCodice().equals(Codici.R100)) {
                 this.cookie = responseCode.getMessaggioInfo();
                 return true;
@@ -123,14 +121,10 @@ public class Client  implements ClientInterface {
                 }
                 return false;
             }
-        }catch (RemoteException exc){
-            System.err.println(exc.getClass().getSimpleName());
-            return false;
-        }
     }
 
     public boolean anonymousRegister(){
-        try {
+
             ResponseCode responseCode = server_stub.anonymousRegister(this.skeleton,this.myPublicKey);
 
             if (responseCode.getCodice().equals(Codici.R100)) {
@@ -146,10 +140,7 @@ public class Client  implements ClientInterface {
                 }
                 return false;
             }
-        }catch (RemoteException exc){
-            System.err.println(exc.getClass().getSimpleName());
-            return false;
-        }
+
     }
 
 

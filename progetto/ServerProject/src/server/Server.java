@@ -9,9 +9,11 @@ import utility.Topic;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
+import java.rmi.AlreadyBoundException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -34,14 +36,18 @@ public class Server implements ServerInterface,Callable<Integer> {
     private String serverPublicKey;
     private String serverPrivateKey;
 
-
+    /*rmi fields*/
+    private Registry registry;
+    private ServerInterface skeleton;
 
     /**Costruttore
      *carica automaticamente i setting da file.
      * Se il file non viene trovato vengono usati i costruttori di default
      *  se il file di config non viene trovato
      */
-    Server() throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchPaddingException, UnsupportedEncodingException {
+    /*TODO creare le chiavi pubbliche eccetera e settarle nei fields*/
+
+    Server() throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchPaddingException, UnsupportedEncodingException, AlreadyBoundException {
         try {
             FileInputStream in = new FileInputStream("config.serverSettings");
             serverSettings.load(in);
@@ -49,11 +55,15 @@ public class Server implements ServerInterface,Callable<Integer> {
             this.accountList=new AccountListMonitor(Integer.parseInt(serverSettings.getProperty("maxaccountnumber")));
                     //TODO aggiungere i costruttori con i loro setting
 
+            this.skeleton=(ServerInterface) UnicastRemoteObject.exportObject(this,0);
+            this.registry= LocateRegistry.getRegistry();
+            this.registry.bind("ServerInterface",skeleton);
+            System.out.println("SERVER PRONTO (lookup)registryName:\"ServerInterface\"");
         }catch (IOException exc){
             this.accountList=new AccountListMonitor();//usa il default
         }
         try {
-            aesCipher = new AES("RandomInitVectol");
+            aesCipher = new AES("RandomInitVectol");//TODO usiamo un intvector un pò migliore
         }catch (Exception exc){
             System.err.println("Unable to create aes encryption class:"+exc.getClass().getSimpleName());
             throw exc;
@@ -66,9 +76,19 @@ public class Server implements ServerInterface,Callable<Integer> {
      */
     public Integer call(){
 
+        System.out.println("Enter something here : ");
 
+        try{
+            BufferedReader bufferRead = new BufferedReader(new InputStreamReader(System.in));
+            String s = bufferRead.readLine();
 
+        }
+        catch(IOException e)
+        {
+            e.printStackTrace();
+        }
 
+        System.out.println("Closing Server with exitcode:0");
         return 0;
     }
 
