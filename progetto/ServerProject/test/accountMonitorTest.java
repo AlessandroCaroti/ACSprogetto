@@ -16,7 +16,7 @@ public class accountMonitorTest {
     public static void main(String[] args)
     {
          accountMonitorTest test=new accountMonitorTest();
-         System.out.println("maxlength:"+test.accountMonitor.getMAXACCOUNTNUMBER());
+         System.out.println("maxlength: "+test.accountMonitor.getMAXACCOUNTNUMBER());
 
 
          /*addAccount*/
@@ -97,8 +97,7 @@ public class accountMonitorTest {
         });
 */
 
-
-        /*getpublickey*/
+    /*getpublickey*/
         test.executors.submit(() ->{
             try {
                 while (true) {
