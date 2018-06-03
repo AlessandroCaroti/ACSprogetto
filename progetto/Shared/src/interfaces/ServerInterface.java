@@ -1,27 +1,32 @@
 package interfaces;
 
 import utility.ResponseCode;
+import utility.Topic;
 
 import java.io.Serializable;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.List;
 
 public interface ServerInterface extends Remote,Serializable
 {
 
-    ResponseCode register(ClientInterface skeleton, String usn, String pwd) throws RemoteException;
+    ResponseCode register(String userName, String plainPassword, ClientInterface stub, String publicKey) throws RemoteException;
 
-    ResponseCode connect(ClientInterface skeleton, String usn, String pwd) throws RemoteException;
+    ResponseCode anonymousRegister(ClientInterface stub, String publicKey) throws RemoteException;
 
-    void disconnect() throws RemoteException;
 
-    void subscribe() throws RemoteException;
+    ResponseCode connect(ClientInterface clientStub,String clientPublicKey) throws RemoteException;
 
-    void unsubscribe() throws RemoteException;
+    ResponseCode disconnect(String cookie) throws RemoteException;
 
-    void publish() throws RemoteException;
+    void subscribe(String cookie, Topic topic) throws RemoteException;
+
+    void unsubscribe(String cookie,Topic topic) throws RemoteException;
+
+    void publish(String cookie) throws RemoteException;
 
     void ping() throws RemoteException;
 
-    void getTopicList() throws RemoteException;
+    List<Topic> getTopicList() throws RemoteException;
 }

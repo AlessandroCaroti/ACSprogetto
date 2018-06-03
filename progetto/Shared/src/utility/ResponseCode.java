@@ -11,12 +11,18 @@ public class ResponseCode {
         SERVER_CLIENT
     }
      public enum Codici{
-        R100,//Set Cookie
-        R200,//OK
-        R400,//bad request
+         R100,//Set Cookie
+         R101,//pong message (nel messagge info è presente il tempo di delay
+
+         //i messaggi con 200 sono messaggi di successo
+         R200,//OK
+         R210,//"set public key" all'interno del massageinfo è presente la chiave pubblica del server
+
+
+         //i messaggi che iniziano per 600 sono di errore
          R500,//null message
-         R600,//bad registry
-         R650//bad connection
+         R610,//registrazione account fallita
+         R620,//errore disconnessione
 
     }
 

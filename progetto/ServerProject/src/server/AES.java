@@ -21,11 +21,6 @@ public  class AES{
         KeyGenerator keyGen=KeyGenerator.getInstance("AES");
         keyGen.init(256);
         secretKey=keyGen.generateKey();
-
-        /*
-        String initVector = "RandomInitVector"; // 16 bytes IV*/
-
-
         cipherDec.init(Cipher.DECRYPT_MODE,secretKey, new IvParameterSpec(initVector16bytes.getBytes("UTF-8")));
         cipherEnc.init(Cipher.ENCRYPT_MODE,secretKey, new IvParameterSpec(initVector16bytes.getBytes("UTF-8")));
 

@@ -202,4 +202,27 @@ public class AccountListMonitor implements AccountCollectionInterface {
         return this.MAXACCOUNTNUMBER;
     }
 
+
+    public String setPublicKey(String clientPublicKey,int accountId){
+        if(accountId>=this.MAXACCOUNTNUMBER||accountId<0){
+            throw new IllegalArgumentException("accountId>MAXACCOUNTNUMBER || accountId<0");
+        }
+        listLock.writeLock().lock();
+        try {
+            String prev=accountList[accountId].getPublicKey();
+            //TODO change publickey
+            return prev;
+        }
+        finally {
+            this.listLock.writeLock().unlock();
+        }
+    }
+
+    //void setPassword(Strint accountId);
+
+    void setUsername(String username,int acountId);
+
+    void setStub(ClientInterface clientStub,int accountId);
+
+
 }

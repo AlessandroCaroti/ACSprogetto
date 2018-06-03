@@ -1,5 +1,6 @@
 package server;
 
+import client.Client;
 import customException.AccountMonitorRuntimeException;
 import customException.MaxNumberAccountReached;
 import interfaces.ClientInterface;
@@ -62,6 +63,13 @@ public interface AccountCollectionInterface {
 
      ClientInterface getStub(int accountId);
 
+     void setPublicKey(String clientPublicKey,int accountId);
+
+     //void setPassword(Strint accountId);
+
+     void setUsername(String username,int acountId);
+
+     void setStub(ClientInterface clientStub,int accountId);
 
      /**semplici getter**/
      int getNumberOfAccount();
