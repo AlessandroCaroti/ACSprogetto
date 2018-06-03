@@ -10,7 +10,11 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import java.io.*;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.rmi.AlreadyBoundException;
+import java.rmi.NoSuchObjectException;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
@@ -47,21 +51,34 @@ public class Server implements ServerInterface,Callable<Integer> {
      */
     /*TODO creare le chiavi pubbliche eccetera e settarle nei fields*/
 
-    Server() throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchPaddingException, UnsupportedEncodingException, AlreadyBoundException {
+    public Server() throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchPaddingException, UnsupportedEncodingException, AlreadyBoundException, RemoteException, UnknownHostException {
         try {
             FileInputStream in = new FileInputStream("config.serverSettings");
             serverSettings.load(in);
             in.close();
-            this.accountList=new AccountListMonitor(Integer.parseInt(serverSettings.getProperty("maxaccountnumber")));
-                    //TODO aggiungere i costruttori con i loro setting
+            accountList=new AccountListMonitor(Integer.parseInt(serverSettings.getProperty("maxaccountnumber")));
+                    //TODO here!!!!!!!!!!!!!!!!!!!!!!
+            serverPrivateKey="privatekeyservertobeimplmented";
+            serverPublicKey="publickeyservertobeimplmented";
 
-            this.skeleton=(ServerInterface) UnicastRemoteObject.exportObject(this,0);
-            this.registry= LocateRegistry.getRegistry();
-            this.registry.bind("ServerInterface",skeleton);
-            System.out.println("SERVER PRONTO (lookup)registryName:\"ServerInterface\"");
+
         }catch (IOException exc){
             this.accountList=new AccountListMonitor();//usa il default
+            System.out.println("WARNING "+exc.getClass().getSimpleName()+"-->using default accountmonitor size");
         }
+
+        this.skeleton = (ServerInterface) UnicastRemoteObject.exportObject(this, 1099);//TODO CHANGE PORT HERE?
+        this.registry= LocateRegistry.getRegistry(InetAddress.getLocalHost().getHostAddress());
+        try {
+            this.registry.rebind("ServerInterface", skeleton);
+        }catch(NoSuchObjectException e){
+            System.out.println("WARNING "+e.getClass().getSimpleName()+"-->forzo l'avvio del registry");
+            this.registry=LocateRegistry.createRegistry(1099);
+            this.registry= LocateRegistry.getRegistry(InetAddress.getLocalHost().getHostAddress());
+            this.registry.rebind("ServerInterface", skeleton);
+        }
+        System.out.println("SERVER PRONTO (lookup)registryName:\"ServerInterface\" on port:");
+
         try {
             aesCipher = new AES("RandomInitVectol");//TODO usiamo un intvector un pò migliore
         }catch (Exception exc){
@@ -126,7 +143,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     @Override
     public ResponseCode connect(ClientInterface stub,String clientPublicKey) {
 
-        return  new ResponseCode(ResponseCode.Codici.R210, ResponseCode.TipoClasse.SERVER,this.serverPublicKey);
+        return  new ResponseCode( ResponseCode.Codici.R210, ResponseCode.TipoClasse.SERVER,this.serverPublicKey);
     }
 
     @Override

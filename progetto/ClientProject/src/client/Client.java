@@ -9,6 +9,8 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
+
 import static utility.ResponseCode.*;
 
 
@@ -27,7 +29,7 @@ public class Client  implements ClientInterface {
 
     private String broker;
     private ServerInterface server_stub;//broker's stub
-    private static final int defaultPort=8000;
+    public static final int defaultPort=1099;
     private int port;
     private String brokerPublicKey; //broker's public key
 
@@ -35,17 +37,16 @@ public class Client  implements ClientInterface {
     //CONSTRUCTORS
 
     //Client's constructor
-    public Client(String username, String plainPassword, ClientInterface skeleton, String my_public_key, String my_private_key )
-
+    public Client(String username, String plainPassword, String my_public_key, String my_private_key ) throws RemoteException
     {
-        if(username==null||plainPassword==null||skeleton==null||my_public_key==null||my_private_key==null)
+        if(username==null||plainPassword==null||my_public_key==null||my_private_key==null)
             throw new NullPointerException();
 
         this.username=username;
         this.plainPassword=plainPassword;
-        this.skeleton=skeleton;
         this.myPublicKey=my_public_key;
         this.myPrivateKey=my_private_key;
+        this.skeleton=(ClientInterface) UnicastRemoteObject.exportObject(this,0);
 
     }
 
@@ -53,14 +54,12 @@ public class Client  implements ClientInterface {
 
     /**
      * @param username il mio username
-     * @param skeleton il mio stub
      * @param my_private_key la mia chiave privata
      * @param my_public_key la mia chiave pubblica
      */
-    public Client(String username, ClientInterface skeleton, String my_public_key, String my_private_key)
-
+    public Client(String username, String my_public_key, String my_private_key)throws RemoteException
     {
-        this(username,"",skeleton,my_public_key,my_private_key);
+        this(username,"",my_public_key,my_private_key);
     }
 
 
@@ -108,6 +107,7 @@ public class Client  implements ClientInterface {
      * @return true se registrazione andata a buon fine, false altrimenti
      */
     private boolean register() {
+        try {
             ResponseCode responseCode = server_stub.register(this.username, this.plainPassword, this.skeleton, this.myPublicKey);
             if (responseCode.getCodice().equals(Codici.R100)) {
                 this.cookie = responseCode.getMessaggioInfo();
@@ -115,32 +115,36 @@ public class Client  implements ClientInterface {
             }else{
                 if (responseCode.getCodice().equals(Codici.R610)) {
                     System.out.println(responseCode.getMessaggioInfo());
-
                 } else {
                     System.out.println(responseCode.getCodice()+":"+responseCode.getMessaggioInfo()+"  FROM:"+responseCode.getClasseGeneratrice());
                 }
                 return false;
             }
+        }catch (RemoteException e){
+            System.err.println("Remote exception:"+e.getClass().getSimpleName());
+            return false;
+        }
     }
 
     public boolean anonymousRegister(){
-
-            ResponseCode responseCode = server_stub.anonymousRegister(this.skeleton,this.myPublicKey);
-
-            if (responseCode.getCodice().equals(Codici.R100)) {
-                this.cookie = responseCode.getMessaggioInfo();
-                return true;
-            }
-            else {
-                if (responseCode.getCodice().equals(Codici.R610)) {
-                    System.out.println(responseCode.getMessaggioInfo());
-
+            try {
+                ResponseCode responseCode = server_stub.anonymousRegister(this.skeleton, this.myPublicKey);
+                if (responseCode.getCodice().equals(Codici.R100)) {
+                    this.cookie = responseCode.getMessaggioInfo();
+                    return true;
                 } else {
-                    System.out.println(responseCode.getCodice()+":"+responseCode.getMessaggioInfo()+"  FROM:"+responseCode.getClasseGeneratrice());
-                }
-                return false;
-            }
+                    if (responseCode.getCodice().equals(Codici.R610)) {
+                        System.out.println(responseCode.getMessaggioInfo());
 
+                    } else {
+                        System.out.println(responseCode.getCodice() + ":" + responseCode.getMessaggioInfo() + "  FROM:" + responseCode.getClasseGeneratrice());
+                    }
+                    return false;
+                }
+            }catch (RemoteException e){
+                System.err.println("Remote exception:"+e.getClass().getSimpleName());
+            return false;
+            }
     }
 
 
@@ -182,6 +186,7 @@ public class Client  implements ClientInterface {
             }
         }catch (RemoteException |NotBoundException exc){
             System.err.println(exc.getClass().getSimpleName());
+            exc.printStackTrace();
             return false;
         }
     }

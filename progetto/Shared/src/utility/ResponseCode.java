@@ -4,8 +4,8 @@ package utility;
  * Il response code contiene 3 campi:il codice,chi l'ha generato, un messaggio informativo
  */
 
-public class ResponseCode {
-    public enum TipoClasse  {
+public  class ResponseCode {
+    public  enum TipoClasse  {
         SERVER,
         CLIENT,
         SERVER_CLIENT
@@ -46,9 +46,12 @@ public class ResponseCode {
     public ResponseCode(Codici codiceRisposta,TipoClasse classeGeneratriceMessaggio,String messaggioInformativo)
             throws NullPointerException
     {
-        if(codice==null || classeGeneratrice==null)
+        if(codice==null)
         {
-            throw new NullPointerException("codice o classeGeneratrice ==null");
+            throw new NullPointerException("codice  ==null");
+        }
+        if( classeGeneratrice==null){
+            throw new NullPointerException(" classeGeneratrice ==null");
         }
         if(messaggioInformativo==null)
         {
