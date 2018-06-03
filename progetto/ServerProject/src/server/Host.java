@@ -1,7 +1,6 @@
 package server;
 
 import utility.GuiInterface;
-
 import javax.crypto.NoSuchPaddingException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;

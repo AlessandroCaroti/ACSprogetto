@@ -11,22 +11,23 @@ import java.util.List;
 public interface ServerInterface extends Remote,Serializable
 {
 
-    ResponseCode register(String userName, String plainPassword, ClientInterface stub, String publicKey) throws RemoteException;
+    ResponseCode register(String userName, String plainPassword, ClientInterface stub, String publicKey) ;
 
-    ResponseCode anonymousRegister(ClientInterface stub, String publicKey) throws RemoteException;
+    ResponseCode anonymousRegister(ClientInterface stub, String publicKey);
 
+    ResponseCode retrieveAccount(String username,String plainPassword,ClientInterface clientStub,String cookie);
 
-    ResponseCode connect(ClientInterface clientStub,String clientPublicKey) throws RemoteException;
+    ResponseCode connect(ClientInterface clientStub,String clientPublicKey) ;
 
-    ResponseCode disconnect(String cookie) throws RemoteException;
+    ResponseCode disconnect(String cookie) ;
 
-    void subscribe(String cookie, Topic topic) throws RemoteException;
+    void subscribe(String cookie, Topic topic) ;
 
-    void unsubscribe(String cookie,Topic topic) throws RemoteException;
+    void unsubscribe(String cookie,Topic topic) ;
 
-    void publish(String cookie) throws RemoteException;
+    void publish(String cookie) ;
 
-    void ping() throws RemoteException;
+    void ping() ;
 
-    List<Topic> getTopicList() throws RemoteException;
+    List<Topic> getTopicList() ;
 }

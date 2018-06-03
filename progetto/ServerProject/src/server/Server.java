@@ -6,14 +6,12 @@ import interfaces.ClientInterface;
 import utility.Account;
 import utility.ResponseCode;
 import utility.Topic;
-
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.rmi.RemoteException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -88,7 +86,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     //METODI REMOTI
 
     @Override
-    public ResponseCode register(String userName, String plainPassword, ClientInterface stub, String publicKey) throws RemoteException {
+    public ResponseCode register(String userName, String plainPassword, ClientInterface stub, String publicKey)  {
         String cookie;
         ResponseCode responseCode;
         try{
@@ -101,7 +99,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     @Override
-    public ResponseCode anonymousRegister(ClientInterface stub, String publicKey) throws RemoteException {
+    public ResponseCode anonymousRegister(ClientInterface stub, String publicKey)  {
         return register("AnonymousAccount","",stub,publicKey);
     }
 
@@ -120,6 +118,32 @@ public class Server implements ServerInterface,Callable<Integer> {
         }catch (BadPaddingException | IllegalBlockSizeException exc){
             return new ResponseCode(ResponseCode.Codici.R620, ResponseCode.TipoClasse.SERVER,"errore disconnessione");
         }
+    }
+
+    @Override
+    public ResponseCode retrieveAccount(String username,String plainPassword,ClientInterface clientStub,String cookie){
+        try {
+            int accountId=getAccountId(cookie);
+            Account account = accountList.getAccountCopy(accountId);
+            if(account.getUsername().equals(username)&&account.cmpPassword(plainPassword)){//okay -->setto lo stub
+                accountList.setStub(clientStub,accountId);
+                return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER,"login andato a buon fine");
+            }else{
+                /*qui non è detto che l'account non esista... potrebbe non essere più associato a quel determinato cookie..
+                si potrebbe fare una scansione dell'array alla ricerca dell'account perduto e se trovato  creare un nuovo cookie e inviare un responsecode R100(set cookie)
+                 */
+                return new ResponseCode(ResponseCode.Codici.R630, ResponseCode.TipoClasse.SERVER,"login fallito:username o password non validi, o cookie non più valido");
+            }
+        } catch (IllegalBlockSizeException |BadPaddingException | NoSuchAlgorithmException e) {
+            if(e instanceof NoSuchAlgorithmException){
+                return new ResponseCode(ResponseCode.Codici.R999, ResponseCode.TipoClasse.SERVER,"Internal server error D;");
+            }
+            else{
+                return new ResponseCode(ResponseCode.Codici.R666, ResponseCode.TipoClasse.SERVER,"Formato cookie non valido");
+            }
+
+        }
+
     }
 
     @Override
@@ -172,6 +196,8 @@ public class Server implements ServerInterface,Callable<Integer> {
             throw new AccountRegistrationException("Unable to register new account");
         }
     }
+
+
 
 
 }
