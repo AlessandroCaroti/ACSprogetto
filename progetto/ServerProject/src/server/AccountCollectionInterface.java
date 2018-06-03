@@ -9,10 +9,13 @@ public interface AccountCollectionInterface {
 
     /**
      *Aggiunge ad accountList l'istanza account.
-     * Se viene aggiunta correttamente (cioè non viene raggiunto il max numero di account disponibili)
-     * account.accountid viene settato con il valore della posizione della lista dove è stato salvato.
-     * @param account diverso da null
+     * Se viene aggiunta correttamente (cioè non è già stato raggiunto in precedenza il max numero di account disponibili)
+     * account.accountid viene settato con il valore della posizione nella lista dove è stato salvato.(da 0 a MAXACCOUNTNUMBER)
+     * @param account deve essere diverso da null
      * @return l'accountId (la posizione nella lista)
+     * @throws NullPointerException se viene passata una classe Account non istanziata
+     * @throws MaxNumberAccountReached se non ci sono più posti all'interno del monitor
+     * @throws AccountMonitorRuntimeException errore irreversibile (non dovrebbe mai succedere)
      */
      int addAccount(Account account)throws MaxNumberAccountReached, AccountMonitorRuntimeException;
 
@@ -22,14 +25,15 @@ public interface AccountCollectionInterface {
      * @param accountId posizione all'interno dell'array
      * @return null  se non trovato o se index outofbounds
      * @throws NullPointerException  deriva dal costruttore di Account
-     * @throws IllegalArgumentException deriva dal costruttore di Account
-     */
+     *@throws IllegalArgumentException se accountId<0 || accountId>=MAXACCOUNTNUMBER
+     **/
      Account getAccountCopy(int accountId);
 
 
     /**
-     * Aggiunge o sovrascrive un account in posizione posizione
-     * @return Account l'account eliminato(null se non era presente)
+     * Aggiunge o sovrascrive un account in posizione accountId
+     * @return l'Account  eliminato(null se non era presente)
+     * @throws IllegalArgumentException se accountId<0 || accountId>=MAXACCOUNTNUMBER
      * Nota:account.accountId viene settato automaticamente
      */
 
@@ -38,7 +42,8 @@ public interface AccountCollectionInterface {
 
     /**Elimina e ritorna l'istanza precedente alla posizione "posizione"
      * @param accountId deve essere >=0 AND <MAXNUMBERACCOUNT
-     * @return l'istanza di account tolta dalla posizione "posizione"
+     * @return l'istanza di account tolta dalla posizione "accountId"
+     * @throws IllegalArgumentException se accountId<0 || accountId>=MAXACCOUNTNUMBER
      */
      Account removeAccount(int accountId);
 
@@ -46,7 +51,7 @@ public interface AccountCollectionInterface {
      *Tutti i getter tornano il valore (null o qualcosa di definito) oppure una delle due eccezioni
      * @param accountId la posizione dove è stato salvato
      * @return null or Something
-     * @throws ArrayIndexOutOfBoundsException se viene richiesto un accountId>=MAxnumberofaccount
+     * @throws IllegalArgumentException se accountId<0 || accountId>=MAXACCOUNTNUMBER
      * @throws NullPointerException se nella posizione accountId non è salvato alcun account
      */
      String getPublicKey(int accountId);
@@ -57,6 +62,8 @@ public interface AccountCollectionInterface {
 
      ClientInterface getStub(int accountId);
 
+
+     /**semplici getter**/
      int getNumberOfAccount();
 
      int getMAXACCOUNTNUMBER();
