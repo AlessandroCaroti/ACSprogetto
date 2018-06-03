@@ -116,6 +116,11 @@ public class Server implements ServerInterface,Callable<Integer> {
     /* ************************************************************************************************************/
     //METODI PRIVATI
 
+    private void createCookie(){
+
+
+
+    }
 
 
 
