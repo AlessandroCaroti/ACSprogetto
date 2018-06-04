@@ -1,3 +1,12 @@
 
 *.xml
 *.iml
+progetto/ServerProject/.project
+progetto/ServerProject/.classpath
+progetto/Shared/.classpath
+progetto/Shared/.project
+*.class
+*.class
+progetto/Shared/out/production/Shared/interfaces/ClientInterface.class
+*.class
+*.class
