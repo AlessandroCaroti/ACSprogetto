@@ -1,16 +1,20 @@
 package utility;
+
+
+import java.io.Serializable;
+
 /**
  * Messaggio di risposta ,utilizzare il costruttore per definire e creare il messaggio
  * Il response code contiene 3 campi:il codice,chi l'ha generato, un messaggio informativo
  */
 
-public  class ResponseCode {
-    public  enum TipoClasse  {
+public  class ResponseCode implements Serializable {
+    public  enum TipoClasse implements Serializable  {
         SERVER,
         CLIENT,
         SERVER_CLIENT
     }
-     public enum Codici{
+     public enum Codici implements Serializable{
          R100,//Set Cookie
          R101,//pong message (nel messagge info è presente il tempo di delay
 
@@ -43,14 +47,14 @@ public  class ResponseCode {
      * @throws NullPointerException se codice o classegeneratrice corrispondono a null
      */
 
-    public ResponseCode(Codici codiceRisposta,TipoClasse classeGeneratriceMessaggio,String messaggioInformativo)
+    public ResponseCode(Codici codiceRisposta, TipoClasse classeGeneratriceMessaggio, String messaggioInformativo)
             throws NullPointerException
     {
-        if(codice==null)
+        if(codiceRisposta==null)
         {
             throw new NullPointerException("codice  ==null");
         }
-        if( classeGeneratrice==null){
+        if( classeGeneratriceMessaggio==null){
             throw new NullPointerException(" classeGeneratrice ==null");
         }
         if(messaggioInformativo==null)
