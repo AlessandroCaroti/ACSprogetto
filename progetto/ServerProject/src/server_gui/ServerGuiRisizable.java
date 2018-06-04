@@ -35,7 +35,7 @@ public class ServerGuiRisizable extends JFrame {
 	private int xx, xy;
 	private int Px, Py;
 	private int section = 1;
-	private int size_sidePnl = 244;
+	private int size_sidePnl = 230;
 	final int resizeBorder_size = 5;
 	private int titleSize = 37;
 	private int textSize = 18;
@@ -309,7 +309,7 @@ public class ServerGuiRisizable extends JFrame {
 		lblProgettoPcad = new JLabel("PCAD Project - Server");
 		lblProgettoPcad.setFont(new Font("Tahoma", Font.PLAIN, 15));
 		lblProgettoPcad.setForeground(Color.WHITE);
-		lblProgettoPcad.setBounds(12, 0, 150, 40);
+		lblProgettoPcad.setBounds(12, 0, 150, 32);
 		panel_12.add(lblProgettoPcad);
 
 		side_panel = new JPanel();
@@ -499,7 +499,7 @@ public class ServerGuiRisizable extends JFrame {
 		});
 		label_30.setFont(new Font("High Tower Text", Font.BOLD, 26));
 		label_30.setForeground(Color.WHITE);
-		label_30.setBounds(195, 0, 49, 46);
+		label_30.setBounds(181, 0, 49, 46);
 		side_panel.add(label_30);
 
 		label_1 = new JLabel("");
@@ -1007,7 +1007,7 @@ public class ServerGuiRisizable extends JFrame {
 		label_11.setText(AddressIp.getPublicIp());
 		if (AddressIp.getLocalIp() != "Unkown") {
 			lblC.setIcon(connected);
-			lblC.setToolTipText("");
+			lblC.setToolTipText("Internet access");
 		} else {
 			lblC.setIcon(disconnected);
 			lblC.setToolTipText("No connection are available");
