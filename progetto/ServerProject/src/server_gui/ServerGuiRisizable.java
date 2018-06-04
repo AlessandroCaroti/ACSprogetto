@@ -78,6 +78,7 @@ public class ServerGuiRisizable extends JFrame {
 	private JPanel conteiner_btn;
 	private JLabel lblC;
 	private JLabel lblS;
+	private JLabel lblProgettoPcad;
 
 	/**
 	 * Launch the application.
@@ -293,7 +294,7 @@ public class ServerGuiRisizable extends JFrame {
 		panel_2.add(btn_minze);
 
 		JPanel panel_12 = new JPanel();
-		panel_12.setPreferredSize(new Dimension(200, 10));
+		panel_12.setPreferredSize(new Dimension(300, 10));
 		panel_12.setOpaque(false);
 		top_panel.add(panel_12, BorderLayout.WEST);
 		panel_12.setLayout(null);
@@ -304,6 +305,12 @@ public class ServerGuiRisizable extends JFrame {
 		lblI.setHorizontalAlignment(SwingConstants.CENTER);
 		lblI.setBounds(0, 0, 56, 40);
 		panel_12.add(lblI);
+		
+		lblProgettoPcad = new JLabel("PCAD Project - Server");
+		lblProgettoPcad.setFont(new Font("Tahoma", Font.PLAIN, 15));
+		lblProgettoPcad.setForeground(Color.WHITE);
+		lblProgettoPcad.setBounds(12, 0, 150, 40);
+		panel_12.add(lblProgettoPcad);
 
 		side_panel = new JPanel();
 		side_panel.setBorder(null);
@@ -341,7 +348,6 @@ public class ServerGuiRisizable extends JFrame {
 					resetColor(new JPanel[] { sideBtn_2, sideBtn_3 }, new JPanel[] { ind_2, ind_3 });
 					cl.show(main_panel, "serverInfo");
 				});
-
 			}
 		});
 		sideBtn_1.setLayout(null);
@@ -473,6 +479,7 @@ public class ServerGuiRisizable extends JFrame {
 					lblI.setVisible(true);
 					label_1.setVisible(true);
 					conteiner_btn.setLocation(0, 62);
+					lblProgettoPcad.setLocation(60, 0);
 				});
 			}
 
@@ -517,6 +524,7 @@ public class ServerGuiRisizable extends JFrame {
 					lblI.setVisible(false);
 					label.setVisible(true);
 					conteiner_btn.setLocation(0, 159);
+					lblProgettoPcad.setLocation(12, 0);
 				});
 			}
 
