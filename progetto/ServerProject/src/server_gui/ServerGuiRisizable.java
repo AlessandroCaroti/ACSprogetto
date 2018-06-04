@@ -1,5 +1,7 @@
 package server_gui;
 
+
+import java.util.Objects;
 import keeptoo.KGradientPanel;
 import utility.AddressIp;
 import utility.MyScrollBar;
@@ -8,13 +10,9 @@ import utility.MyScrollPaneLayout;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.EventQueue;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.Dimension;
 import java.awt.Component;
 import java.awt.Cursor;
-
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.Font;
@@ -22,8 +20,9 @@ import java.awt.Frame;
 import java.awt.Point;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.CardLayout;
-import java.io.File;
-import java.util.Objects;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
 
@@ -50,10 +49,14 @@ public class ServerGuiRisizable extends JFrame {
 	final private ImageIcon dotWhite;
 	final private ImageIcon connected;
 	final private ImageIcon disconnected;
-	final private Cursor DEFAULT_CURSOR = new Cursor(Cursor.DEFAULT_CURSOR);
-	final private Cursor N_RESIZE_CURSOR = new Cursor(Cursor.N_RESIZE_CURSOR);
+	final private ImageIcon reduceWhite;
+	final private ImageIcon reduceGray;
+	final private ImageIcon growWhite;
+	final private ImageIcon growGray;
+	
+	final private Cursor N_RESIZE_CURSOR  = new Cursor(Cursor.N_RESIZE_CURSOR);
 	final private Cursor NW_RESIZE_CURSOR = new Cursor(Cursor.NW_RESIZE_CURSOR);
-	final private Cursor E_RESIZE_CURSOR = new Cursor(Cursor.E_RESIZE_CURSOR);
+	final private Cursor E_RESIZE_CURSOR  = new Cursor(Cursor.E_RESIZE_CURSOR);
 	private JPanel ind_3;
 	private JPanel ind_2;
 	private JPanel ind_1;
@@ -64,6 +67,15 @@ public class ServerGuiRisizable extends JFrame {
 	private JPanel side_panel;
 	private JLabel label_10;
 	private JLabel label_11;
+	private JPanel panel_16;
+	private JPanel panel_19;
+	private JPanel panel_18;
+	private JPanel panel_20;
+	private JLabel label;
+	private JLabel lblI;
+	private JLabel label_1;
+	private JPanel conteiner_btn;
+	private JLabel lblC;
 
 	/**
 	 * Launch the application.
@@ -84,10 +96,7 @@ public class ServerGuiRisizable extends JFrame {
 	
 	private void update()
 	{
-		AddressIp.updateIp();
-		label_10.setText(AddressIp.getLocalIp());
-		label_11.setText(AddressIp.getPublicIp());
-		
+		setIpAddress();
 	}
 	
 	/**
@@ -107,8 +116,15 @@ public class ServerGuiRisizable extends JFrame {
 		dotBlack = new ImageIcon(Objects.requireNonNull(classLoader.getResource("DotDark_26px.png")));
 		dotWhite = new ImageIcon(Objects.requireNonNull(classLoader.getResource("DotLight_15px.png")));
 		
-		connected = new ImageIcon(Objects.requireNonNull(classLoader.getResource("Connected_22px.png")));
-		disconnected = new ImageIcon(Objects.requireNonNull(classLoader.getResource("Disconnected_22px.png")));
+		connected = new ImageIcon(Objects.requireNonNull(classLoader.getResource("Connected_20px.png")));
+		disconnected = new ImageIcon(Objects.requireNonNull(classLoader.getResource("Disconnected_20px.png")));
+		
+		reduceWhite = new ImageIcon(Objects.requireNonNull(classLoader.getResource("Double_Left_White_32px.png")));
+		reduceGray =  new ImageIcon(Objects.requireNonNull(classLoader.getResource("Double_Left_Gray_32px.png")));
+		
+		growGray = new ImageIcon(Objects.requireNonNull(classLoader.getResource("Double_Right_Gray_32px.png")));
+		growWhite = new ImageIcon(Objects.requireNonNull(classLoader.getResource("Double_Right_White_32px.png")));
+				
 		
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1270, 705);
@@ -137,9 +153,9 @@ public class ServerGuiRisizable extends JFrame {
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				Point p = ServerGuiRisizable.this.getLocationOnScreen();
-				if(abs(p.x)<12)
+				if(Math.abs(p.x)<12)
 					p.x=0;
-				if(abs(p.y)<12)
+				if(Math.abs(p.y)<12)
 					p.y=0;
 				ServerGuiRisizable.this.setLocation(p);
 			}
@@ -240,6 +256,13 @@ public class ServerGuiRisizable extends JFrame {
 		top_panel.add(panel_12, BorderLayout.WEST);
 		panel_12.setLayout(null);
 		
+		lblI = new JLabel("");
+		lblI.setVisible(false);
+		lblI.setIcon(new ImageIcon(Objects.requireNonNull(classLoader.getResource("logo_32.png"))));
+		lblI.setHorizontalAlignment(SwingConstants.CENTER);
+		lblI.setBounds(0, 0, 56, 40);
+		panel_12.add(lblI);
+		
 		side_panel = new JPanel();
 		side_panel.setBorder(null);
 		side_panel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -248,16 +271,17 @@ public class ServerGuiRisizable extends JFrame {
 		contentPane.add(side_panel, BorderLayout.WEST);
 		side_panel.setLayout(null);
 		
-		JLabel label = new JLabel("ACS");
+		label = new JLabel("");
+		label.setIcon(new ImageIcon(Objects.requireNonNull(classLoader.getResource("logo_128.png"))));
 		label.setHorizontalAlignment(SwingConstants.CENTER);
 		label.setForeground(Color.LIGHT_GRAY);
 		label.setFont(new Font("Tahoma", Font.BOLD | Font.ITALIC, 32));
 		label.setBackground(Color.WHITE);
-		label.setBounds(26, -13, 149, 83);
+		label.setBounds(0, 0, 195, 129);
 		side_panel.add(label);
 		
-		JPanel conteiner_btn = new JPanel();
-		conteiner_btn.setBounds(0, 111, 244, 175);
+		conteiner_btn = new JPanel();
+		conteiner_btn.setBounds(0, 159, 244, 175);
 		conteiner_btn.setOpaque(false);
 		side_panel.add(conteiner_btn);
 		conteiner_btn.setLayout(null);
@@ -272,9 +296,7 @@ public class ServerGuiRisizable extends JFrame {
 				section=1;
 				setColor(sideBtn_1);
 				ind_1.setOpaque(true);
-				resetColor(new JPanel[] {sideBtn_2,sideBtn_3}, new JPanel[] {ind_2,ind_3});
-				//panel.setVisible(true);
-				 
+				resetColor(new JPanel[] {sideBtn_2,sideBtn_3}, new JPanel[] {ind_2,ind_3});				 
 			}
 		});
 		sideBtn_1.setLayout(null);
@@ -285,7 +307,7 @@ public class ServerGuiRisizable extends JFrame {
 		JLabel sideImg_1 = new JLabel("");
 		sideImg_1.setIcon(new ImageIcon(Objects.requireNonNull(classLoader.getResource("InfoLight_28px.png"))));
 		sideImg_1.setHorizontalAlignment(SwingConstants.CENTER);
-		sideImg_1.setBounds(14, 0, 44, 42);
+		sideImg_1.setBounds(10, 0, 44, 42);
 		sideBtn_1.add(sideImg_1);
 		
 		JLabel lblFstsection = new JLabel("Server Info");
@@ -318,7 +340,7 @@ public class ServerGuiRisizable extends JFrame {
 		JLabel sideImg_2 = new JLabel("");
 		sideImg_2.setIcon(new ImageIcon(Objects.requireNonNull(classLoader.getResource("PeopleLight_28px.png"))));
 		sideImg_2.setHorizontalAlignment(SwingConstants.CENTER);
-		sideImg_2.setBounds(14, 0, 44, 42);
+		sideImg_2.setBounds(10, 0, 44, 42);
 		sideBtn_2.add(sideImg_2);
 		
 		JLabel lblScndsection = new JLabel("Client Info");
@@ -353,7 +375,7 @@ public class ServerGuiRisizable extends JFrame {
 		JLabel sideImg_3 = new JLabel("");
 		sideImg_3.setIcon(new ImageIcon(Objects.requireNonNull(classLoader.getResource("QuestionLight_28px.png"))));
 		sideImg_3.setHorizontalAlignment(SwingConstants.CENTER);
-		sideImg_3.setBounds(14, 0, 44, 42);
+		sideImg_3.setBounds(10, 0, 44, 42);
 		sideBtn_3.add(sideImg_3);
 		
 		JLabel lblThrdsection = new JLabel("Topic");
@@ -377,26 +399,83 @@ public class ServerGuiRisizable extends JFrame {
 		panel_10.setBounds(8, 107, 224, 1);
 		conteiner_btn.add(panel_10);
 		
-		JLabel label_1 = new JLabel("Nome del progetto di P.C.A.D.");
-		label_1.setForeground(Color.LIGHT_GRAY);
-		label_1.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		label_1.setBounds(12, 45, 234, 25);
-		side_panel.add(label_1);
-		
-		JLabel label_30 = new JLabel("<");
+		JLabel label_30 = new JLabel("");
+		label_30.setVerticalAlignment(SwingConstants.TOP);
+		label_30.setIcon(reduceGray);
+		label_30.setHorizontalAlignment(SwingConstants.RIGHT);
 		label_30.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
 				Dimension d = side_panel.getSize();
-				d.width = 62;
-				//side_panel.setSize(62, d.height);
+				d.width = 60;
 				side_panel.setPreferredSize(d);
+				side_panel.setSize(d);
+				d = panel_19.getSize();
+				d.width = 60;
+				panel_19.setPreferredSize(d);
+				panel_19.setSize(d);
+				d = panel_20.getSize();
+				d.width = 60;
+				panel_20.setPreferredSize(d);
+				panel_20.setSize(d);
+				label.setVisible(false);
+				lblI.setVisible(true);
+				label_1.setVisible(true);
+				conteiner_btn.setLocation(0, 95);
+			}
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				label_30.setIcon(reduceWhite);
+			}
+			@Override
+			public void mouseExited(MouseEvent e) {
+				label_30.setIcon(reduceGray);
 			}
 		});
 		label_30.setFont(new Font("High Tower Text", Font.BOLD, 26));
 		label_30.setForeground(Color.WHITE);
-		label_30.setBounds(221, 21, 17, 21);
+		label_30.setBounds(195, 0, 49, 46);
 		side_panel.add(label_30);
+		
+		label_1 = new JLabel("");
+		label_1.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				Dimension d = side_panel.getSize();
+				d.width = size_sidePnl;
+				side_panel.setPreferredSize(d);
+				side_panel.setSize(d);
+				d = panel_19.getSize();
+				d.width = size_sidePnl;
+				panel_19.setPreferredSize(d);
+				panel_19.setSize(d);
+				d = panel_20.getSize();
+				d.width = size_sidePnl;
+				panel_20.setPreferredSize(d);
+				panel_20.setSize(d);
+				label.setVisible(false);
+				label_1.setVisible(false);				
+				lblI.setVisible(false);	
+				label.setVisible(true);
+				conteiner_btn.setLocation(0, 159);
+			}
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				label_1.setIcon(growWhite);
+			}
+			@Override
+			public void mouseExited(MouseEvent e) {
+				label_1.setIcon(growGray);
+			}
+		});
+		label_1.setVisible(false);
+		label_1.setIcon(growGray);
+		label_1.setVerticalAlignment(SwingConstants.TOP);
+		label_1.setHorizontalAlignment(SwingConstants.CENTER);
+		label_1.setForeground(Color.WHITE);
+		label_1.setFont(new Font("High Tower Text", Font.BOLD, 26));
+		label_1.setBounds(0, 40, 57, 32);
+		side_panel.add(label_1);
 		
 		JPanel border_right = new JPanel();
 		border_right.setCursor(E_RESIZE_CURSOR);
@@ -474,7 +553,7 @@ public class ServerGuiRisizable extends JFrame {
 		JLabel label_5 = new JLabel("Tempo di attivit\u00E0:");
 		label_5.setVerticalAlignment(SwingConstants.TOP);
 		label_5.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		label_5.setBounds(71, 110, 257, 29);
+		label_5.setBounds(64, 110, 257, 29);
 		panel_7.add(label_5);
 		
 		JLabel label_6 = new JLabel("");
@@ -697,18 +776,28 @@ public class ServerGuiRisizable extends JFrame {
 				Py = arg0.getY();		
 			}
 		});
+		
+		panel_18 = new JPanel();
 		GroupLayout gl_panel = new GroupLayout(panel);
 		gl_panel.setHorizontalGroup(
-			gl_panel.createParallelGroup(Alignment.LEADING)
-				.addGroup(Alignment.TRAILING, gl_panel.createSequentialGroup()
-					.addContainerGap(465, Short.MAX_VALUE)
+			gl_panel.createParallelGroup(Alignment.TRAILING)
+				.addGroup(gl_panel.createSequentialGroup()
+					.addComponent(panel_18, GroupLayout.PREFERRED_SIZE, 244, GroupLayout.PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED, 1005, Short.MAX_VALUE)
 					.addComponent(panel_4, GroupLayout.PREFERRED_SIZE, 4, GroupLayout.PREFERRED_SIZE)
 					.addGap(0))
 		);
 		gl_panel.setVerticalGroup(
 			gl_panel.createParallelGroup(Alignment.LEADING)
-				.addComponent(panel_4, GroupLayout.DEFAULT_SIZE, 15, Short.MAX_VALUE)
+				.addComponent(panel_4, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(panel_18, GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
 		);
+		panel_18.setLayout(null);
+		
+		panel_20 = new JPanel();
+		panel_20.setBackground(BLACKBLUE);
+		panel_20.setBounds(0, 0, size_sidePnl, 3);
+		panel_18.add(panel_20);
 		panel.setLayout(gl_panel);
 		
 		JPanel panel_1 = new JPanel();
@@ -736,8 +825,8 @@ public class ServerGuiRisizable extends JFrame {
 		
 		JPanel panel_5 = new JPanel();
 		
-		JPanel panel_16 = new JPanel();
-		panel_16.setBackground(BLACKBLUE);
+		panel_16 = new JPanel();
+		panel_16.setOpaque(false);
 		GroupLayout gl_panel_3 = new GroupLayout(panel_3);
 		gl_panel_3.setHorizontalGroup(
 			gl_panel_3.createParallelGroup(Alignment.TRAILING)
@@ -751,6 +840,12 @@ public class ServerGuiRisizable extends JFrame {
 				.addComponent(panel_5, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 37, Short.MAX_VALUE)
 				.addComponent(panel_16, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 37, Short.MAX_VALUE)
 		);
+		panel_16.setLayout(null);
+		
+		panel_19 = new JPanel();
+		panel_19.setBounds(0, 0, size_sidePnl, 22);
+		panel_19.setBackground(BLACKBLUE);
+		panel_16.add(panel_19);
 		panel_5.setLayout(null);
 		
 		JLabel label_29 = new JLabel("");
@@ -769,7 +864,8 @@ public class ServerGuiRisizable extends JFrame {
 		panel_17.setBounds(162, 2, 1, 22);
 		panel_5.add(panel_17);
 		
-		JLabel lblC = new JLabel("C");
+		lblC = new JLabel("");
+		lblC.setVerticalAlignment(SwingConstants.BOTTOM);
 		lblC.setHorizontalAlignment(SwingConstants.CENTER);
 		lblC.setBounds(133, 0, 22, 22);
 		panel_5.add(lblC);
@@ -797,12 +893,6 @@ public class ServerGuiRisizable extends JFrame {
 	
 	
 	//UTILITY FUNCTIONS
-	protected int abs(int x) {
-		if(x<0)
-			return -x;
-		return x;
-	}
-
 	private void setColor(JPanel pane)
     {
         pane.setBackground(new Color(41,57,80));
@@ -815,4 +905,18 @@ public class ServerGuiRisizable extends JFrame {
          for(int i=0;i<indicators.length;i++)
            indicators[i].setOpaque(false);       
     }
+    
+    private void setIpAddress() {
+		AddressIp.updateIp();
+		label_10.setText(AddressIp.getLocalIp());
+		label_11.setText(AddressIp.getPublicIp());
+		if(AddressIp.getLocalIp()!="Unkown") {
+			lblC.setIcon(connected);
+			lblC.setToolTipText("");
+		}
+		else {
+			lblC.setIcon(disconnected);
+			lblC.setToolTipText("No connection are available");
+		}
+	}
 }
