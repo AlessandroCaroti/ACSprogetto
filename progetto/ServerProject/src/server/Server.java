@@ -141,7 +141,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     @Override
-    public ResponseCode connect(ClientInterface stub,String clientPublicKey) {
+    public ResponseCode connect(ClientInterface stub, String clientPublicKey) {
 
         return  new ResponseCode( ResponseCode.Codici.R210, ResponseCode.TipoClasse.SERVER,this.serverPublicKey);
     }
@@ -158,7 +158,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     @Override
-    public ResponseCode retrieveAccount(String username,String plainPassword,ClientInterface clientStub,String cookie){
+    public ResponseCode retrieveAccount(String username, String plainPassword, ClientInterface clientStub, String cookie){
         try {
             int accountId=getAccountId(cookie);
             Account account = accountList.getAccountCopy(accountId);
