@@ -25,4 +25,5 @@ hs_err_pid*
 *.xml
 *.iml
 *.classpath
+*.project
 progetto/Shared/bin/out/*
