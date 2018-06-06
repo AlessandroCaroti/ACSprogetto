@@ -106,7 +106,7 @@ public class Client  implements ClientInterface {
      *Il client si registra sul server su cui si era connesso con il metodo connect() e viene settato il cookie
      * @return true se registrazione andata a buon fine, false altrimenti
      */
-    private boolean register() {
+    public boolean register() {
         try {
             ResponseCode responseCode = server_stub.register(this.username, this.plainPassword, this.skeleton, this.myPublicKey);
             if (responseCode.getCodice().equals(Codici.R100)) {
@@ -198,6 +198,52 @@ public class Client  implements ClientInterface {
 
 
 
+    }
+
+    public boolean disconnect(){
+        try {
+            boolean uscita=false;
+            ResponseCode response=server_stub.disconnect(cookie);
+            switch(response.getCodice())
+            {
+                case R200:
+                    uscita=true;
+                    System.out.println(response.getCodice()+":"+response.getClasseGeneratrice()+":"+response.getMessaggioInfo());
+                    break;
+                default:
+                    System.err.println(response.getCodice()+":"+response.getClasseGeneratrice()+":"+response.getMessaggioInfo());
+                    uscita=false;
+                    break;
+            }
+            this.broker=null;
+            return uscita;
+
+        }catch(RemoteException exc){
+            System.err.println(exc.getClass().getSimpleName());
+            return false;
+        }
+
+    }
+
+
+    public boolean retrieveAccount(){
+        try{
+            ResponseCode response=server_stub.retrieveAccount(username,plainPassword,skeleton,cookie);
+            switch(response.getCodice())
+            {
+                case R220:
+                    System.out.println(response.getCodice()+":"+response.getClasseGeneratrice()+":"+response.getMessaggioInfo());
+                    return true;
+                    default:
+                        System.err.println(response.getCodice()+":"+response.getClasseGeneratrice()+":"+response.getMessaggioInfo());
+                    return false;
+            }
+
+
+        }catch(RemoteException exc){
+            System.err.println(exc.getClass().getSimpleName());
+            return false;
+        }
     }
 
 }

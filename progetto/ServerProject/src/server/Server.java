@@ -122,6 +122,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     /* ************************************************************************************************************/
     //METODI REMOTI
 
+    //TODO creare una lista concorrente degli username già presenti !! e quando un utente tenta la register con un nome utente già presente ritornare un response code R610
     @Override
     public ResponseCode register(String userName, String plainPassword, ClientInterface stub, String publicKey)  {
         String cookie;
