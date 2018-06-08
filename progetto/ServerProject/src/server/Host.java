@@ -1,6 +1,14 @@
 package server;
 
 import utility.GuiInterface;
+import javax.crypto.NoSuchPaddingException;
+import java.io.UnsupportedEncodingException;
+import java.net.UnknownHostException;
+import java.rmi.AlreadyBoundException;
+import java.rmi.RemoteException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.*;
 
 public class Host {
@@ -15,7 +23,7 @@ public class Host {
 
 
 
-    private Host(boolean usingUserInterface){
+    private Host(boolean usingUserInterface) throws UnsupportedEncodingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, AlreadyBoundException, RemoteException, UnknownHostException {
          userInterface=new GuiInterface(usingUserInterface);
          server=new Server();
          //TODO sclient=new SClient();
@@ -37,11 +45,14 @@ public class Host {
         }
 
         //INIT AND START
-        Host host = new Host(Boolean.parseBoolean(args[0]));
+        try {
+
+            Host host = new Host(Boolean.parseBoolean(args[0]));
 
         //TODO exitCodeSClient=host.sClientThread.submit(host.sclient);
         exitCodeServer=host.serverThread.submit(host.server);
         exitCodeUserInterface=host.userInterfaceThread.submit(host.userInterface);
+
 
         while(true) {
 
@@ -112,5 +123,11 @@ public class Host {
             */
 
         }
+
+        }catch (Exception exc){
+            exc.printStackTrace();
+            return;
+        }
+
     }
 }

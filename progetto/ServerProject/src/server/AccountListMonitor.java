@@ -1,6 +1,8 @@
 package server;
 
 import interfaces.ClientInterface;
+
+import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.locks.*;
 import customException.*;
 import utility.Account;
@@ -201,5 +203,67 @@ public class AccountListMonitor implements AccountCollectionInterface {
     {
         return this.MAXACCOUNTNUMBER;
     }
+
+
+    public String setPublicKey(String clientPublicKey,int accountId){
+        if(accountId>=this.MAXACCOUNTNUMBER||accountId<0){
+            throw new IllegalArgumentException("accountId>MAXACCOUNTNUMBER || accountId<0");
+        }
+        listLock.writeLock().lock();
+        try {
+            String prev=accountList[accountId].getPublicKey();
+            accountList[accountId].setPublicKey(clientPublicKey);
+            return prev;
+        }
+        finally {
+            this.listLock.writeLock().unlock();
+        }
+    }
+
+     public byte[] setPassword(String plainPassword,int accountId)throws NoSuchAlgorithmException{
+         if(accountId>=this.MAXACCOUNTNUMBER||accountId<0){
+             throw new IllegalArgumentException("accountId>MAXACCOUNTNUMBER || accountId<0");
+         }
+         listLock.writeLock().lock();
+         try {
+             byte[] prev=accountList[accountId].getPassword();
+             accountList[accountId].encryptAndSetPassword(plainPassword);
+             return prev;
+         }
+         finally {
+             this.listLock.writeLock().unlock();
+         }
+     }
+
+    public String setUsername(String username,int accountId){
+        if(accountId>=this.MAXACCOUNTNUMBER||accountId<0){
+            throw new IllegalArgumentException("accountId>MAXACCOUNTNUMBER || accountId<0");
+        }
+        listLock.writeLock().lock();
+        try {
+            String prev=accountList[accountId].getUsername();
+            accountList[accountId].setUsername(username);
+            return prev;
+        }
+        finally {
+            this.listLock.writeLock().unlock();
+        }
+    }
+
+    public ClientInterface setStub(ClientInterface clientStub,int accountId){
+        if(accountId>=this.MAXACCOUNTNUMBER||accountId<0){
+            throw new IllegalArgumentException("accountId>MAXACCOUNTNUMBER || accountId<0");
+        }
+        listLock.writeLock().lock();
+        try {
+            ClientInterface prev=accountList[accountId].getStub();
+            accountList[accountId].setStub(clientStub);
+            return prev;
+        }
+        finally {
+            this.listLock.writeLock().unlock();
+        }
+    }
+
 
 }

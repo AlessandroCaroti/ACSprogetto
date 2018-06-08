@@ -1,9 +1,12 @@
 package server;
 
+import client.Client;
 import customException.AccountMonitorRuntimeException;
 import customException.MaxNumberAccountReached;
 import interfaces.ClientInterface;
 import utility.Account;
+
+import java.security.NoSuchAlgorithmException;
 
 public interface AccountCollectionInterface {
 
@@ -62,6 +65,21 @@ public interface AccountCollectionInterface {
 
      ClientInterface getStub(int accountId);
 
+    /**
+     *Tutti i setter tornano il valore sovrascritto (null o qualcosa di definito) oppure una delle due eccezioni
+     * @param accountId la posizione dove è salvato l'account da modificare
+     * @return null or Something
+     * @throws IllegalArgumentException se accountId<0 || accountId>=MAXACCOUNTNUMBER
+     * @throws NullPointerException se nella posizione accountId non è salvato alcun account
+     */
+
+     String setPublicKey(String clientPublicKey,int accountId);
+
+     byte[] setPassword(String plainPassword,int accountId)throws NoSuchAlgorithmException;
+
+     String setUsername(String username,int acountId);
+
+     ClientInterface setStub(ClientInterface clientStub,int accountId);
 
      /**semplici getter**/
      int getNumberOfAccount();

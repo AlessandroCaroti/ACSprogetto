@@ -78,7 +78,7 @@ public class Account {
      * @param plainPassword password in chiaro, se null viene settata come stringa vuota
      * @return true se corrispondono, false altrimenti
      */
-    public boolean cmpPassword(String plainPassword) throws NoSuchAlgorithmException
+    public  boolean cmpPassword(String plainPassword) throws NoSuchAlgorithmException
     {
         if(plainPassword==null)
         {
@@ -87,6 +87,7 @@ public class Account {
         return compareHashandString(this.password, plainPassword);
     }
 
+    /**getter**/
     public int getAccountId() {
         return accountId;
     }
@@ -107,7 +108,36 @@ public class Account {
         return stub;
     }
 
+
+    /**setter*/
     public void setAccountId(int accountId) {
+        if(accountId<0)
+        {
+            throw new IllegalArgumentException("accountId < 0");//non era strettamente necessario ma vabbè
+        }
         this.accountId = accountId;
+    }
+
+    public void setEncryptedPassword(byte[] encryptedPassword) {
+        if(password==null)throw new IllegalArgumentException("password==null");
+        this.password = encryptedPassword;
+    }
+
+    public void encryptAndSetPassword(String plainPassword)throws NoSuchAlgorithmException{
+        if(plainPassword==null){throw new IllegalArgumentException("password==null");}
+        setEncryptedPassword(stringHash(plainPassword));
+    }
+
+    public void setStub(ClientInterface stub) {
+        this.stub = stub;
+    }
+
+    public void setPublicKey(String publicKey) {
+        this.publicKey = publicKey;
+    }
+
+    public void setUsername(String username) {
+        if(username==null)throw new IllegalArgumentException("username==null");
+        this.username = username;
     }
 }

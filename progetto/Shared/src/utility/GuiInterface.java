@@ -30,6 +30,8 @@ public class GuiInterface implements Callable<Integer> {
         else {
             stdErrStream=System.err;
             stdOutStream=System.out;
+
+            System.out.println("USING TERMINAL INTERFACE");
         }
     }
 
