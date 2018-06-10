@@ -1,93 +1,109 @@
+/**
+    This file is part of ACSprogetto.
+
+    ACSprogetto is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    ACSprogetto is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with ACSprogetto.  If not, see <http://www.gnu.org/licenses/>.
+
+**/
+
 package server;
 
 import interfaces.ClientInterface;
+
+import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.locks.*;
 import customException.*;
 import utility.Account;
+
+import javax.management.RuntimeErrorException;
 
 /**
  * Implementazione con multiple reader single writer lock
  */
 public class AccountListMonitor implements AccountCollectionInterface {
     private  int MAXACCOUNTNUMBER;
-    private final int MAXACCOUNTNUMBERDEFAULT=30;
-    private  Account[] accountList=new Account[MAXACCOUNTNUMBER];
+    private final int MAXACCOUNTNUMBERDEFAULT=300;
+    private  Account[] accountList;
     private int length=0;
     private ReentrantReadWriteLock listLock=new ReentrantReadWriteLock();
+    private int lastFreeposition=-1;//funziona come una cache
 
-    /**
-     * @param maxAccountNumber il numero massimo di account
-     * @throws IllegalArgumentException se MAXACCOUNTNUMBER <=0
-     */
-     AccountListMonitor(int maxAccountNumber) throws  IllegalArgumentException
+    public AccountListMonitor(int maxAccountNumber) throws  IllegalArgumentException
     {
         if(MAXACCOUNTNUMBER<=0){
             throw new IllegalArgumentException("maxaccountnumber<=0");
         }
         this.MAXACCOUNTNUMBER=maxAccountNumber;
+        this.accountList=new Account[MAXACCOUNTNUMBER];
     }
 
-    /**
-     * Setta il numero massimo di account con il valore di dafault
-     */
-     AccountListMonitor(){
-        this.MAXACCOUNTNUMBER=this.MAXACCOUNTNUMBERDEFAULT;
+
+     public  AccountListMonitor(){
+
+         this.MAXACCOUNTNUMBER=this.MAXACCOUNTNUMBERDEFAULT;
+         this.accountList=new Account[MAXACCOUNTNUMBER];
     }
 
-    /**
-     *Aggiunge ad accountList l'istanza account.
-     * Se viene aggiunta correttamente (cioè non viene raggiunto il max numero di account disponibili)
-     * account.accountid viene settato con il valore della posizione della lista dove è stato salvato.
-     * @param account diverso da null
-     * @return l'accountId (la posizione nella lista)
-     * @throws NullPointerException se account==null
-     * @throws MaxNumberAccountReached reached max number of account
-     */
-    public int addAccount(Account account) throws NullPointerException,MaxNumberAccountReached
+
+    public int addAccount(Account account) throws NullPointerException,MaxNumberAccountReached,AccountMonitorRuntimeException
     {
         int posizione;
         if(account==null)
         {
             throw new NullPointerException("account==null");
         }
+        if(this.getNumberOfAccount()>=MAXACCOUNTNUMBER){
+            throw new MaxNumberAccountReached();
+        }
+
 
         this.listLock.writeLock().lock();
         try{
-            posizione=0;
-            while(posizione<MAXACCOUNTNUMBER){
-                if(accountList[posizione]==null){
-                    accountList[posizione]=account;
-                    account.setAccountId(posizione);
-                    break;
-                }
-                posizione++;
+
+            if(lastFreeposition!=-1){//cache funzionante
+                accountList[lastFreeposition]=account;
+                account.setAccountId(lastFreeposition);
+                posizione=lastFreeposition;//System.err.println(" cache!");
+                lastFreeposition=-1;
+                return posizione;
+            }else{
+               for (int i=0;i<this.MAXACCOUNTNUMBER;i++){
+                   if(accountList[i]==null){
+                       accountList[i]=account;
+                       account.setAccountId(i);
+                       return i;
+                   }
+               }
             }
-            if(posizione==MAXACCOUNTNUMBER){
-                throw new MaxNumberAccountReached();
-            }
-            this.length++;
         }finally{
+            this.length++;
             listLock.writeLock().unlock();
         }
-
-        return posizione;
+        throw new AccountMonitorRuntimeException("ERRORE:addAccount");//Non dovrebbe mai essere sollevata :D speremmu!
     }
 
-
-    /**
-     * Ritorna uno snapshot della classe account nella posizione id della lista degli account
-     * @param accountId posizione all'interno dell'array
-     * @return null  se non trovato
-     * @throws NullPointerException  deriva dal costruttore di Account
-     * @throws IllegalArgumentException deriva dal costruttore di Account
-     */
     public Account getAccountCopy(int accountId){
+
         Account snapShot;
+        Account curr;
+
+        if(accountId>=this.MAXACCOUNTNUMBER||accountId<0){
+            throw new IllegalArgumentException("accountId>MAXACCOUNTNUMBER || accountId<0");
+        }
 
         this.listLock.readLock().lock();
-        Account curr;
         try {
-            curr = this.accountList[accountId];
+            curr = accountList[accountId];
             if(curr==null){
                 return null;
             }
@@ -100,113 +116,172 @@ public class AccountListMonitor implements AccountCollectionInterface {
         }
     }
 
-    /**
-     * Aggiunge o sovrascrive un account in posizione posizione
-     * Nota:account.accountId viene settato automaticamente
-     * @param account l'istanza della classe Account
-     * @param accountId l'identificativo dell'account
-     * @throws NullPointerException se account==null
-     * @throws IndexOutOfBoundsException se accountId>=MAXNUMBERACCOUNT
-     */
-
-    public void addAccount(Account account,int accountId)throws NullPointerException,IndexOutOfBoundsException
+    public Account addAccount(Account account,int accountId)
     {
-        if(account==null)
-        {
-            throw new NullPointerException("account==null");
+        if(accountId>=this.MAXACCOUNTNUMBER||accountId<0){
+            throw new IllegalArgumentException("accountId>MAXACCOUNTNUMBER || accountId<0");
         }
-        if(accountId>=MAXACCOUNTNUMBER){
-            throw new IndexOutOfBoundsException("accountId>=MAXACCOUNTNUMBER");
+        Account prev;
+        this.listLock.writeLock().lock();
+        try{
+            prev=accountList[accountId];
+
+            //gestione length
+            if(prev!=null&&account==null){
+                this.length--;
+            }else if(prev==null && account!=null){
+                this.length++;
+            }
+            if(account==null){
+                lastFreeposition=accountId;
+            }else{
+                account.setAccountId(accountId);
+            }
+            accountList[accountId]=account;
+        }finally {
+            this.listLock.writeLock().unlock();
         }
-        account.setAccountId(accountId);
-        listLock.writeLock().lock();
-        accountList[accountId]=account;
-        this.length++;
-        listLock.writeLock().unlock();
+        return prev;
     }
 
-    /**Elimina e ritorna l'istanza precedente alla posizione "posizione"
-     * @param accountId deve essere >=0 AND <MAXNUMBERACCOUNT
-     * @return l'istanza di account tolta dalla posizione "posizione"
-     * @throws IndexOutOfBoundsException se posizione>=MAXNUMBERACCOUNT
-     */
-    public Account removeAccount(int accountId) throws IndexOutOfBoundsException
-    {
-        Account account;
-        if(accountId>=MAXACCOUNTNUMBER){
-            throw new IndexOutOfBoundsException("accountId>=MAXACCOUNTNUMBER");
-        }
-        listLock.writeLock().lock();
-        account=accountList[accountId];
-        accountList[accountId]=null;
-        this.length--;
-        listLock.writeLock().unlock();
-        return account;
-    }
 
+    public Account removeAccount(int accountId)
+    {
+        return this.addAccount(null,accountId);
+    }
 
     public String getPublicKey(int accountId) {
-        Account curr;
-        String pk;
-        listLock.readLock().lock();
-        curr=accountList[accountId];
-        if(curr==null){
-            listLock.readLock().unlock();
-            throw new NullPointerException("non esiste un account alla posizione accountId");
+
+        if(accountId>=this.MAXACCOUNTNUMBER||accountId<0){
+            throw new IllegalArgumentException("accountId>MAXACCOUNTNUMBER || accountId<0");
         }
-        pk=curr.getPublicKey();
-        listLock.readLock().unlock();
-        return pk;
+
+        listLock.readLock().lock();
+        try {
+            return accountList[accountId].getPublicKey();
+        }
+        finally {
+            this.listLock.readLock().unlock();
+        }
     }
 
+
     public byte[] getPassword(int accountId) {
-        Account curr;
-        byte[] passw;
-        listLock.readLock().lock();
-        curr=accountList[accountId];
-        if(curr==null){
-            listLock.readLock().unlock();
-            throw new NullPointerException("non esiste un account alla posizione accountId");
+
+        if(accountId>=this.MAXACCOUNTNUMBER||accountId<0){
+            throw new IllegalArgumentException("accountId>MAXACCOUNTNUMBER || accountId<0");
         }
-        passw=curr.getPassword();
-        listLock.readLock().unlock();
-        return passw;
+
+        listLock.readLock().lock();
+        try {
+            return accountList[accountId].getPassword();
+        }
+        finally {
+            this.listLock.readLock().unlock();
+        }
     }
 
     public String getUsername(int accountId) {
-        Account curr;
-        String username;
-        listLock.readLock().lock();
-        curr=accountList[accountId];
-        if(curr==null){
-            listLock.readLock().unlock();
-            throw new NullPointerException("non esiste un account alla posizione accountId");
+        if(accountId>=this.MAXACCOUNTNUMBER||accountId<0){
+            throw new IllegalArgumentException("accountId>MAXACCOUNTNUMBER || accountId<0");
         }
-        username=curr.getUsername();
-        listLock.readLock().unlock();
-        return username;
+        listLock.readLock().lock();
+        try {
+            return accountList[accountId].getUsername();
+
+        }
+        finally {
+            this.listLock.readLock().unlock();
+        }
     }
 
     public ClientInterface getStub(int accountId) {
-        Account curr;
-        ClientInterface stub;
-        listLock.readLock().lock();
-        curr=accountList[accountId];
-        if(curr==null){
-            listLock.readLock().unlock();
-            throw new NullPointerException("non esiste un account alla posizione accountId");
+        if(accountId>=this.MAXACCOUNTNUMBER||accountId<0){
+            throw new IllegalArgumentException("accountId>MAXACCOUNTNUMBER || accountId<0");
         }
-        stub=curr.getStub();
-        listLock.readLock().unlock();
-        return stub;
+        listLock.readLock().lock();
+        try {
+            return accountList[accountId].getStub();
+
+        }
+        finally {
+            this.listLock.readLock().unlock();
+        }
     }
 
-    public int getLength() {
+    public int getNumberOfAccount() {
         int l;
         listLock.readLock().lock();
          l=this.length;
          listLock.readLock().unlock();
          return l;
     }
+
+    public int getMAXACCOUNTNUMBER()
+    {
+        return this.MAXACCOUNTNUMBER;
+    }
+
+
+    public String setPublicKey(String clientPublicKey,int accountId){
+        if(accountId>=this.MAXACCOUNTNUMBER||accountId<0){
+            throw new IllegalArgumentException("accountId>MAXACCOUNTNUMBER || accountId<0");
+        }
+        listLock.writeLock().lock();
+        try {
+            String prev=accountList[accountId].getPublicKey();
+            accountList[accountId].setPublicKey(clientPublicKey);
+            return prev;
+        }
+        finally {
+            this.listLock.writeLock().unlock();
+        }
+    }
+
+     public byte[] setPassword(String plainPassword,int accountId)throws NoSuchAlgorithmException{
+         if(accountId>=this.MAXACCOUNTNUMBER||accountId<0){
+             throw new IllegalArgumentException("accountId>MAXACCOUNTNUMBER || accountId<0");
+         }
+         listLock.writeLock().lock();
+         try {
+             byte[] prev=accountList[accountId].getPassword();
+             accountList[accountId].encryptAndSetPassword(plainPassword);
+             return prev;
+         }
+         finally {
+             this.listLock.writeLock().unlock();
+         }
+     }
+
+    public String setUsername(String username,int accountId){
+        if(accountId>=this.MAXACCOUNTNUMBER||accountId<0){
+            throw new IllegalArgumentException("accountId>MAXACCOUNTNUMBER || accountId<0");
+        }
+        listLock.writeLock().lock();
+        try {
+            String prev=accountList[accountId].getUsername();
+            accountList[accountId].setUsername(username);
+            return prev;
+        }
+        finally {
+            this.listLock.writeLock().unlock();
+        }
+    }
+
+    public ClientInterface setStub(ClientInterface clientStub,int accountId){
+        if(accountId>=this.MAXACCOUNTNUMBER||accountId<0){
+            throw new IllegalArgumentException("accountId>MAXACCOUNTNUMBER || accountId<0");
+        }
+        listLock.writeLock().lock();
+        try {
+            ClientInterface prev=accountList[accountId].getStub();
+            accountList[accountId].setStub(clientStub);
+            return prev;
+        }
+        finally {
+            this.listLock.writeLock().unlock();
+        }
+    }
+
 
 }

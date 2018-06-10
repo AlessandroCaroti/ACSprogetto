@@ -1,6 +1,31 @@
+/**
+    This file is part of ACSprogetto.
+
+    ACSprogetto is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    ACSprogetto is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with ACSprogetto.  If not, see <http://www.gnu.org/licenses/>.
+
+**/
 package server;
 
 import utility.GuiInterface;
+import javax.crypto.NoSuchPaddingException;
+import java.io.UnsupportedEncodingException;
+import java.net.UnknownHostException;
+import java.rmi.AlreadyBoundException;
+import java.rmi.RemoteException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.*;
 
 public class Host {
@@ -15,7 +40,7 @@ public class Host {
 
 
 
-    private Host(boolean usingUserInterface){
+    private Host(boolean usingUserInterface) throws UnsupportedEncodingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, AlreadyBoundException, RemoteException, UnknownHostException {
          userInterface=new GuiInterface(usingUserInterface);
          server=new Server();
          //TODO sclient=new SClient();
@@ -37,11 +62,14 @@ public class Host {
         }
 
         //INIT AND START
-        Host host = new Host(Boolean.parseBoolean(args[0]));
+        try {
+
+            Host host = new Host(Boolean.parseBoolean(args[0]));
 
         //TODO exitCodeSClient=host.sClientThread.submit(host.sclient);
         exitCodeServer=host.serverThread.submit(host.server);
         exitCodeUserInterface=host.userInterfaceThread.submit(host.userInterface);
+
 
         while(true) {
 
@@ -112,5 +140,11 @@ public class Host {
             */
 
         }
+
+        }catch (Exception exc){
+            exc.printStackTrace();
+            return;
+        }
+
     }
 }

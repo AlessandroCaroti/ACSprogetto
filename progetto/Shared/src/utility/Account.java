@@ -1,3 +1,20 @@
+/**
+    This file is part of ACSprogetto.
+
+    ACSprogetto is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    ACSprogetto is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with ACSprogetto.  If not, see <http://www.gnu.org/licenses/>.
+
+**/
 package utility;
 
 
@@ -44,7 +61,7 @@ public class Account {
 
 
     /**
-     * Crea un nuovo account
+     * Crea un nuovo account differenza con il precente sulla password (già hashata)
      * @param userName l'username :D
      * @param password (password hashata)
      * @param stub lo del client
@@ -68,6 +85,7 @@ public class Account {
             this.accountId=accountId;
         }
 
+
     }
 
 
@@ -77,7 +95,7 @@ public class Account {
      * @param plainPassword password in chiaro, se null viene settata come stringa vuota
      * @return true se corrispondono, false altrimenti
      */
-    public boolean cmpPassword(String plainPassword) throws NoSuchAlgorithmException
+    public  boolean cmpPassword(String plainPassword) throws NoSuchAlgorithmException
     {
         if(plainPassword==null)
         {
@@ -86,6 +104,7 @@ public class Account {
         return compareHashandString(this.password, plainPassword);
     }
 
+    /**getter**/
     public int getAccountId() {
         return accountId;
     }
@@ -106,7 +125,36 @@ public class Account {
         return stub;
     }
 
+
+    /**setter*/
     public void setAccountId(int accountId) {
+        if(accountId<0)
+        {
+            throw new IllegalArgumentException("accountId < 0");//non era strettamente necessario ma vabbè
+        }
         this.accountId = accountId;
+    }
+
+    public void setEncryptedPassword(byte[] encryptedPassword) {
+        if(password==null)throw new IllegalArgumentException("password==null");
+        this.password = encryptedPassword;
+    }
+
+    public void encryptAndSetPassword(String plainPassword)throws NoSuchAlgorithmException{
+        if(plainPassword==null){throw new IllegalArgumentException("password==null");}
+        setEncryptedPassword(stringHash(plainPassword));
+    }
+
+    public void setStub(ClientInterface stub) {
+        this.stub = stub;
+    }
+
+    public void setPublicKey(String publicKey) {
+        this.publicKey = publicKey;
+    }
+
+    public void setUsername(String username) {
+        if(username==null)throw new IllegalArgumentException("username==null");
+        this.username = username;
     }
 }
