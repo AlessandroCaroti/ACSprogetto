@@ -21,7 +21,6 @@ package utility;
 import interfaces.ClientInterface;
 
 import java.security.NoSuchAlgorithmException;
-
 import static utility.hashFunctions.compareHashandString;
 import static utility.hashFunctions.stringHash;
 

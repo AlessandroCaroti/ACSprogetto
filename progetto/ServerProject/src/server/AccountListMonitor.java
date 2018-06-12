@@ -123,7 +123,8 @@ public class AccountListMonitor implements AccountCollectionInterface {
         return prev;
     }
 
-    //E' più veloce avere un metodo specializato che riutilizare addAccount(Account account, int accountId)
+    //Secondo me è più veloce avere un metodo specializato che riutilizare addAccount(Account account, int accountId)
+    //Se preferisci come era prima lo si cambia
     public Account removeAccount(int accountId) {
         testRange(accountId);
 
@@ -250,6 +251,7 @@ public class AccountListMonitor implements AccountCollectionInterface {
             this.listLock.writeLock().unlock();
         }
     }
+
 
     public String setUsername(String username, int accountId) {
         testRange(accountId);
