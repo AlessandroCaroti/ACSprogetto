@@ -62,7 +62,7 @@ public class AccountListMonitor implements AccountCollectionInterface {
         this.accountList = new Account[MAXACCOUNTNUMBER];
     }
 
-    
+
     /*****************************************************************************************************/
     //METODI MODIFICATORI
     public int addAccount(Account account) throws NullPointerException, MaxNumberAccountReached, AccountMonitorRuntimeException {
@@ -167,6 +167,8 @@ public class AccountListMonitor implements AccountCollectionInterface {
         }
     }
 
+
+
     public String getPublicKey(int accountId) {
         testRange(accountId);
 
@@ -212,6 +214,8 @@ public class AccountListMonitor implements AccountCollectionInterface {
             this.listLock.readLock().unlock();
         }
     }
+
+
 
     public int getNumberOfAccount() {
         int l;
