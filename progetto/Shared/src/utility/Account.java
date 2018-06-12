@@ -97,9 +97,9 @@ public class Account {
      */
     public  boolean cmpPassword(String plainPassword) throws NoSuchAlgorithmException
     {
-        if(plainPassword==null)
+        if(plainPassword==null || plainPassword.isEmpty())
         {
-            plainPassword="";
+            throw new IllegalArgumentException();
         }
         return compareHashandString(this.password, plainPassword);
     }
