@@ -158,8 +158,7 @@ public class Account {
         this.username = username;
     }
 
-    @Override
-    protected Object clone() throws CloneNotSupportedException {
+    public Account copy()  {
         return new Account(username, password, stub, publicKey, accountId);
     }
 }
