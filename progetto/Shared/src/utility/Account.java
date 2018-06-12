@@ -21,7 +21,6 @@ package utility;
 import interfaces.ClientInterface;
 
 import java.security.NoSuchAlgorithmException;
-
 import static utility.hashFunctions.compareHashandString;
 import static utility.hashFunctions.stringHash;
 
@@ -97,9 +96,9 @@ public class Account {
      */
     public  boolean cmpPassword(String plainPassword) throws NoSuchAlgorithmException
     {
-        if(plainPassword==null)
+        if(plainPassword==null || plainPassword.isEmpty())
         {
-            plainPassword="";
+            throw new IllegalArgumentException();
         }
         return compareHashandString(this.password, plainPassword);
     }
@@ -156,5 +155,9 @@ public class Account {
     public void setUsername(String username) {
         if(username==null)throw new IllegalArgumentException("username==null");
         this.username = username;
+    }
+
+    public Account copy()  {
+        return new Account(username, password, stub, publicKey, accountId);
     }
 }
