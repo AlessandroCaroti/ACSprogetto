@@ -17,17 +17,14 @@
 
 package server;
 
-import interfaces.ClientInterface;
-
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.*;
 
+import interfaces.ClientInterface;
 import customException.*;
 import utility.Account;
 
-import javax.management.RuntimeErrorException;
 
 /**
  * Implementazione con multiple reader single writer lock
@@ -126,6 +123,7 @@ public class AccountListMonitor implements AccountCollectionInterface {
         return prev;
     }
 
+    //E' più veloce avere un metodo specializato che riutilizare addAccount(Account account, int accountId)
     public Account removeAccount(int accountId) {
         testRange(accountId);
 
@@ -166,7 +164,6 @@ public class AccountListMonitor implements AccountCollectionInterface {
     }
 
 
-
     public String getPublicKey(int accountId) {
         testRange(accountId);
 
@@ -195,7 +192,6 @@ public class AccountListMonitor implements AccountCollectionInterface {
         listLock.readLock().lock();
         try {
             return accountList[accountId].getUsername();
-
         } finally {
             this.listLock.readLock().unlock();
         }
@@ -207,7 +203,6 @@ public class AccountListMonitor implements AccountCollectionInterface {
         listLock.readLock().lock();
         try {
             return accountList[accountId].getStub();
-
         } finally {
             this.listLock.readLock().unlock();
         }
