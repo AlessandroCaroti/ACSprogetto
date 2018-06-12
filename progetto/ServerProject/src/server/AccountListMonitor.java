@@ -135,6 +135,7 @@ public class AccountListMonitor implements AccountCollectionInterface {
             if (toRemove != null) {
                 this.length--;
                 accountList[accountId] = null;
+                lastFreeposition = accountId;
             }
         } finally {
             this.listLock.writeLock().unlock();
