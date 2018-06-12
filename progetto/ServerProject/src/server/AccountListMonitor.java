@@ -46,6 +46,8 @@ public class AccountListMonitor implements AccountCollectionInterface {
     private ConcurrentHashMap<Long, Pair> h;
 
 
+    /*****************************************************************************************************/
+    //COSTRUTTORI
     public AccountListMonitor(int maxAccountNumber) throws IllegalArgumentException {
         if (maxAccountNumber <= 0) {
             throw new IllegalArgumentException("maxaccountnumber<=0");
@@ -54,13 +56,15 @@ public class AccountListMonitor implements AccountCollectionInterface {
         this.accountList = new Account[MAXACCOUNTNUMBER];
     }
 
-
     public AccountListMonitor() {
 
         this.MAXACCOUNTNUMBER = this.MAXACCOUNTNUMBERDEFAULT;
         this.accountList = new Account[MAXACCOUNTNUMBER];
     }
 
+    
+    /*****************************************************************************************************/
+    //METODI MODIFICATORI
     public int addAccount(Account account) throws NullPointerException, MaxNumberAccountReached, AccountMonitorRuntimeException {
         int posizione;
         if (account == null) {
@@ -96,27 +100,6 @@ public class AccountListMonitor implements AccountCollectionInterface {
         throw new AccountMonitorRuntimeException("ERRORE:addAccount");//Non dovrebbe mai essere sollevata :D speremmu!
     }
 
-    public Account getAccountCopy(int accountId) {
-        testRange(accountId);
-
-        Account snapShot;
-        Account curr;
-
-
-        this.listLock.readLock().lock();
-        try {
-            curr = accountList[accountId];
-            if (curr == null) {
-                return null;
-            }
-            snapShot = new
-                    Account(curr.getUsername(), curr.getPassword(), curr.getStub(), curr.getPublicKey(), curr.getAccountId());
-            return snapShot;
-        } finally {
-            listLock.readLock().unlock();
-        }
-    }
-
     public Account addAccount(Account account, int accountId) {
         testRange(accountId);
 
@@ -143,7 +126,6 @@ public class AccountListMonitor implements AccountCollectionInterface {
         return prev;
     }
 
-
     public Account removeAccount(int accountId) {
         testRange(accountId);
 
@@ -161,6 +143,30 @@ public class AccountListMonitor implements AccountCollectionInterface {
         return toRemove;
     }
 
+
+    /*****************************************************************************************************/
+    //METODI GETTER
+    public Account getAccountCopy(int accountId) {
+        testRange(accountId);
+
+        Account snapShot;
+        Account curr;
+
+
+        this.listLock.readLock().lock();
+        try {
+            curr = accountList[accountId];
+            if (curr == null) {
+                return null;
+            }
+            snapShot = new
+                    Account(curr.getUsername(), curr.getPassword(), curr.getStub(), curr.getPublicKey(), curr.getAccountId());
+            return snapShot;
+        } finally {
+            listLock.readLock().unlock();
+        }
+    }
+
     public String getPublicKey(int accountId) {
         testRange(accountId);
 
@@ -171,7 +177,6 @@ public class AccountListMonitor implements AccountCollectionInterface {
             this.listLock.readLock().unlock();
         }
     }
-
 
     public byte[] getPassword(int accountId) {
         testRange(accountId);
@@ -220,6 +225,9 @@ public class AccountListMonitor implements AccountCollectionInterface {
         return this.MAXACCOUNTNUMBER;
     }
 
+
+    /*****************************************************************************************************/
+    //METODI SETTER
     public String setPublicKey(String clientPublicKey, int accountId) {
         testRange(accountId);
 
@@ -272,6 +280,9 @@ public class AccountListMonitor implements AccountCollectionInterface {
         }
     }
 
+
+    /*****************************************************************************************************/
+    //METODI PRIVATI
     private void testRange(int n) {
         if (n >= this.MAXACCOUNTNUMBER || n < 0) {
             throw new IllegalArgumentException("accountId>MAXACCOUNTNUMBER || accountId<0");
