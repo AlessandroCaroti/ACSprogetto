@@ -727,79 +727,87 @@ public class ServerGuiRisizable extends JFrame {
 		label_19.setBounds(46, 79, 16, 16);
 		panel_13.add(label_19);
 
-		JPanel panel_15 = new JPanel();
-		panel_15.setBackground(Color.LIGHT_GRAY);
-		panel_15.setBounds(437, 60, 330, 3);
-		panel_13.add(panel_15);
-
 		JLabel label_20 = new JLabel("");
 		label_20.setIcon(dotBlack);
 		label_20.setBounds(0, 24, 26, 26);
 		panel_13.add(label_20);
 
-		JLabel label_21 = new JLabel("");
-		label_21.setIcon(dotBlack);
-		label_21.setBounds(435, 24, 26, 26);
-		panel_13.add(label_21);
-
 		JLabel label_22 = new JLabel("0");
 		label_22.setVerticalAlignment(SwingConstants.TOP);
 		label_22.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		label_22.setBounds(216, 76, 227, 29);
+		label_22.setBounds(216, 76, 146, 29);
 		panel_13.add(label_22);
 
 		JLabel label_23 = new JLabel("0");
 		label_23.setVerticalAlignment(SwingConstants.TOP);
 		label_23.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		label_23.setBounds(216, 109, 227, 29);
+		label_23.setBounds(216, 109, 149, 29);
 		panel_13.add(label_23);
-
-		JLabel label_24 = new JLabel("Client online:");
-		label_24.setVerticalAlignment(SwingConstants.TOP);
-		label_24.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		label_24.setBounds(475, 81, 150, 24);
-		panel_13.add(label_24);
-
-		JLabel label_25 = new JLabel("Registered:");
-		label_25.setVerticalAlignment(SwingConstants.TOP);
-		label_25.setFont(new Font("Tahoma", Font.PLAIN, 16));
-		label_25.setBounds(502, 113, 84, 19);
-		panel_13.add(label_25);
-
-		JLabel label_26 = new JLabel("Anonymous:");
-		label_26.setVerticalAlignment(SwingConstants.TOP);
-		label_26.setFont(new Font("Tahoma", Font.PLAIN, 16));
-		label_26.setBounds(502, 135, 99, 19);
-		panel_13.add(label_26);
 
 		JLabel label_27 = new JLabel("Topics:");
 		label_27.setFont(new Font("Tahoma", Font.PLAIN, 37));
 		label_27.setBounds(30, 0, 123, 70);
 		panel_13.add(label_27);
-
-		JLabel label_28 = new JLabel("Clients:");
-		label_28.setFont(new Font("Tahoma", Font.PLAIN, 37));
-		label_28.setBounds(465, 0, 132, 70);
-		panel_13.add(label_28);
+		
+		JPanel panel_23 = new JPanel();
+		panel_23.setBackground(Color.WHITE);
 		GroupLayout gl_panel_6 = new GroupLayout(panel_6);
-		gl_panel_6.setHorizontalGroup(gl_panel_6.createParallelGroup(Alignment.LEADING).addGroup(gl_panel_6
-				.createSequentialGroup().addContainerGap()
-				.addGroup(gl_panel_6.createParallelGroup(Alignment.LEADING)
-						.addComponent(panel_13, GroupLayout.PREFERRED_SIZE, 789, GroupLayout.PREFERRED_SIZE)
+		gl_panel_6.setHorizontalGroup(
+			gl_panel_6.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panel_6.createSequentialGroup()
+					.addContainerGap()
+					.addGroup(gl_panel_6.createParallelGroup(Alignment.LEADING)
 						.addGroup(gl_panel_6.createSequentialGroup()
-								.addGroup(gl_panel_6.createParallelGroup(Alignment.LEADING, false)
-										.addComponent(panel_7, GroupLayout.DEFAULT_SIZE, 825, Short.MAX_VALUE)
-										.addComponent(panel_8, GroupLayout.PREFERRED_SIZE, 728,
-												GroupLayout.PREFERRED_SIZE))
-								.addContainerGap(168, Short.MAX_VALUE)))));
-		gl_panel_6.setVerticalGroup(gl_panel_6.createParallelGroup(Alignment.TRAILING)
-				.addGroup(gl_panel_6.createSequentialGroup().addContainerGap()
-						.addComponent(panel_7, GroupLayout.PREFERRED_SIZE, 164, GroupLayout.PREFERRED_SIZE)
-						.addPreferredGap(ComponentPlacement.RELATED)
-						.addComponent(panel_8, GroupLayout.PREFERRED_SIZE, 159, GroupLayout.PREFERRED_SIZE)
-						.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(panel_13, GroupLayout.PREFERRED_SIZE, 378, GroupLayout.PREFERRED_SIZE)
+							.addGap(106)
+							.addComponent(panel_23, GroupLayout.PREFERRED_SIZE, 502, GroupLayout.PREFERRED_SIZE))
+						.addGroup(gl_panel_6.createParallelGroup(Alignment.LEADING, false)
+							.addComponent(panel_7, GroupLayout.DEFAULT_SIZE, 825, Short.MAX_VALUE)
+							.addComponent(panel_8, GroupLayout.PREFERRED_SIZE, 728, GroupLayout.PREFERRED_SIZE)))
+					.addContainerGap(21, Short.MAX_VALUE))
+		);
+		gl_panel_6.setVerticalGroup(
+			gl_panel_6.createParallelGroup(Alignment.TRAILING)
+				.addGroup(gl_panel_6.createSequentialGroup()
+					.addContainerGap()
+					.addComponent(panel_7, GroupLayout.PREFERRED_SIZE, 164, GroupLayout.PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(panel_8, GroupLayout.PREFERRED_SIZE, 159, GroupLayout.PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addGroup(gl_panel_6.createParallelGroup(Alignment.LEADING)
 						.addComponent(panel_13, GroupLayout.PREFERRED_SIZE, 194, GroupLayout.PREFERRED_SIZE)
-						.addContainerGap(49, Short.MAX_VALUE)));
+						.addComponent(panel_23, GroupLayout.PREFERRED_SIZE, 203, GroupLayout.PREFERRED_SIZE))
+					.addContainerGap(40, Short.MAX_VALUE))
+		);
+		panel_23.setLayout(null);
+		
+		JLabel label_24 = new JLabel("Clients:");
+		label_24.setFont(new Font("Tahoma", Font.PLAIN, 37));
+		label_24.setBounds(40, 8, 132, 70);
+		panel_23.add(label_24);
+		
+		JLabel label_25 = new JLabel("Client online:");
+		label_25.setVerticalAlignment(SwingConstants.TOP);
+		label_25.setFont(new Font("Tahoma", Font.PLAIN, 18));
+		label_25.setBounds(50, 89, 150, 24);
+		panel_23.add(label_25);
+		
+		JLabel label_26 = new JLabel("Registered:");
+		label_26.setVerticalAlignment(SwingConstants.TOP);
+		label_26.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		label_26.setBounds(77, 121, 84, 19);
+		panel_23.add(label_26);
+		
+		JLabel label_28 = new JLabel("Anonymous:");
+		label_28.setVerticalAlignment(SwingConstants.TOP);
+		label_28.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		label_28.setBounds(77, 143, 99, 19);
+		panel_23.add(label_28);
+		
+		JPanel panel_15 = new JPanel();
+		panel_15.setBackground(Color.LIGHT_GRAY);
+		panel_15.setBounds(12, 68, 330, 3);
+		panel_23.add(panel_15);
 		panel_6.setLayout(gl_panel_6);
 
 		JScrollPane scrollPane_clientInfo = new JScrollPane();
@@ -819,6 +827,47 @@ public class ServerGuiRisizable extends JFrame {
 		JPanel panel_21 = new JPanel();
 		panel_21.setBackground(Color.WHITE);
 		scrollPane_clientInfo.setViewportView(panel_21);
+		
+		JPanel panel_24 = new JPanel();
+		panel_24.setBackground(Color.WHITE);
+		panel_24.setBorder(new LineBorder(new Color(0, 0, 0), 3, true));
+		GroupLayout gl_panel_21 = new GroupLayout(panel_21);
+		gl_panel_21.setHorizontalGroup(
+			gl_panel_21.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panel_21.createSequentialGroup()
+					.addGap(74)
+					.addComponent(panel_24, GroupLayout.PREFERRED_SIZE, 367, GroupLayout.PREFERRED_SIZE)
+					.addContainerGap(576, Short.MAX_VALUE))
+		);
+		gl_panel_21.setVerticalGroup(
+			gl_panel_21.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panel_21.createSequentialGroup()
+					.addGap(116)
+					.addComponent(panel_24, GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE)
+					.addGap(78))
+		);
+		panel_24.setLayout(new BorderLayout(0, 0));
+		
+		JPanel panel_25 = new JPanel();
+		panel_25.setPreferredSize(new Dimension(10, 32));
+		panel_24.add(panel_25, BorderLayout.NORTH);
+		panel_25.setLayout(null);
+		
+		JLabel lblNewLabel = new JLabel("Client Online:");
+		lblNewLabel.setFont(new Font("Comic Sans MS", Font.BOLD | Font.ITALIC, 15));
+		lblNewLabel.setBounds(12, 0, 175, 32);
+		panel_25.add(lblNewLabel);
+		
+		JLabel label_21 = new JLabel("0");
+		label_21.setFont(new Font("Consolas", Font.PLAIN, 21));
+		label_21.setHorizontalAlignment(SwingConstants.RIGHT);
+		label_21.setBounds(293, 0, 56, 32);
+		panel_25.add(label_21);
+		
+		JPanel panel_26 = new JPanel();
+		panel_26.setBorder(new MatteBorder(1, 0, 0, 0, (Color) new Color(0, 0, 0)));
+		panel_24.add(panel_26, BorderLayout.CENTER);
+		panel_21.setLayout(gl_panel_21);
 
 		JScrollPane scrollPane_topicInfo = new JScrollPane();
 		/*
@@ -836,6 +885,11 @@ public class ServerGuiRisizable extends JFrame {
 		JPanel panel_22 = new JPanel();
 		panel_22.setBackground(Color.WHITE);
 		scrollPane_topicInfo.setViewportView(panel_22);
+		panel_22.setLayout(null);
+		
+		JPanel panel_27 = new JPanel();
+		panel_27.setBounds(37, 78, 736, 362);
+		panel_22.add(panel_27);
 
 		JPanel border_down = new JPanel();
 		border_down.setPreferredSize(new Dimension(10, 25));
