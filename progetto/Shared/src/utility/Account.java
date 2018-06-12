@@ -157,4 +157,9 @@ public class Account {
         if(username==null)throw new IllegalArgumentException("username==null");
         this.username = username;
     }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        return new Account(username, password, stub, publicKey, accountId);
+    }
 }
