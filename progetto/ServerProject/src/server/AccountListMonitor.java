@@ -152,15 +152,13 @@ public class AccountListMonitor implements AccountCollectionInterface {
         Account snapShot;
         Account curr;
 
-
         this.listLock.readLock().lock();
         try {
             curr = accountList[accountId];
             if (curr == null) {
                 return null;
             }
-            snapShot = new
-                    Account(curr.getUsername(), curr.getPassword(), curr.getStub(), curr.getPublicKey(), curr.getAccountId());
+            snapShot = curr.copy();
             return snapShot;
         } finally {
             listLock.readLock().unlock();
