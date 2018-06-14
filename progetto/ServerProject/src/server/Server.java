@@ -51,8 +51,9 @@ public class Server implements ServerInterface,Callable<Integer> {
     *   lista dei client anonimi
     *
      */
-    private AccountCollectionInterface accountList;         //monitor della lista contente tutti gli account salvati
-    private Properties serverSettings=new Properties();     //setting del server
+    private AccountCollectionInterface accountList;                     //monitor della lista contente tutti gli account salvati
+    private ConcurrentHashMap<String, Integer> userNameList;            //coppia nome (nome_account, indice_lista) degli accoun che sono salvati
+    private Properties serverSettings=new Properties();                 //setting del server
     private ConcurrentHashMap<byte[],Integer> topicCookieAssociation;   //aka  hashMap contenente le associazioni topic->accountId
     private AES aesCipher;
     private String serverPublicKey;
@@ -60,39 +61,47 @@ public class Server implements ServerInterface,Callable<Integer> {
 
     /*rmi fields*/
     private Registry registry;
+    private int regPort = 1099;                 //Default registry port TODO magari si può importare del file di configurazione
+    private String host;
+    private String serverName;                  //TODO: da creare nel costruttore
     private ServerInterface skeleton;
 
+
+    /*****************************************************************************************************************************/
     /**Costruttore
      *carica automaticamente i setting da file.
      * Se il file non viene trovato vengono usati i costruttori di default
      *  se il file di config non viene trovato
      */
-    /*TODO creare le chiavi pubbliche eccetera e settarle nei fields*/
+
 
     public Server() throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchPaddingException, UnsupportedEncodingException, AlreadyBoundException, RemoteException, UnknownHostException {
-        try {
-            FileInputStream in = new FileInputStream("config.serverSettings");
-            serverSettings.load(in);
-            in.close();
-            accountList=new AccountListMonitor(Integer.parseInt(serverSettings.getProperty("maxaccountnumber")));
-                    //TODO here!!!!!!!!!!!!!!!!!!!!!!
-            serverPrivateKey="privatekeyservertobeimplmented";
-            serverPublicKey="publickeyservertobeimplmented";
+
+        //TODO             creare un nome per il server utilizzato per il registro
+        serverName = "Server_" + (int)(Math.random()*1000000);
+
+        //Caricamento delle impostazioni del server memorizate su file
+        loadSetting("config.serverSettings");
+        infoStamp("Server settings imported.");
+
+        //Creazione del gestore degli account
+        accountList = createAccountManager();
+        infoStamp("Account monitor created.");
+
+        //Creazione PKI del server
+        setupPKI();
+        infoStamp("Public key infrastructure created.");
 
 
-        }catch (IOException exc){
-            this.accountList=new AccountListMonitor();//usa il default
-            System.out.println("WARNING "+exc.getClass().getSimpleName()+"-->using default accountmonitor size");
-        }
-
-        this.skeleton = (ServerInterface) UnicastRemoteObject.exportObject(this, 1099);//TODO CHANGE PORT HERE?
+        //Creazione dello stub del client, del regestry
+        this.skeleton = (ServerInterface) UnicastRemoteObject.exportObject(this, 1099);//TODO CHANGE PORT HERE? - BY ALE: 1099 è la porta di default del registry
         this.registry= LocateRegistry.getRegistry(InetAddress.getLocalHost().getHostAddress());
         try {
             this.registry.rebind("ServerInterface", skeleton);
         }catch(NoSuchObjectException e){
-            System.out.println("WARNING "+e.getClass().getSimpleName()+"-->forzo l'avvio del registry");
-            this.registry=LocateRegistry.createRegistry(1099);
-            this.registry= LocateRegistry.getRegistry(InetAddress.getLocalHost().getHostAddress());
+            System.out.println("[SERVER-WARNING]: "+e.getClass().getSimpleName()+"-->forzo l'avvio del registry");
+            this.registry = LocateRegistry.createRegistry(1099);
+            this.registry = LocateRegistry.getRegistry(InetAddress.getLocalHost().getHostAddress());
             this.registry.rebind("ServerInterface", skeleton);
         }
         System.out.println("SERVER PRONTO (lookup)registryName:\"ServerInterface\" on port:");
@@ -127,6 +136,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         return 0;
     }
 
+    /*****************************************************************************************************************************/
     /* ********************************************************************************************************** **/
     //API
 
@@ -136,8 +146,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
 
 
-
-    /* ************************************************************************************************************/
+    /*****************************************************************************************************************************/
     //METODI REMOTI
 
     //TODO creare una lista concorrente degli username già presenti !! e quando un utente tenta la register con un nome utente già presente ritornare un response code R610
@@ -150,7 +159,7 @@ public class Server implements ServerInterface,Callable<Integer> {
            return responseCode=new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER,cookie);
 
        } catch (Exception exc){
-            return responseCode=new ResponseCode(ResponseCode.Codici.R610, ResponseCode.TipoClasse.SERVER,"Registrazione account fallita");
+            return responseCode=new ResponseCode(ResponseCode.Codici.R610, ResponseCode.TipoClasse.SERVER,"Registrazione account fallita!");
         }
     }
 
@@ -251,6 +260,133 @@ public class Server implements ServerInterface,Callable<Integer> {
             exc.printStackTrace(System.err);
             throw new AccountRegistrationException("Unable to register new account");
         }
+    }
+
+    private void loadSetting(String settingFileName){
+        FileInputStream in = null;
+        try {
+            //Apertura del file
+            in = new FileInputStream(settingFileName);
+            //Caricamnto delle impostazioni
+            serverSettings.load(in);
+        } catch (IOException e) {
+            errorStamp(e,"The file \'"+settingFileName+"\' could not be found or error occurred when reading it!");
+        }finally {
+            //Chiusura del file
+            try {
+                if(in != null)
+                    in.close();
+            } catch (IOException e) {
+                warningStamp(e, "File closure failed!");
+            }
+        }
+    }
+
+    //Creazione della chiava pubblica, chiave privata con cui verranno criptati i messaggi scambiaticon i client
+    private void setupPKI(){
+        /*TODO creare le chiavi pubbliche eccetera e settarle nei fields*/
+        serverPrivateKey="privatekeyservertobeimplmented";
+        serverPublicKey="publickeyservertobeimplmented";
+    }
+
+    private AccountCollectionInterface createAccountManager(){
+        AccountCollectionInterface accManager = null;
+        try {
+            accManager = new AccountListMonitor(Integer.parseInt(serverSettings.getProperty("maxaccountnumber")));
+        }catch (IllegalArgumentException e){
+            warningStamp(e, "");
+            //System.out.println("[SERVER-WARNING]: "+exc.getClass().getSimpleName()+" --> using default accountmonitor size");
+            accManager = new AccountListMonitor();        //Utilizzo del costruttore di default
+        }
+        return accManager;
+    }
+
+    public void start(){
+        ServerInterface stub = null;
+        Registry r = null;
+        try {
+            //Importing the security policy and
+            System.setProperty("java.security.policy","file:./sec.policy");
+            //System.setProperty("java.rmi.server.codebase","file:${workspace_loc}/Server/");
+
+            //Creating and Installing a Security Manager
+            if (System.getSecurityManager() == null) {
+                System.setSecurityManager(new SecurityManager());
+            }
+
+            //Creating or import the local regestry
+            try {
+                r = LocateRegistry.createRegistry(regPort);
+            } catch (RemoteException e) {
+                r = LocateRegistry.getRegistry(regPort);
+            }
+
+            //Making the Remote Object Available to Clients
+            stub = (ServerInterface) UnicastRemoteObject.exportObject(this, 0); //The 2nd argument specifies which TCP port to use to listen for incoming remote invocation requests . It is common to use the value 0, which specifies the use of an anonymous port. The actual port will then be chosen at runtime by RMI or the underlying operating system.
+            r.rebind(serverName, stub);
+
+        }catch (RemoteException e){
+            errorStamp(e);
+            System.exit(-1);
+        }
+
+
+        this.registry = r;
+        this.skeleton = stub;
+
+        /*
+       1) Impostare le policy                                                                                       (FATTO)
+                System.setProperty("java.security.policy","file:./sec.policy");
+                System.setProperty("java.rmi.server.codebase","file:${workspace_loc}/Server/"); o System.setProperty ("java.rmi.server.codebase", "http://130.251.36.239/hello.jar");
+
+           2) Creare se non esiste un SecurityManager                                                               (FATTO)
+                if(System.getSecurityManager() == null)
+				    System.setSecurityManager(new SecurityManager());
+
+	       3) Importare o creare il registry se non esiste
+	            Registry r = null;
+	            try {
+				    r = LocateRegistry.createRegistry(regPort);
+			    } catch (RemoteException e) {
+				    r = LocateRegistry.getRegistry(regPort);
+			    }
+           4) Creare lo stub del server                                                                             (FATTO)
+			    ServerInt stubRequest = (ServerInt) UnicastRemoteObject.exportObject(this,0);
+
+           5) Caricare lo stub sul regestry
+                r.rebind("REG", stubRequest);
+
+
+            FINE
+         */
+    }
+
+
+
+
+
+    private void errorStamp(Exception e){
+        System.err.println("[SERVER-ERROR]");
+        System.err.println("\tException type: "    + e.getClass().getSimpleName());
+        System.err.println("\tException message: " + e.getMessage());
+        e.printStackTrace();
+    }
+
+    private void errorStamp(Exception e, String msg){
+        System.err.println("[SERVER-ERROR]: "      + msg);
+        System.err.println("\tException type: "    + e.getClass().getSimpleName());
+        System.err.println("\tException message: " + e.getMessage());
+        e.printStackTrace();
+    }
+
+    private void warningStamp(Exception e, String msg){
+        System.out.println("[SERVER-WARNING]: "    + msg);
+        System.err.println("\tException type: "    + e.getClass().getSimpleName());
+        System.err.println("\tException message: " + e.getMessage());
+    }
+
+    private void infoStamp(String msg){
+        System.out.println("[SERVER-INFO]: " + msg);
     }
 
 
