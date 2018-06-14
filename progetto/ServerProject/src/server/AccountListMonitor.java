@@ -40,21 +40,18 @@ public class AccountListMonitor implements AccountCollectionInterface {
 
     private ReentrantReadWriteLock listLock = new ReentrantReadWriteLock();
 
-    private ConcurrentHashMap<Long, Pair> h;
-
 
     /*****************************************************************************************************/
     //COSTRUTTORI
     public AccountListMonitor(int maxAccountNumber) throws IllegalArgumentException {
         if (maxAccountNumber <= 0) {
-            throw new IllegalArgumentException("maxaccountnumber<=0");
+            throw new IllegalArgumentException("Class: AccountListMonitor - Error: maxAccountNumber <= 0");
         }
         this.MAXACCOUNTNUMBER = maxAccountNumber;
         this.accountList = new Account[MAXACCOUNTNUMBER];
     }
 
     public AccountListMonitor() {
-
         this.MAXACCOUNTNUMBER = this.MAXACCOUNTNUMBERDEFAULT;
         this.accountList = new Account[MAXACCOUNTNUMBER];
     }
