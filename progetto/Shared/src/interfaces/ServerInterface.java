@@ -32,9 +32,9 @@ public interface ServerInterface extends Remote,Serializable
 
     ResponseCode anonymousRegister(ClientInterface stub, String publicKey)throws RemoteException;
 
-    ResponseCode retrieveAccount(String username, String plainPassword, ClientInterface clientStub, String cookie)throws RemoteException;
+    ResponseCode retrieveAccount(String username, String plainPassword, ClientInterface clientStub)throws RemoteException;
 
-    ResponseCode connect(ClientInterface clientStub, String clientPublicKey) throws RemoteException;
+    ResponseCode connect() throws RemoteException;
 
     ResponseCode disconnect(String cookie) throws RemoteException;
 
