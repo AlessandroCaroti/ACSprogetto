@@ -35,17 +35,21 @@ public  class ResponseCode implements Serializable {
          R100,//Set Cookie
          R101,//pong message (nel messagge info è presente il tempo di delay
 
-         //i messaggi con 200 sono messaggi di successo
-         R200,//OK
-         R210,//"set public key" all'interno del massageinfo è presente la chiave pubblica del server
-         R220,//account successfully retrieved(login a buon fine)
+         //I messaggi con 200 sono messaggi di successo
+         R200,  //OK
+         R210,  //"set public key" all'interno del massageinfo è presente la chiave pubblica del server
+         R220,  //account successfully retrieved(login a buon fine)
 
-         //i messaggi che iniziano per 600 sono di errore
-         R500,//null message
-         R610,//registrazione account fallita
-         R620,//errore disconnessione
-         R630,//login senza successo
-         R666,//formato cookie non valido
+         //I messaggi che iniziano per 600 sono di errore del server
+         R500,  //null message
+         R505,  //Internal Server Error
+
+
+         //I messaggi che iniziano per 600 sono di errore del client
+         R610,  //registrazione account fallita
+         R620,  //errore disconnessione
+         R630,  //login senza successo
+         R666,  //formato cookie non valido
 
          //internal server error
          R999
