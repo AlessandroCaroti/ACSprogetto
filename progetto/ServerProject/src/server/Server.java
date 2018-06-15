@@ -58,13 +58,13 @@ public class Server implements ServerInterface,Callable<Integer> {
     private AES aesCipher;
     private String serverPublicKey;
     private String serverPrivateKey;
-    private boolean pedantic = false;
+    private boolean pedantic = false;           //verrà utile per il debugging      todo magari anche questo si può importare dal file di config
 
     /*rmi fields*/
     private Registry registry;
-    private int regPort = 1099;                 //Default registry port TODO magari si può importare dal file di configurazione
+    private int regPort = 1099;                 //Default registry port TODO magari si può importare dal file di config
     private String host;
-    private String serverName;                  //TODO: da creare nel costruttore, sarebbe il nome con cui si fa la bind sul registro
+    private String serverName;                  //TODO: da creare nel costruttore, il nome con cui si fa la bind dello serverStub sul registro
     private ServerInterface skeleton;
 
 
@@ -212,9 +212,10 @@ public class Server implements ServerInterface,Callable<Integer> {
                 int posNewAccount =  registerAccount(userName, plainPassword, stub, publicKey, 0);
                 cookie = getCookie(posNewAccount);
                 userNameList.replace(userName, posNewAccount);
+                pedanticInfo("Registered new client "+userName+".");
                 return new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER, cookie);  //OK: Nuovo client registrato
-
             }
+            pedanticInfo("Client registration refused, username \'"+userName+"\' already used.");
             return ResponseCodeList.ClientError;
         }catch (Exception e){
             errorStamp(e);
@@ -243,15 +244,17 @@ public class Server implements ServerInterface,Callable<Integer> {
     @Override
     public ResponseCode retrieveAccount(String username, String plainPassword, ClientInterface clientStub){
         try {
-            Integer accountId = userNameList.get(username);     //Returns null if this map don't contains the username
+            Integer accountId = userNameList.get(username);     //Returns null if userNameList does not contain the username
             if(accountId != null) {
                 Account account = accountList.getAccountCopy(accountId);
                 if (account.getUsername().equals(username) && account.cmpPassword(plainPassword)) {//okay -->setto lo stub
                     accountList.setStub(clientStub, accountId);
+                    pedanticInfo(username + " connected.");
                     return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER, "login andato a buon fine");
                 }
-            }else
-                return ResponseCodeList.LoginFailed;
+            }
+            pedanticInfo(username + " failed to connect.");
+            return ResponseCodeList.LoginFailed;
         } catch (Exception e) {
             errorStamp(e);
         }
@@ -274,8 +277,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     @Override
-    public void ping( )  {
-
+    public void ping()  {
     }
 
     @Override
@@ -346,10 +348,6 @@ public class Server implements ServerInterface,Callable<Integer> {
 
 
     //METODI USATI PER LA GESTIONE DEGLI ACCOUNT
-
-    private int addNewAccount(){
-        return 0;
-    }
 
 
     private int registerAccount(String userName, String plainPassword, ClientInterface stub, String publicKey,int accountId) throws AccountRegistrationException {
