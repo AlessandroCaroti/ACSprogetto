@@ -301,13 +301,24 @@ public class Server implements ServerInterface,Callable<Integer> {
         return accManager;
     }
 
+
+
+    /*
+    Link Remote Java RMI Registry:
+        http://collaboration.cmc.ec.gc.ca/science/rpn/biblio/ddj/Website/articles/DDJ/2008/0812/081101oh01/081101oh01.html
+     */
+
+    // Startup of RMI serverobject, including registration of the instantiated server object
+    // with remote RMI registry
     public void start(){
         ServerInterface stub = null;
         Registry r = null;
+
         try {
-            //Importing the security policy and
+            //Importing the security policy and ...
             System.setProperty("java.security.policy","file:./sec.policy");
             //System.setProperty("java.rmi.server.codebase","file:${workspace_loc}/Server/");
+            //System.setProperty ("java.rmi.server.codebase", "http://130.251.36.239/hello.jar");
 
             //Creating and Installing a Security Manager
             if (System.getSecurityManager() == null) {
@@ -323,6 +334,8 @@ public class Server implements ServerInterface,Callable<Integer> {
 
             //Making the Remote Object Available to Clients
             stub = (ServerInterface) UnicastRemoteObject.exportObject(this, 0); //The 2nd argument specifies which TCP port to use to listen for incoming remote invocation requests . It is common to use the value 0, which specifies the use of an anonymous port. The actual port will then be chosen at runtime by RMI or the underlying operating system.
+
+            //Load the server stub on the Registry
             r.rebind(serverName, stub);
 
         }catch (RemoteException e){
@@ -330,35 +343,8 @@ public class Server implements ServerInterface,Callable<Integer> {
             System.exit(-1);
         }
 
-
         this.registry = r;
         this.skeleton = stub;
-
-        /*
-       1) Impostare le policy                                                                                       (FATTO)
-                System.setProperty("java.security.policy","file:./sec.policy");
-                System.setProperty("java.rmi.server.codebase","file:${workspace_loc}/Server/"); o System.setProperty ("java.rmi.server.codebase", "http://130.251.36.239/hello.jar");
-
-           2) Creare se non esiste un SecurityManager                                                               (FATTO)
-                if(System.getSecurityManager() == null)
-				    System.setSecurityManager(new SecurityManager());
-
-	       3) Importare o creare il registry se non esiste
-	            Registry r = null;
-	            try {
-				    r = LocateRegistry.createRegistry(regPort);
-			    } catch (RemoteException e) {
-				    r = LocateRegistry.getRegistry(regPort);
-			    }
-           4) Creare lo stub del server                                                                             (FATTO)
-			    ServerInt stubRequest = (ServerInt) UnicastRemoteObject.exportObject(this,0);
-
-           5) Caricare lo stub sul regestry
-                r.rebind("REG", stubRequest);
-
-
-            FINE
-         */
     }
 
 
