@@ -18,7 +18,6 @@
 package server;
 
 import java.security.NoSuchAlgorithmException;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.*;
 
 import interfaces.ClientInterface;
