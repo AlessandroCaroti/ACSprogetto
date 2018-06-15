@@ -23,7 +23,6 @@ import interfaces.ServerInterface;
 import interfaces.ClientInterface;
 import utility.Account;
 import utility.ResponseCode;
-import utility.Topic;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
@@ -262,12 +261,12 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     @Override
-    public void subscribe(String cookie, Topic topic)  {
+    public void subscribe(String cookie, String topicName)  {
 
     }
 
     @Override
-    public void unsubscribe(String cookie,Topic topic)  {
+    public void unsubscribe(String cookie,String topicName)  {
 
     }
 
@@ -281,7 +280,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     @Override
-    public List<Topic> getTopicList()  {
+    public List<String> getTopicList()  {
 
         return null;
     }

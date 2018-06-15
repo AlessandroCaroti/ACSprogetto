@@ -18,7 +18,6 @@
 package interfaces;
 
 import utility.ResponseCode;
-import utility.Topic;
 
 import java.io.Serializable;
 import java.rmi.Remote;
@@ -38,13 +37,13 @@ public interface ServerInterface extends Remote,Serializable
 
     ResponseCode disconnect(String cookie) throws RemoteException;
 
-    void subscribe(String cookie, Topic topic) throws RemoteException;
+    void subscribe(String cookie, String topicName) throws RemoteException;
 
-    void unsubscribe(String cookie,Topic topic) throws RemoteException ;
+    void unsubscribe(String cookie,String topicName) throws RemoteException ;
 
     void publish(String cookie) throws RemoteException;
 
     void ping() throws RemoteException;
 
-    List<Topic> getTopicList() throws RemoteException;
+    List<String> getTopicList() throws RemoteException;
 }
