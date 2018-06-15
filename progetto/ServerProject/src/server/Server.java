@@ -58,6 +58,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     private AES aesCipher;
     private String serverPublicKey;
     private String serverPrivateKey;
+    private boolean pedantic = false;
 
     /*rmi fields*/
     private Registry registry;
@@ -78,7 +79,8 @@ public class Server implements ServerInterface,Callable<Integer> {
     public Server() throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchPaddingException, UnsupportedEncodingException, AlreadyBoundException, RemoteException, UnknownHostException {
 
         //TODO             creare un nome per il server utilizzato per il registro
-        serverName = "Server_" + (int)(Math.random()*1000000);
+        serverName   = "Server_" + (int)(Math.random()*1000000);
+        userNameList = new ConcurrentHashMap<>();
 
         //Caricamento delle impostazioni del server memorizate su file
         loadSetting("config.serverSettings");
@@ -92,16 +94,12 @@ public class Server implements ServerInterface,Callable<Integer> {
         setupPKI();
         infoStamp("Public key infrastructure created.");
 
+        setupAes();
+        infoStamp("Aes created.");
+
         //Ho spostato la roba del regestry nel metodo start
 
         System.out.println("SERVER PRONTO (lookup)registryName:\"ServerInterface\" on port:");
-
-        try {
-            aesCipher = new AES("RandomInitVectol");//TODO usiamo un intvector un pò migliore
-        }catch (Exception exc){
-            System.err.println("Unable to create aes encryption class:"+exc.getClass().getSimpleName());
-            throw exc;
-        }
     }
 
     /**
@@ -186,25 +184,42 @@ public class Server implements ServerInterface,Callable<Integer> {
 
 
 
-    
 
 
 
-    /*****************************************************************************************************************************/
-    //METODI REMOTI
 
-    //TODO creare una lista concorrente degli username già presenti !! e quando un utente tenta la register con un nome utente già presente ritornare un response code R610
+    /*************************************************************************************************************
+     ****    METODI REMOTI          ******************************************************************************
+     *************************************************************************************************************/
+
+    @Override
+    //Usato per stabilire la connesione tra server e client
+    public ResponseCode connect() {
+        try {
+            return  new ResponseCode( ResponseCode.Codici.R210, ResponseCode.TipoClasse.SERVER,this.serverPublicKey);
+        } catch (Exception e){
+            errorStamp(e);
+        }
+        return ResponseCodeList.InternalError;
+    }
+
     @Override
     public ResponseCode register(String userName, String plainPassword, ClientInterface stub, String publicKey)  {
-        String cookie;
-        ResponseCode responseCode;
-        try{
-           cookie=getCookie(registerAccount(userName, plainPassword, stub, publicKey, 0/*lo setta automaticamente dopo*/));
-           return responseCode=new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER,cookie);
+        try {
+            String cookie;
+            if (userNameList.putIfAbsent(userName, 0) == null)  //se non c'è già un account con lo stesso nome
+            {
+                int posNewAccount =  registerAccount(userName, plainPassword, stub, publicKey, 0);
+                cookie = getCookie(posNewAccount);
+                userNameList.replace(userName, posNewAccount);
+                return new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER, cookie);  //OK: Nuovo client registrato
 
-       } catch (Exception exc){
-            return responseCode=new ResponseCode(ResponseCode.Codici.R610, ResponseCode.TipoClasse.SERVER,"Registrazione account fallita!");
+            }
+            return ResponseCodeList.ClientError;
+        }catch (Exception e){
+            errorStamp(e);
         }
+        return ResponseCodeList.InternalError;
     }
 
     @Override
@@ -212,11 +227,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         return register("AnonymousAccount","",stub,publicKey);
     }
 
-    @Override
-    public ResponseCode connect(ClientInterface stub, String clientPublicKey) {
 
-        return  new ResponseCode( ResponseCode.Codici.R210, ResponseCode.TipoClasse.SERVER,this.serverPublicKey);
-    }
 
     @Override
     public ResponseCode disconnect(String cookie) {
@@ -230,29 +241,21 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     @Override
-    public ResponseCode retrieveAccount(String username, String plainPassword, ClientInterface clientStub, String cookie){
+    public ResponseCode retrieveAccount(String username, String plainPassword, ClientInterface clientStub){
         try {
-            int accountId=getAccountId(cookie);
-            Account account = accountList.getAccountCopy(accountId);
-            if(account.getUsername().equals(username)&&account.cmpPassword(plainPassword)){//okay -->setto lo stub
-                accountList.setStub(clientStub,accountId);
-                return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER,"login andato a buon fine");
-            }else{
-                /*qui non è detto che l'account non esista... potrebbe non essere più associato a quel determinato cookie..
-                si potrebbe fare una scansione dell'array alla ricerca dell'account perduto e se trovato  creare un nuovo cookie e inviare un responsecode R100(set cookie)
-                 */
-                return new ResponseCode(ResponseCode.Codici.R630, ResponseCode.TipoClasse.SERVER,"login fallito:username o password non validi, o cookie non più valido");
-            }
-        } catch (IllegalBlockSizeException |BadPaddingException | NoSuchAlgorithmException e) {
-            if(e instanceof NoSuchAlgorithmException){
-                return new ResponseCode(ResponseCode.Codici.R999, ResponseCode.TipoClasse.SERVER,"Internal server error D;");
-            }
-            else{
-                return new ResponseCode(ResponseCode.Codici.R666, ResponseCode.TipoClasse.SERVER,"Formato cookie non valido");
-            }
-
+            Integer accountId = userNameList.get(username);     //Returns null if this map don't contains the username
+            if(accountId != null) {
+                Account account = accountList.getAccountCopy(accountId);
+                if (account.getUsername().equals(username) && account.cmpPassword(plainPassword)) {//okay -->setto lo stub
+                    accountList.setStub(clientStub, accountId);
+                    return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER, "login andato a buon fine");
+                }
+            }else
+                return ResponseCodeList.LoginFailed;
+        } catch (Exception e) {
+            errorStamp(e);
         }
-
+        return ResponseCodeList.InternalError;
     }
 
     @Override
@@ -281,30 +284,16 @@ public class Server implements ServerInterface,Callable<Integer> {
         return null;
     }
 
-    /* ************************************************************************************************************/
-    //METODI PRIVATI
-
-    private String getCookie(int accountId) throws BadPaddingException, IllegalBlockSizeException {
-        return aesCipher.encrypt(String.valueOf(accountId));
-    }
-
-    private int getAccountId(String cookie) throws BadPaddingException, IllegalBlockSizeException {
-        return Integer.parseInt(aesCipher.decrypt(cookie));
-    }
 
 
-    private int registerAccount(String userName, String plainPassword, ClientInterface stub, String publicKey,int accountId) throws AccountRegistrationException {
-        //sarebbe utile aggiungere un metodo per controllare se l'account esiste già
-        //però solleva dei problemi sul testing(localhost non può avere più di un account)->soluzione chiave primaria email associata all'account
 
-        try {
-            Account account = new Account(userName, plainPassword, stub, publicKey, accountId);
-            return accountList.addAccount(account);
-        }catch (Exception exc){
-            exc.printStackTrace(System.err);
-            throw new AccountRegistrationException("Unable to register new account");
-        }
-    }
+
+    /*************************************************************************************************************
+    ****    METODI PRIVATI          ******************************************************************************
+    *************************************************************************************************************/
+
+
+    //METODI UTILIZZATI PER LA CREAZIONE DEL SERVER
 
     private void loadSetting(String settingFileName){
         FileInputStream in = null;
@@ -333,16 +322,56 @@ public class Server implements ServerInterface,Callable<Integer> {
         serverPublicKey="publickeyservertobeimplmented";
     }
 
+    private void setupAes() throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchPaddingException, UnsupportedEncodingException {
+
+        try {
+            aesCipher = new AES("RandomInitVectol");        //TODO usiamo un intvector un pò migliore
+        }catch (Exception exc){
+            errorStamp(exc, "Unable to create aes encryption class");
+            throw exc;
+        }
+    }
+
     private AccountCollectionInterface createAccountManager(){
-        AccountCollectionInterface accManager = null;
+        AccountCollectionInterface accManager;
         try {
             accManager = new AccountListMonitor(Integer.parseInt(serverSettings.getProperty("maxaccountnumber")));
         }catch (IllegalArgumentException e){
-            warningStamp(e, "");
-            //System.out.println("[SERVER-WARNING]: "+exc.getClass().getSimpleName()+" --> using default accountmonitor size");
+            warningStamp(e, "Creating AccountManager using default size");
             accManager = new AccountListMonitor();        //Utilizzo del costruttore di default
         }
         return accManager;
+    }
+
+
+
+    //METODI USATI PER LA GESTIONE DEGLI ACCOUNT
+
+    private int addNewAccount(){
+        return 0;
+    }
+
+
+    private int registerAccount(String userName, String plainPassword, ClientInterface stub, String publicKey,int accountId) throws AccountRegistrationException {
+        //sarebbe utile aggiungere un metodo per controllare se l'account esiste già
+        //però solleva dei problemi sul testing(localhost non può avere più di un account)->soluzione chiave primaria email associata all'account
+
+        try {
+            Account account = new Account(userName, plainPassword, stub, publicKey, accountId);
+            return accountList.addAccount(account);
+        }catch (Exception exc){
+            errorStamp(exc,"Unable to register new account");
+            throw new AccountRegistrationException("Unable to register new account");
+        }
+    }
+
+
+    private String getCookie(int accountId) throws BadPaddingException, IllegalBlockSizeException {
+        return aesCipher.encrypt(String.valueOf(accountId));
+    }
+
+    private int getAccountId(String cookie) throws BadPaddingException, IllegalBlockSizeException {
+        return Integer.parseInt(aesCipher.decrypt(cookie));
     }
 
 
@@ -351,6 +380,27 @@ public class Server implements ServerInterface,Callable<Integer> {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //METODI UTILIZZATI PER LA GESTIONE DELL'OUTPUT DEL SERVER
 
     private void errorStamp(Exception e){
         System.err.println("[SERVER-ERROR]");
@@ -374,6 +424,12 @@ public class Server implements ServerInterface,Callable<Integer> {
 
     private void infoStamp(String msg){
         System.out.println("[SERVER-INFO]: " + msg);
+    }
+
+    private void pedanticInfo(String msg){
+        if(pedantic){
+            infoStamp(msg);
+        }
     }
 
 
