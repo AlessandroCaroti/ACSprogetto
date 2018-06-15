@@ -92,18 +92,8 @@ public class Server implements ServerInterface,Callable<Integer> {
         setupPKI();
         infoStamp("Public key infrastructure created.");
 
+        //Ho spostato la roba del regestry nel metodo start
 
-        //Creazione dello stub del client, del regestry
-        this.skeleton = (ServerInterface) UnicastRemoteObject.exportObject(this, 1099);//TODO CHANGE PORT HERE? - BY ALE: 1099 è la porta di default del registry
-        this.registry= LocateRegistry.getRegistry(InetAddress.getLocalHost().getHostAddress());
-        try {
-            this.registry.rebind("ServerInterface", skeleton);
-        }catch(NoSuchObjectException e){
-            System.out.println("[SERVER-WARNING]: "+e.getClass().getSimpleName()+"-->forzo l'avvio del registry");
-            this.registry = LocateRegistry.createRegistry(1099);
-            this.registry = LocateRegistry.getRegistry(InetAddress.getLocalHost().getHostAddress());
-            this.registry.rebind("ServerInterface", skeleton);
-        }
         System.out.println("SERVER PRONTO (lookup)registryName:\"ServerInterface\" on port:");
 
         try {
@@ -319,24 +309,30 @@ public class Server implements ServerInterface,Callable<Integer> {
             System.setProperty("java.security.policy","file:./sec.policy");
             //System.setProperty("java.rmi.server.codebase","file:${workspace_loc}/Server/");
             //System.setProperty ("java.rmi.server.codebase", "http://130.251.36.239/hello.jar");
+            infoStamp("Policy and codebase setted.");
 
             //Creating and Installing a Security Manager
             if (System.getSecurityManager() == null) {
                 System.setSecurityManager(new SecurityManager());
             }
+            infoStamp("Security Manager installed.");
 
             //Creating or import the local regestry
             try {
                 r = LocateRegistry.createRegistry(regPort);
+                infoStamp("Registry find.");
             } catch (RemoteException e) {
                 r = LocateRegistry.getRegistry(regPort);
+                warningStamp(e, "Registry created.");
             }
 
             //Making the Remote Object Available to Clients
             stub = (ServerInterface) UnicastRemoteObject.exportObject(this, 0); //The 2nd argument specifies which TCP port to use to listen for incoming remote invocation requests . It is common to use the value 0, which specifies the use of an anonymous port. The actual port will then be chosen at runtime by RMI or the underlying operating system.
+            infoStamp("Created server remote object.");
 
             //Load the server stub on the Registry
             r.rebind(serverName, stub);
+            infoStamp("Server stub loaded on registry.");
 
         }catch (RemoteException e){
             errorStamp(e);
@@ -345,6 +341,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
         this.registry = r;
         this.skeleton = stub;
+
     }
 
 
