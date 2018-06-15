@@ -27,10 +27,8 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import java.io.*;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.rmi.AlreadyBoundException;
-import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -233,7 +231,8 @@ public class Server implements ServerInterface,Callable<Integer> {
     public ResponseCode disconnect(String cookie) {
         try {
             int accountId = getAccountId(cookie);
-            this.accountList.setStub(null, accountId);
+            this.accountList.setStub(null, accountId);//Se poi si ricambia quando uno si connette non è un pò inutile impostarlo a null
+            pedanticInfo(accountId + "disconnected.");
             return new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER,"disconnessione avvenuta con successo");
         }catch (BadPaddingException | IllegalBlockSizeException exc){
             return new ResponseCode(ResponseCode.Codici.R620, ResponseCode.TipoClasse.SERVER,"errore disconnessione");
