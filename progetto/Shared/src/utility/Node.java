@@ -20,9 +20,11 @@ class Node<K,V> implements Map.Entry<K,V> {
     public final V setValue(V value) { throw new UnsupportedOperationException(); }
 
     public final boolean equals(Object o) {
-        Object k;
+        Object v, u;
         return ((o instanceof Map.Entry) &&
-                (k = ((Map.Entry<?,?>)o).getKey()) != null &&
-                (k == key || k.equals(key)));
+                (v = ((Map.Entry<?,?>)o).getValue()) != null &&
+                (v == (u = val) || v.equals(u)));
     }
 }
+
+//ConcurrentLinkedQueue<Node<UserName, Stub>> -> lista degli utenti con il loro stub che si sono iscritti ad uno specifico topic
