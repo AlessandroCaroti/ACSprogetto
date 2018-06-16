@@ -17,7 +17,7 @@
 **/
 package server;
 
-import utility.GuiInterface;
+import utility.gui.GuiInterface;
 import javax.crypto.NoSuchPaddingException;
 import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;

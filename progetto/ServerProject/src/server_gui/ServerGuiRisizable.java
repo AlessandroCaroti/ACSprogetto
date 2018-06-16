@@ -2,8 +2,8 @@ package server_gui;
 
 import keeptoo.KGradientPanel;
 import utility.AddressIp;
-import utility.MyScrollBar;
-import utility.MyScrollPaneLayout;
+import utility.gui.MyScrollBar;
+import utility.gui.MyScrollPaneLayout;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -22,7 +22,6 @@ import java.awt.Frame;
 import java.awt.Point;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.CardLayout;
-import java.io.File;
 import java.util.Objects;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
