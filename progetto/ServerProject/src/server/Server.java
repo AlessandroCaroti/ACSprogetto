@@ -52,6 +52,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     private ConcurrentSkipListMap<String,ConcurrentLinkedQueue<Integer>> topicClientList;                 // topic -> lista idAccount    -   PUNTI 1 e 2
     //invece di rompere sempre le balle all'account manager dandogli id dello stub si potrebbe salvare direttamente lo stub
     private ConcurrentSkipListMap<String,ConcurrentLinkedQueue<ClientInterface>> topicClientList_2;        // topic -> lista stubClient
+    //NOTA: nella mia idea le varie liste associate ai topic contengono solo i riferimenti ai client che sono attualmente online
 
     private ConcurrentLinkedQueue<String> topicList;        //utilizzata per tenere traccia di tutti i topic e da utilizzare in getTopicList()
 
@@ -312,12 +313,13 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     @Override
+    //Il client che invia il messaggio riceverà una copia del suo stesso messaggio, questo lo gestiremo nel client e si può usare anche come conferma dell'invio tipo la spunta blu di whatsappp
     public void publish(String cookie, Message msg) {
         try {
             Integer accountId = getAccountId(cookie);
             String topicName  = msg.getTopic();
             ConcurrentLinkedQueue<Integer> subscibers = topicClientList.putIfAbsent(topicName, new ConcurrentLinkedQueue<Integer>());
-            if(subscibers == null){  //creazione del nuovo topc
+            if(subscibers == null){  //creazione di un nuovo topc
                 topicList.add(topicName);
                 (subscibers = topicClientList.get(topicName)).add(accountId);
             }
@@ -337,6 +339,23 @@ public class Server implements ServerInterface,Callable<Integer> {
     public String[] getTopicList()  {
         return topicList.toArray(new String[0]);    //guarda esempio in https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ConcurrentLinkedQueue.html#toArray(T[])
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -432,10 +451,12 @@ public class Server implements ServerInterface,Callable<Integer> {
                 try {
                     ClientInterface stub = accountList.getStub(accountId);
                     stub.notify(msg);
-
                 }catch (java.rmi.RemoteException e){
-                    errorStamp(e, "client non più raggiungibile");
+                    warningStamp(e, "client not reachable.");
                     //todo il client corrente va eliminato perchè non più raggiungibile
+                }catch (NullPointerException e){
+                    warningStamp(e, "Client stub not saved.");
+                    //todo il client corrente va eliminato perchè si è disconneddo  -   si potrebbe pensare di farlo durante la chiamata della disconnect(...)
                 }
             });
     }
