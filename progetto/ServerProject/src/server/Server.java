@@ -22,6 +22,7 @@ import customException.AccountRegistrationException;
 import interfaces.ServerInterface;
 import interfaces.ClientInterface;
 import utility.Account;
+import utility.Message;
 import utility.ResponseCode;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -36,20 +37,37 @@ import java.rmi.server.UnicastRemoteObject;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 public class Server implements ServerInterface,Callable<Integer> {
-    //STRUTTURE DATI
+
+    /* topic and message management fields */
+    //todo se qualcuno trova un nome migliore cambitelo quello che ci ho messo fa schifo
+    private ConcurrentSkipListMap<String,ConcurrentLinkedQueue<Integer>> topicClientList;                 // topic -> lista idAccount    -   PUNTI 1 e 2
+    //invece di rompere sempre le balle all'account manager dandogli id dello stub si potrebbe salvare direttamente lo stub
+    private ConcurrentSkipListMap<String,ConcurrentLinkedQueue<ClientInterface>> topicClientList_2;        // topic -> lista stubClient
+
+    private ConcurrentLinkedQueue<String> topicList;        //utilizzata per tenere traccia di tutti i topic e da utilizzare in getTopicList()
+
     /*
-    *   lista dei topic
-    *   lista dei client anonimi
-    *
-     */
+        1)lista dei topic
+        2)associazioni topic -> lista client che si sono registrati al topic
+                possibili implementazioni ConcurrentSkipListMap
+        3)lista client
+                possibili implementazioni concurrentLikedQueue
+    */
+
+    /* clients management fields */
     private AccountCollectionInterface accountList;                     //monitor della lista contente tutti gli account salvati
-    private ConcurrentHashMap<String, Integer> userNameList;            //coppia nome (nome_account, indice_lista) degli accoun che sono salvati
+    private ConcurrentHashMap<String, Integer> userNameList;            //coppia (userName_account, idAccount) degli accoun che sono salvati
+
+    /* server settings fields */
     private Properties serverSettings=new Properties();                 //setting del server
     private boolean pedantic = false;                                   //utile per il debugging per stampare ogni avvenimento      todo magari anche questo si può importare dal file di config
 
@@ -58,7 +76,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     private String serverPublicKey;
     private String serverPrivateKey;
 
-    /*rmi fields*/
+    /* rmi fields */
     private Registry registry;
     private int regPort = 1099;                 //Default registry port TODO magari si può importare dal file di config
     private String host;
@@ -78,6 +96,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
         //TODO             creare un nome per il server utilizzato per il registro
         serverName   = "Server_" + (int)(Math.random()*1000000);
+        topicList    = new ConcurrentLinkedQueue<>();
         userNameList = new ConcurrentHashMap<>();
 
         //Caricamento delle impostazioni del server memorizate su file
@@ -130,7 +149,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         aggiungere i metodi elencari nel file che specifica le API del server
      */
     /*
-    Link Remote Java RMI Registry:
+    Link spiegazione funzionamento Remote Java RMI Registry:
         http://collaboration.cmc.ec.gc.ca/science/rpn/biblio/ddj/Website/articles/DDJ/2008/0812/081101oh01/081101oh01.html
      */
 
@@ -263,17 +282,51 @@ public class Server implements ServerInterface,Callable<Integer> {
 
     @Override
     public void subscribe(String cookie, String topicName)  {
-
+        try {
+            Integer accountId = getAccountId(cookie);
+            //todo controllare che non sia già inscritto al topic
+            topicClientList.get(topicName).add(accountId);
+        }catch (BadPaddingException| IllegalBlockSizeException e){
+            warningStamp(e,"subscribe() - error cookies not recognize");
+        }catch (NullPointerException e){
+            warningStamp(e,"subscibe() - topic"+topicName+"not found");
+        }catch (Exception e){
+            errorStamp(e);
+        }
     }
 
     @Override
     public void unsubscribe(String cookie,String topicName)  {
+        try {
+            Integer accountId = getAccountId(cookie);
+            //todo fose bisogna controllare che sia già inscritto al topic
+            topicClientList.get(topicName).remove(accountId);
+        }catch (BadPaddingException| IllegalBlockSizeException e){
+            warningStamp(e,"subscribe() - error cookies not recognize");
+        }catch (NullPointerException e){
+            warningStamp(e,"subscibe() - topic \'"+topicName+"\' not found");
+        }catch (Exception e){
+            errorStamp(e);
+        }
 
     }
 
     @Override
-    public void publish(String cookie) {
-
+    public void publish(String cookie, Message msg) {
+        try {
+            Integer accountId = getAccountId(cookie);
+            String topicName  = msg.getTopic();
+            ConcurrentLinkedQueue<Integer> subscibers = topicClientList.putIfAbsent(topicName, new ConcurrentLinkedQueue<Integer>());
+            if(subscibers == null){  //creazione del nuovo topc
+                topicList.add(topicName);
+                (subscibers = topicClientList.get(topicName)).add(accountId);
+            }
+            notifyAll(subscibers.iterator(), msg);      //todo magari si potrebbe eseguire su un altro thread in modo da non bloccare questa funzione
+        }catch (BadPaddingException| IllegalBlockSizeException e){
+            warningStamp(e,"subscribe() - error cookies not recognize");
+        }catch (Exception e){
+            errorStamp(e);
+        }
     }
 
     @Override
@@ -281,9 +334,8 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     @Override
-    public List<String> getTopicList()  {
-
-        return null;
+    public String[] getTopicList()  {
+        return topicList.toArray(new String[0]);    //guarda esempio in https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ConcurrentLinkedQueue.html#toArray(T[])
     }
 
 
@@ -370,6 +422,22 @@ public class Server implements ServerInterface,Callable<Integer> {
 
     private int getAccountId(String cookie) throws BadPaddingException, IllegalBlockSizeException {
         return Integer.parseInt(aesCipher.decrypt(cookie));
+    }
+
+
+
+    private void notifyAll(Iterator<Integer> accounts, Message msg){
+
+            accounts.forEachRemaining(accountId -> {
+                try {
+
+                    ClientInterface stub = accountList.getStub(accountId);
+                    stub.notify(msg);
+
+                }catch (java.rmi.RemoteException e){
+                errorStamp(e, "client non più raggiungibile");
+                }
+            });
     }
 
 
