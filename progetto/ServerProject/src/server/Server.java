@@ -51,11 +51,12 @@ public class Server implements ServerInterface,Callable<Integer> {
     private AccountCollectionInterface accountList;                     //monitor della lista contente tutti gli account salvati
     private ConcurrentHashMap<String, Integer> userNameList;            //coppia nome (nome_account, indice_lista) degli accoun che sono salvati
     private Properties serverSettings=new Properties();                 //setting del server
-    private ConcurrentHashMap<byte[],Integer> topicCookieAssociation;   //aka  hashMap contenente le associazioni topic->accountId
+    private boolean pedantic = false;                                   //utile per il debugging per stampare ogni avvenimento      todo magari anche questo si può importare dal file di config
+
+    /* security fields */
     private AES aesCipher;
     private String serverPublicKey;
     private String serverPrivateKey;
-    private boolean pedantic = false;           //verrà utile per il debugging      todo magari anche questo si può importare dal file di config
 
     /*rmi fields*/
     private Registry registry;
