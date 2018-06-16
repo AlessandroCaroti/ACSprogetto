@@ -21,7 +21,6 @@ import interfaces.ClientInterface;
 import interfaces.ServerInterface;
 import utility.Message;
 import utility.ResponseCode;
-import utility.Topic;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -191,7 +190,7 @@ public class Client  implements ClientInterface {
         try {
             Registry r = LocateRegistry.getRegistry(this.broker, this.port);
             this.server_stub = (ServerInterface) r.lookup("ServerInterface");
-            ResponseCode response = server_stub.connect(this.skeleton, myPublicKey);
+            ResponseCode response = server_stub.connect();
 
             switch (response.getCodice()) {
                 case R210:
@@ -209,7 +208,7 @@ public class Client  implements ClientInterface {
     }
 
 
-    public void subscribe(Topic topic)
+    public void subscribe(String topic)
     {
 
 
@@ -245,7 +244,7 @@ public class Client  implements ClientInterface {
 
     public boolean retrieveAccount(){
         try{
-            ResponseCode response=server_stub.retrieveAccount(username,plainPassword,skeleton,cookie);
+            ResponseCode response=server_stub.retrieveAccount(username,plainPassword,skeleton);
             switch(response.getCodice())
             {
                 case R220:

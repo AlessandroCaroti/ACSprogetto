@@ -23,15 +23,12 @@ import interfaces.ServerInterface;
 import interfaces.ClientInterface;
 import utility.Account;
 import utility.ResponseCode;
-import utility.Topic;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import java.io.*;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.rmi.AlreadyBoundException;
-import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -51,58 +48,55 @@ public class Server implements ServerInterface,Callable<Integer> {
     *   lista dei client anonimi
     *
      */
-    private AccountCollectionInterface accountList;         //monitor della lista contente tutti gli account salvati
-    private Properties serverSettings=new Properties();     //setting del server
+    private AccountCollectionInterface accountList;                     //monitor della lista contente tutti gli account salvati
+    private ConcurrentHashMap<String, Integer> userNameList;            //coppia nome (nome_account, indice_lista) degli accoun che sono salvati
+    private Properties serverSettings=new Properties();                 //setting del server
     private ConcurrentHashMap<byte[],Integer> topicCookieAssociation;   //aka  hashMap contenente le associazioni topic->accountId
     private AES aesCipher;
     private String serverPublicKey;
     private String serverPrivateKey;
+    private boolean pedantic = false;           //verrà utile per il debugging      todo magari anche questo si può importare dal file di config
 
     /*rmi fields*/
     private Registry registry;
+    private int regPort = 1099;                 //Default registry port TODO magari si può importare dal file di config
+    private String host;
+    private String serverName;                  //TODO: da creare nel costruttore, il nome con cui si fa la bind dello serverStub sul registro
     private ServerInterface skeleton;
 
+
+    /*****************************************************************************************************************************/
     /**Costruttore
      *carica automaticamente i setting da file.
      * Se il file non viene trovato vengono usati i costruttori di default
      *  se il file di config non viene trovato
      */
-    /*TODO creare le chiavi pubbliche eccetera e settarle nei fields*/
+
 
     public Server() throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchPaddingException, UnsupportedEncodingException, AlreadyBoundException, RemoteException, UnknownHostException {
-        try {
-            FileInputStream in = new FileInputStream("config.serverSettings");
-            serverSettings.load(in);
-            in.close();
-            accountList=new AccountListMonitor(Integer.parseInt(serverSettings.getProperty("maxaccountnumber")));
-                    //TODO here!!!!!!!!!!!!!!!!!!!!!!
-            serverPrivateKey="privatekeyservertobeimplmented";
-            serverPublicKey="publickeyservertobeimplmented";
 
+        //TODO             creare un nome per il server utilizzato per il registro
+        serverName   = "Server_" + (int)(Math.random()*1000000);
+        userNameList = new ConcurrentHashMap<>();
 
-        }catch (IOException exc){
-            this.accountList=new AccountListMonitor();//usa il default
-            System.out.println("WARNING "+exc.getClass().getSimpleName()+"-->using default accountmonitor size");
-        }
+        //Caricamento delle impostazioni del server memorizate su file
+        loadSetting("config.serverSettings");
+        infoStamp("Server settings imported.");
 
-        this.skeleton = (ServerInterface) UnicastRemoteObject.exportObject(this, 1099);//TODO CHANGE PORT HERE?
-        this.registry= LocateRegistry.getRegistry(InetAddress.getLocalHost().getHostAddress());
-        try {
-            this.registry.rebind("ServerInterface", skeleton);
-        }catch(NoSuchObjectException e){
-            System.out.println("WARNING "+e.getClass().getSimpleName()+"-->forzo l'avvio del registry");
-            this.registry=LocateRegistry.createRegistry(1099);
-            this.registry= LocateRegistry.getRegistry(InetAddress.getLocalHost().getHostAddress());
-            this.registry.rebind("ServerInterface", skeleton);
-        }
+        //Creazione del gestore degli account
+        accountList = createAccountManager();
+        infoStamp("Account monitor created.");
+
+        //Creazione PKI del server
+        setupPKI();
+        infoStamp("Public key infrastructure created.");
+
+        setupAes();
+        infoStamp("Aes created.");
+
+        //Ho spostato la roba del regestry nel metodo start
+
         System.out.println("SERVER PRONTO (lookup)registryName:\"ServerInterface\" on port:");
-
-        try {
-            aesCipher = new AES("RandomInitVectol");//TODO usiamo un intvector un pò migliore
-        }catch (Exception exc){
-            System.err.println("Unable to create aes encryption class:"+exc.getClass().getSimpleName());
-            throw exc;
-        }
     }
 
     /**
@@ -127,31 +121,103 @@ public class Server implements ServerInterface,Callable<Integer> {
         return 0;
     }
 
+    /*****************************************************************************************************************************/
     /* ********************************************************************************************************** **/
     //API
 
     /*TODO
         aggiungere i metodi elencari nel file che specifica le API del server
      */
+    /*
+    Link Remote Java RMI Registry:
+        http://collaboration.cmc.ec.gc.ca/science/rpn/biblio/ddj/Website/articles/DDJ/2008/0812/081101oh01/081101oh01.html
+     */
+
+    // Startup of RMI serverobject, including registration of the instantiated server object
+    // with remote RMI registry
+    public void start(){
+        ServerInterface stub = null;
+        Registry r = null;
+
+        try {
+            //Importing the security policy and ...
+            System.setProperty("java.security.policy","file:./sec.policy");
+            //System.setProperty("java.rmi.server.codebase","file:${workspace_loc}/Server/");
+            //System.setProperty ("java.rmi.server.codebase", "http://130.251.36.239/hello.jar");
+            infoStamp("Policy and codebase setted.");
+
+            //Creating and Installing a Security Manager
+            if (System.getSecurityManager() == null) {
+                System.setSecurityManager(new SecurityManager());
+            }
+            infoStamp("Security Manager installed.");
+
+            //Creating or import the local regestry
+            try {
+                r = LocateRegistry.createRegistry(regPort);
+                infoStamp("Registry find.");
+            } catch (RemoteException e) {
+                r = LocateRegistry.getRegistry(regPort);
+                warningStamp(e, "Registry created.");
+            }
+
+            //Making the Remote Object Available to Clients
+            stub = (ServerInterface) UnicastRemoteObject.exportObject(this, 0); //The 2nd argument specifies which TCP port to use to listen for incoming remote invocation requests . It is common to use the value 0, which specifies the use of an anonymous port. The actual port will then be chosen at runtime by RMI or the underlying operating system.
+            infoStamp("Created server remote object.");
+
+            //Load the server stub on the Registry
+            r.rebind(serverName, stub);
+            infoStamp("Server stub loaded on registry.");
+
+        }catch (RemoteException e){
+            errorStamp(e);
+            System.exit(-1);
+        }
+
+        this.registry = r;
+        this.skeleton = stub;
+
+    }
 
 
 
 
-    /* ************************************************************************************************************/
-    //METODI REMOTI
 
-    //TODO creare una lista concorrente degli username già presenti !! e quando un utente tenta la register con un nome utente già presente ritornare un response code R610
+
+
+    /*************************************************************************************************************
+     ****    METODI REMOTI          ******************************************************************************
+     *************************************************************************************************************/
+
+    @Override
+    //Usato per stabilire la connesione tra server e client
+    public ResponseCode connect() {
+        try {
+            return  new ResponseCode( ResponseCode.Codici.R210, ResponseCode.TipoClasse.SERVER,this.serverPublicKey);
+        } catch (Exception e){
+            errorStamp(e);
+        }
+        return ResponseCodeList.InternalError;
+    }
+
     @Override
     public ResponseCode register(String userName, String plainPassword, ClientInterface stub, String publicKey)  {
-        String cookie;
-        ResponseCode responseCode;
-        try{
-           cookie=getCookie(registerAccount(userName, plainPassword, stub, publicKey, 0/*lo setta automaticamente dopo*/));
-           return responseCode=new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER,cookie);
-
-       } catch (Exception exc){
-            return responseCode=new ResponseCode(ResponseCode.Codici.R610, ResponseCode.TipoClasse.SERVER,"Registrazione account fallita");
+        try {
+            String cookie;
+            if (userNameList.putIfAbsent(userName, 0) == null)  //se non c'è già un account con lo stesso nome
+            {
+                int posNewAccount =  registerAccount(userName, plainPassword, stub, publicKey, 0);
+                cookie = getCookie(posNewAccount);
+                userNameList.replace(userName, posNewAccount);
+                pedanticInfo("Registered new client "+userName+".");
+                return new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER, cookie);  //OK: Nuovo client registrato
+            }
+            pedanticInfo("Client registration refused, username \'"+userName+"\' already used.");
+            return ResponseCodeList.ClientError;
+        }catch (Exception e){
+            errorStamp(e);
         }
+        return ResponseCodeList.InternalError;
     }
 
     @Override
@@ -159,17 +225,14 @@ public class Server implements ServerInterface,Callable<Integer> {
         return register("AnonymousAccount","",stub,publicKey);
     }
 
-    @Override
-    public ResponseCode connect(ClientInterface stub, String clientPublicKey) {
 
-        return  new ResponseCode( ResponseCode.Codici.R210, ResponseCode.TipoClasse.SERVER,this.serverPublicKey);
-    }
 
     @Override
     public ResponseCode disconnect(String cookie) {
         try {
             int accountId = getAccountId(cookie);
-            this.accountList.setStub(null, accountId);
+            this.accountList.setStub(null, accountId);//Se poi si ricambia quando uno si connette non è un pò inutile impostarlo a null
+            pedanticInfo(accountId + "disconnected.");
             return new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER,"disconnessione avvenuta con successo");
         }catch (BadPaddingException | IllegalBlockSizeException exc){
             return new ResponseCode(ResponseCode.Codici.R620, ResponseCode.TipoClasse.SERVER,"errore disconnessione");
@@ -177,38 +240,32 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     @Override
-    public ResponseCode retrieveAccount(String username, String plainPassword, ClientInterface clientStub, String cookie){
+    public ResponseCode retrieveAccount(String username, String plainPassword, ClientInterface clientStub){
         try {
-            int accountId=getAccountId(cookie);
-            Account account = accountList.getAccountCopy(accountId);
-            if(account.getUsername().equals(username)&&account.cmpPassword(plainPassword)){//okay -->setto lo stub
-                accountList.setStub(clientStub,accountId);
-                return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER,"login andato a buon fine");
-            }else{
-                /*qui non è detto che l'account non esista... potrebbe non essere più associato a quel determinato cookie..
-                si potrebbe fare una scansione dell'array alla ricerca dell'account perduto e se trovato  creare un nuovo cookie e inviare un responsecode R100(set cookie)
-                 */
-                return new ResponseCode(ResponseCode.Codici.R630, ResponseCode.TipoClasse.SERVER,"login fallito:username o password non validi, o cookie non più valido");
+            Integer accountId = userNameList.get(username);     //Returns null if userNameList does not contain the username
+            if(accountId != null) {
+                Account account = accountList.getAccountCopy(accountId);
+                if (account.getUsername().equals(username) && account.cmpPassword(plainPassword)) {//okay -->setto lo stub
+                    accountList.setStub(clientStub, accountId);
+                    pedanticInfo(username + " connected.");
+                    return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER, "login andato a buon fine");
+                }
             }
-        } catch (IllegalBlockSizeException |BadPaddingException | NoSuchAlgorithmException e) {
-            if(e instanceof NoSuchAlgorithmException){
-                return new ResponseCode(ResponseCode.Codici.R999, ResponseCode.TipoClasse.SERVER,"Internal server error D;");
-            }
-            else{
-                return new ResponseCode(ResponseCode.Codici.R666, ResponseCode.TipoClasse.SERVER,"Formato cookie non valido");
-            }
-
+            pedanticInfo(username + " failed to connect.");
+            return ResponseCodeList.LoginFailed;
+        } catch (Exception e) {
+            errorStamp(e);
         }
+        return ResponseCodeList.InternalError;
+    }
+
+    @Override
+    public void subscribe(String cookie, String topicName)  {
 
     }
 
     @Override
-    public void subscribe(String cookie, Topic topic)  {
-
-    }
-
-    @Override
-    public void unsubscribe(String cookie,Topic topic)  {
+    public void unsubscribe(String cookie,String topicName)  {
 
     }
 
@@ -218,26 +275,77 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     @Override
-    public void ping( )  {
-
+    public void ping()  {
     }
 
     @Override
-    public List<Topic> getTopicList()  {
+    public List<String> getTopicList()  {
 
         return null;
     }
 
-    /* ************************************************************************************************************/
-    //METODI PRIVATI
 
-    private String getCookie(int accountId) throws BadPaddingException, IllegalBlockSizeException {
-        return aesCipher.encrypt(String.valueOf(accountId));
+
+
+
+    /*************************************************************************************************************
+    ****    METODI PRIVATI          ******************************************************************************
+    *************************************************************************************************************/
+
+
+    //METODI UTILIZZATI PER LA CREAZIONE DEL SERVER
+
+    private void loadSetting(String settingFileName){
+        FileInputStream in = null;
+        try {
+            //Apertura del file
+            in = new FileInputStream(settingFileName);
+            //Caricamnto delle impostazioni
+            serverSettings.load(in);
+        } catch (IOException e) {
+            errorStamp(e,"The file \'"+settingFileName+"\' could not be found or error occurred when reading it!");
+        }finally {
+            //Chiusura del file
+            try {
+                if(in != null)
+                    in.close();
+            } catch (IOException e) {
+                warningStamp(e, "File closure failed!");
+            }
+        }
     }
 
-    private int getAccountId(String cookie) throws BadPaddingException, IllegalBlockSizeException {
-        return Integer.parseInt(aesCipher.decrypt(cookie));
+    //Creazione della chiava pubblica, chiave privata con cui verranno criptati i messaggi scambiaticon i client
+    private void setupPKI(){
+        /*TODO creare le chiavi pubbliche eccetera e settarle nei fields*/
+        serverPrivateKey="privatekeyservertobeimplmented";
+        serverPublicKey="publickeyservertobeimplmented";
     }
+
+    private void setupAes() throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchPaddingException, UnsupportedEncodingException {
+
+        try {
+            aesCipher = new AES("RandomInitVectol");        //TODO usiamo un intvector un pò migliore
+        }catch (Exception exc){
+            errorStamp(exc, "Unable to create aes encryption class");
+            throw exc;
+        }
+    }
+
+    private AccountCollectionInterface createAccountManager(){
+        AccountCollectionInterface accManager;
+        try {
+            accManager = new AccountListMonitor(Integer.parseInt(serverSettings.getProperty("maxaccountnumber")));
+        }catch (IllegalArgumentException e){
+            warningStamp(e, "Creating AccountManager using default size");
+            accManager = new AccountListMonitor();        //Utilizzo del costruttore di default
+        }
+        return accManager;
+    }
+
+
+
+    //METODI USATI PER LA GESTIONE DEGLI ACCOUNT
 
 
     private int registerAccount(String userName, String plainPassword, ClientInterface stub, String publicKey,int accountId) throws AccountRegistrationException {
@@ -248,8 +356,75 @@ public class Server implements ServerInterface,Callable<Integer> {
             Account account = new Account(userName, plainPassword, stub, publicKey, accountId);
             return accountList.addAccount(account);
         }catch (Exception exc){
-            exc.printStackTrace(System.err);
+            errorStamp(exc,"Unable to register new account");
             throw new AccountRegistrationException("Unable to register new account");
+        }
+    }
+
+
+    private String getCookie(int accountId) throws BadPaddingException, IllegalBlockSizeException {
+        return aesCipher.encrypt(String.valueOf(accountId));
+    }
+
+    private int getAccountId(String cookie) throws BadPaddingException, IllegalBlockSizeException {
+        return Integer.parseInt(aesCipher.decrypt(cookie));
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //METODI UTILIZZATI PER LA GESTIONE DELL'OUTPUT DEL SERVER
+
+    private void errorStamp(Exception e){
+        System.err.println("[SERVER-ERROR]");
+        System.err.println("\tException type: "    + e.getClass().getSimpleName());
+        System.err.println("\tException message: " + e.getMessage());
+        e.printStackTrace();
+    }
+
+    private void errorStamp(Exception e, String msg){
+        System.err.println("[SERVER-ERROR]: "      + msg);
+        System.err.println("\tException type: "    + e.getClass().getSimpleName());
+        System.err.println("\tException message: " + e.getMessage());
+        e.printStackTrace();
+    }
+
+    private void warningStamp(Exception e, String msg){
+        System.out.println("[SERVER-WARNING]: "    + msg);
+        System.err.println("\tException type: "    + e.getClass().getSimpleName());
+        System.err.println("\tException message: " + e.getMessage());
+    }
+
+    private void infoStamp(String msg){
+        System.out.println("[SERVER-INFO]: " + msg);
+    }
+
+    private void pedanticInfo(String msg){
+        if(pedantic){
+            infoStamp(msg);
         }
     }
 

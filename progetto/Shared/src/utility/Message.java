@@ -27,16 +27,15 @@ public class Message
     final private String topic;
     final private Date date;
 
-    public Message(String title, String author, String text, Topic topic)
+    public Message(String title, String author, String text, String topicName)
     {
-        if(title==null||author==null||text==null||topic==null)
+        if(title==null||author==null||text==null||topicName==null)
             throw new NullPointerException();
-
         this.date = new Date();
         this.title = title;
         this.author = author;
         this.text = text;
-        this.topic = topic.getTopicName();
+        this.topic = topicName;
     }
 
     public String getTitle()
