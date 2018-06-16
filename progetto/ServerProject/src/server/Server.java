@@ -201,12 +201,12 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     @Override
-    public ResponseCode register(String userName, String plainPassword, ClientInterface stub, String publicKey)  {
+    public ResponseCode register(String userName, String plainPassword, ClientInterface stub, String publicKey,String email)  {
         try {
             String cookie;
             if (userNameList.putIfAbsent(userName, 0) == null)  //se non c'è già un account con lo stesso nome
             {
-                int posNewAccount =  registerAccount(userName, plainPassword, stub, publicKey, 0);
+                int posNewAccount =  registerAccount(userName, plainPassword, stub, publicKey, 0,email);
                 cookie = getCookie(posNewAccount);
                 userNameList.replace(userName, posNewAccount);
                 pedanticInfo("Registered new client "+userName+".");
@@ -222,7 +222,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
     @Override
     public ResponseCode anonymousRegister(ClientInterface stub, String publicKey)  {
-        return register("AnonymousAccount","",stub,publicKey);
+        return register("AnonymousAccount","",stub,publicKey,null);
     }
 
 
@@ -348,12 +348,12 @@ public class Server implements ServerInterface,Callable<Integer> {
     //METODI USATI PER LA GESTIONE DEGLI ACCOUNT
 
 
-    private int registerAccount(String userName, String plainPassword, ClientInterface stub, String publicKey,int accountId) throws AccountRegistrationException {
+    private int registerAccount(String userName, String plainPassword, ClientInterface stub, String publicKey,int accountId,String email) throws AccountRegistrationException {
         //sarebbe utile aggiungere un metodo per controllare se l'account esiste già
         //però solleva dei problemi sul testing(localhost non può avere più di un account)->soluzione chiave primaria email associata all'account
 
         try {
-            Account account = new Account(userName, plainPassword, stub, publicKey, accountId);
+            Account account = new Account(userName, plainPassword, stub, publicKey, accountId,email);
             return accountList.addAccount(account);
         }catch (Exception exc){
             errorStamp(exc,"Unable to register new account");

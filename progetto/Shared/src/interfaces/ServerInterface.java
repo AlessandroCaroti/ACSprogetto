@@ -27,7 +27,7 @@ import java.util.List;
 public interface ServerInterface extends Remote,Serializable
 {
 
-    ResponseCode register(String userName, String plainPassword, ClientInterface stub, String publicKey) throws RemoteException;
+    ResponseCode register(String userName, String plainPassword, ClientInterface stub, String publicKey,String email) throws RemoteException;
 
     ResponseCode anonymousRegister(ClientInterface stub, String publicKey)throws RemoteException;
 
