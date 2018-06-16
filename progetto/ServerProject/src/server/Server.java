@@ -209,7 +209,7 @@ public class Server implements ServerInterface,Callable<Integer> {
                 int posNewAccount =  registerAccount(userName, plainPassword, stub, publicKey, 0,email);
                 cookie = getCookie(posNewAccount);
                 userNameList.replace(userName, posNewAccount);
-                pedanticInfo("Registered new client "+userName+".");
+                pedanticInfo("Registered new client \'"+userName+"\'.");
                 return new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER, cookie);  //OK: Nuovo client registrato
             }
             pedanticInfo("Client registration refused, username \'"+userName+"\' already used.");
