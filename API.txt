@@ -1,5 +1,6 @@
 
 
+
 API client:
 
 -Register(Server, UserName, Password)                       // Registrazione su un server
