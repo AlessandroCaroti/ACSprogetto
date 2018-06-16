@@ -215,6 +215,7 @@ public class Server implements ServerInterface,Callable<Integer> {
             pedanticInfo("Client registration refused, username \'"+userName+"\' already used.");
             return ResponseCodeList.ClientError;
         }catch (Exception e){
+            userNameList.remove(userName);
             errorStamp(e);
         }
         return ResponseCodeList.InternalError;
