@@ -31,7 +31,7 @@ public class Account {
     private ClientInterface stub;
     private String publicKey;
     private int accountId;//l'indice dove si trova nella lista degli account
-
+    private String email;//can be null for anonymous users
     /**
      * Crea un nuovo account
      * @param userName l'username :D
@@ -39,12 +39,13 @@ public class Account {
      * @param stub lo del client
      * @param publicKey la chiave pubblica del client
      * @param accountId deve essere >=0 in quanto si riferisce anche alla posizione all'interno della accountList del server
+     * @param email l'email associata all'account
      * @throws NullPointerException() se username o password corrispondono a null;gli altri possono essere passati come null
      */
-    public Account(String userName, String plainPassword, ClientInterface stub, String publicKey,int accountId)
+    public Account(String userName, String plainPassword, ClientInterface stub, String publicKey,int accountId,String email)
     throws  NullPointerException,NoSuchAlgorithmException,IllegalArgumentException {
-        if (userName == null || plainPassword == null) {
-            throw new NullPointerException("username o plainpassword == null");
+        if (userName == null || plainPassword == null ) {
+            throw new NullPointerException("username o plainpassword  == null");
         } else {
             if(accountId<0)
             {
@@ -55,6 +56,7 @@ public class Account {
             this.stub = stub;
             this.publicKey = publicKey;
             this.accountId=accountId;
+            this.email=email;
         }
     }
 
@@ -66,12 +68,13 @@ public class Account {
      * @param stub lo del client
      * @param publicKey la chiave pubblica del client
      * @param accountId deve essere >=0 in quanto si riferisce anche alla posizione all'interno della accountList del server
+     * @param email l'email associata all'account
      * @throws NullPointerException() se username o password corrispondono a null;gli altri possono essere passati come null
      */
-    public Account(String userName, byte[] password, ClientInterface stub, String publicKey,int accountId)
+    public Account(String userName, byte[] password, ClientInterface stub, String publicKey,int accountId,String email)
             throws  NullPointerException,IllegalArgumentException {
         if (userName == null) {
-            throw new NullPointerException("username o plainpassword == null");
+            throw new NullPointerException("username o email==null ");
         } else {
             if(accountId<0)
             {
@@ -82,6 +85,7 @@ public class Account {
             this.stub = stub;
             this.publicKey = publicKey;
             this.accountId=accountId;
+            this.email=email;
         }
 
 
@@ -124,6 +128,7 @@ public class Account {
         return stub;
     }
 
+    public String getEmail(){return email;}
 
     /**setter*/
     public void setAccountId(int accountId) {
@@ -157,7 +162,11 @@ public class Account {
         this.username = username;
     }
 
+    public void setEmail(String email){ this.email=email; }
+
+
     public Account copy()  {
-        return new Account(username, password, stub, publicKey, accountId);
+        return new Account(username, password, stub, publicKey, accountId,email);
     }
+
 }
