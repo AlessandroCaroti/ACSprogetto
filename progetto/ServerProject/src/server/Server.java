@@ -430,12 +430,12 @@ public class Server implements ServerInterface,Callable<Integer> {
 
             accounts.forEachRemaining(accountId -> {
                 try {
-
                     ClientInterface stub = accountList.getStub(accountId);
                     stub.notify(msg);
 
                 }catch (java.rmi.RemoteException e){
-                errorStamp(e, "client non più raggiungibile");
+                    errorStamp(e, "client non più raggiungibile");
+                    //todo il client corrente va eliminato perchè non più raggiungibile
                 }
             });
     }
