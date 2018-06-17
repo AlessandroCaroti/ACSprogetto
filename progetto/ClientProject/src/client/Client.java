@@ -44,13 +44,19 @@ public class Client  implements ClientInterface {
     /* server fields */
     private String broker;
     private ServerInterface server_stub;            //broker's stub
-    private int port = 1099;
+    private int regPort = 1099;
     private String brokerPublicKey;                 //broker's public key
 
     // ************************************************************************************************************
     //CONSTRUCTORS
 
-    //Client's constructor
+    /**
+     * Client's constructor
+     * @param username          identificativo client
+     * @param plainPassword     password in chiaro
+     * @param my_private_key    la mia chiave privata
+     * @param my_public_key     la mia chiave pubblica
+     */
     public Client(String username, String plainPassword, String my_public_key, String my_private_key ) throws RemoteException
     {
         if(username==null||plainPassword==null||my_public_key==null||my_private_key==null)
@@ -64,12 +70,12 @@ public class Client  implements ClientInterface {
 
     }
 
-    //Anonymous user's constructor
 
     /**
-     * @param username il mio username
-     * @param my_private_key la mia chiave privata
-     * @param my_public_key la mia chiave pubblica
+     * Anonymous user's constructor
+     * @param username          il mio username
+     * @param my_private_key    la mia chiave privata
+     * @param my_public_key     la mia chiave pubblica
      */
     public Client(String username, String my_public_key, String my_private_key)throws RemoteException
     {
@@ -134,7 +140,7 @@ public class Client  implements ClientInterface {
 
 
     /**
-     * Si connette al server specificato dalla stringa broker e dalla porta port facendo il lookup
+     * Si connette al server specificato dalla stringa broker e dalla porta regPort facendo il lookup
      * sul registry dell'host
      * @param broker il broker su cui connettersi
      * @param port se null viene usata defaultport
@@ -148,10 +154,10 @@ public class Client  implements ClientInterface {
             throw new NullPointerException("broker string == null");
         }
         if(port!=null)
-            this.port=port;
+            this.regPort =port;
         this.broker=broker;
         try {
-            Registry r = LocateRegistry.getRegistry(this.broker, this.port);
+            Registry r = LocateRegistry.getRegistry(this.broker, this.regPort);
             this.server_stub = (ServerInterface) r.lookup(stubName);
             ResponseCode response = server_stub.connect();
 
