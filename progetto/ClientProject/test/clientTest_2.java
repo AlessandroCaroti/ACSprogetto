@@ -4,7 +4,7 @@ public class clientTest_2 {
     static Client c;
     public static void main(String[] args) {
         try {
-            c = new Client("asdfghj", "password","asdfghj", "asdfghj");
+            c = new Client("user_1", "password","pki_pubblica", "pki_privata");
 
             if(c.connect("localhost","ServerInterface",1099)){
                 System.out.println("CONNESSO");

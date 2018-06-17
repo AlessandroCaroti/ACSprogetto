@@ -26,13 +26,12 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-
 import static utility.ResponseCode.*;
-
 
 
 public class Client  implements ClientInterface {
 
+    /******************/
     /* client fields */
     private String username;
     private String plainPassword;
@@ -40,17 +39,32 @@ public class Client  implements ClientInterface {
     private String cookie;
     private String myPrivateKey;
     private String myPublicKey;
+    private boolean pedantic = true;
 
+    /******************/
     /* server fields */
+    private String serverName;                      //the name for the remote reference to look up
     private String broker;
     private ServerInterface server_stub;            //broker's stub
-    private int port = 1099;
     private String brokerPublicKey;                 //broker's public key
+
+    /* remote registry fields */
+    private String registryHost;                    //host for the remote registry
+    private int registryPort = 1099;                //port on which the registry accepts requests
+
+
+
 
     // ************************************************************************************************************
     //CONSTRUCTORS
 
-    //Client's constructor
+    /**
+     * Client's constructor
+     * @param username          identificativo client
+     * @param plainPassword     password in chiaro
+     * @param my_private_key    la mia chiave privata
+     * @param my_public_key     la mia chiave pubblica
+     */
     public Client(String username, String plainPassword, String my_public_key, String my_private_key ) throws RemoteException
     {
         if(username==null||plainPassword==null||my_public_key==null||my_private_key==null)
@@ -64,12 +78,12 @@ public class Client  implements ClientInterface {
 
     }
 
-    //Anonymous user's constructor
 
     /**
-     * @param username il mio username
-     * @param my_private_key la mia chiave privata
-     * @param my_public_key la mia chiave pubblica
+     * Anonymous user's constructor
+     * @param username          il mio username
+     * @param my_private_key    la mia chiave privata
+     * @param my_public_key     la mia chiave pubblica
      */
     public Client(String username, String my_public_key, String my_private_key)throws RemoteException
     {
@@ -134,13 +148,14 @@ public class Client  implements ClientInterface {
 
 
     /**
-     * Si connette al server specificato dalla stringa broker e dalla porta port facendo il lookup
+     * Si connette al server specificato dalla stringa broker e dalla porta regPort facendo il lookup
      * sul registry dell'host
      * @param broker il broker su cui connettersi
      * @param port se null viene usata defaultport
      * @throws NullPointerException se broker == null
      * @return true se andata a buon fine,false altrimenti
      */
+
     public boolean connect(String broker, String stubName, Integer port) throws NullPointerException
     {
         /*init*/
@@ -148,10 +163,10 @@ public class Client  implements ClientInterface {
             throw new NullPointerException("broker string == null");
         }
         if(port!=null)
-            this.port=port;
+            this.registryPort = port;
         this.broker=broker;
         try {
-            Registry r = LocateRegistry.getRegistry(this.broker, this.port);
+            Registry r = LocateRegistry.getRegistry(this.broker, this.registryPort);
             this.server_stub = (ServerInterface) r.lookup(stubName);
             ResponseCode response = server_stub.connect();
 
@@ -226,6 +241,26 @@ public class Client  implements ClientInterface {
     }
 
 
+    //metodi non ancora utilizzati ma che penso possano servire più tardi
+    private void setServerInfo(String regHost, String serverName){
+        if(regHost==null || regHost.isEmpty() || serverName==null || serverName.isEmpty()){
+            throw new IllegalArgumentException("Invalid argument format of regHost or serverName");
+        }
+        this.registryHost = regHost;
+        this.serverName   = serverName;
+    }
+
+    private void setServerInfo(String regHost, int regPort, String serverName){
+        if(regHost==null || regHost.isEmpty() || serverName==null || serverName.isEmpty()){
+            throw new IllegalArgumentException("Invalid argument format of regHost or serverName");
+        }
+        this.registryHost = regHost;
+        this.registryPort = regPort;
+        this.serverName   = serverName;
+
+    }
+
+
 
     // *************************************************************************************************************
     //REMOTE METHOD
@@ -257,4 +292,72 @@ public class Client  implements ClientInterface {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //METODI UTILIZZATI PER LA GESTIONE DELL'OUTPUT DEL CLIENT
+
+    private void errorStamp(Exception e){
+        System.out.flush();
+        System.err.println("[CLIENT-ERROR]");
+        System.err.println("\tException type: "    + e.getClass().getSimpleName());
+        System.err.println("\tException message: " + e.getMessage());
+        e.printStackTrace();
+    }
+
+    private void errorStamp(Exception e, String msg){
+        System.out.flush();
+        System.err.println("[CLIENT-ERROR]: "      + msg);
+        System.err.println("\tException type: "    + e.getClass().getSimpleName());
+        System.err.println("\tException message: " + e.getMessage());
+        e.printStackTrace();
+    }
+
+    private void warningStamp(Exception e, String msg){
+        System.out.flush();
+        System.err.println("[CLIENT-WARNING]: "    + msg);
+        System.err.println("\tException type: "    + e.getClass().getSimpleName());
+        System.err.println("\tException message: " + e.getMessage());
+    }
+
+    private void infoStamp(String msg){
+        System.out.println("[CLIENT-INFO]: " + msg);
+    }
+
+    private void pedanticInfo(String msg){
+        if(pedantic){
+            infoStamp(msg);
+        }
+    }
 }
