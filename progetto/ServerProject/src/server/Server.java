@@ -160,6 +160,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     // Startup of RMI serverobject, including registration of the instantiated server object
     // with remote RMI registry
     public void start(){
+        pedanticInfo("Starting server ...");
         ServerInterface stub = null;
         Registry r = null;
 
@@ -179,10 +180,10 @@ public class Server implements ServerInterface,Callable<Integer> {
             //Creating or import the local regestry
             try {
                 r = LocateRegistry.createRegistry(regPort);
-                infoStamp("Registry find.");
+                infoStamp("New registry created.");
             } catch (RemoteException e) {
                 r = LocateRegistry.getRegistry(regPort);
-                warningStamp(e, "Registry created.");
+                infoStamp("Registry find.");
             }
 
             //Making the Remote Object Available to Clients
@@ -494,6 +495,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     //METODI UTILIZZATI PER LA GESTIONE DELL'OUTPUT DEL SERVER
 
     private void errorStamp(Exception e){
+        System.out.flush();
         System.err.println("[SERVER-ERROR]");
         System.err.println("\tException type: "    + e.getClass().getSimpleName());
         System.err.println("\tException message: " + e.getMessage());
@@ -501,6 +503,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     private void errorStamp(Exception e, String msg){
+        System.out.flush();
         System.err.println("[SERVER-ERROR]: "      + msg);
         System.err.println("\tException type: "    + e.getClass().getSimpleName());
         System.err.println("\tException message: " + e.getMessage());
@@ -508,7 +511,8 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     private void warningStamp(Exception e, String msg){
-        System.out.println("[SERVER-WARNING]: "    + msg);
+        System.out.flush();
+        System.err.println("[SERVER-WARNING]: "    + msg);
         System.err.println("\tException type: "    + e.getClass().getSimpleName());
         System.err.println("\tException message: " + e.getMessage());
     }

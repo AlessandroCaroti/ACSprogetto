@@ -9,11 +9,8 @@ public class serverTest {
             s = new Server();
             s.start();
         }catch (Exception e){
-
-        }
-        try {
-            System.in.read();
-        } catch (IOException e) {
+            e.getClass().getSimpleName();
+            e.getMessage();
             e.printStackTrace();
         }
     }
