@@ -25,7 +25,7 @@ public class accountMonitorTest {
                  try {
                      int randomNum = ThreadLocalRandom.current().nextInt(-100, 310);
                      Account account =
-                             new Account(String.valueOf(randomNum), String.valueOf(randomNum), null, null, 0);
+                             new Account(String.valueOf(randomNum), String.valueOf(randomNum), null, null, 0, "esempioMail@qualcosa.com");
                      System.out.println("adding" + test.accountMonitor.addAccount(account));
 
                  } catch(MaxNumberAccountReached | NullPointerException exc)
@@ -103,7 +103,7 @@ public class accountMonitorTest {
                 while (true) {
                     int randomNum = ThreadLocalRandom.current().nextInt(-30, 350 );//oltre la dimensione massima
                     Account account =
-                            new Account(String.valueOf(randomNum), String.valueOf(randomNum), null, null, 0);
+                            new Account(String.valueOf(randomNum), String.valueOf(randomNum), null, null, 0,"esempioMail@qualcosa.com");
                     try {
                         String pkey = test.accountMonitor.getPublicKey(randomNum);
                         if (pkey == null) {
@@ -128,7 +128,7 @@ public class accountMonitorTest {
                 while (true) {
                     int randomNum = ThreadLocalRandom.current().nextInt(-100, 350 );
                     Account account =
-                            new Account(String.valueOf(randomNum), String.valueOf(randomNum), null, null, 0);
+                            new Account(String.valueOf(randomNum), String.valueOf(randomNum), null, null, 0, "esempioMail@qualcosa.com");
                     try {
                         byte [] pass = test.accountMonitor.getPassword(randomNum);
                         if (pass == null) {

@@ -124,7 +124,7 @@ public class Client  implements ClientInterface {
      */
     public boolean register() {
         try {
-            ResponseCode responseCode = server_stub.register(this.username, this.plainPassword, this.skeleton, this.myPublicKey);
+            ResponseCode responseCode = server_stub.register(this.username, this.plainPassword, this.skeleton, this.myPublicKey,"emailTest@qualcosa.org");
             if (responseCode.getCodice().equals(Codici.R100)) {
                 this.cookie = responseCode.getMessaggioInfo();
                 return true;

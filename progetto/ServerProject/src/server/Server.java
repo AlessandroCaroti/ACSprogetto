@@ -27,6 +27,7 @@ import utility.ResponseCode;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.swing.filechooser.FileSystemView;
 import java.io.*;
 import java.net.UnknownHostException;
 import java.rmi.AlreadyBoundException;
@@ -100,8 +101,10 @@ public class Server implements ServerInterface,Callable<Integer> {
         topicList    = new ConcurrentLinkedQueue<>();
         userNameList = new ConcurrentHashMap<>();
 
+        System.out.println(System.getProperty("user.dir"));
+
         //Caricamento delle impostazioni del server memorizate su file
-        loadSetting("config.serverSettings");
+        loadSetting("./src/server/config.serverSettings");
         infoStamp("Server settings imported.");
 
         //Creazione del gestore degli account
@@ -377,6 +380,7 @@ public class Server implements ServerInterface,Callable<Integer> {
             serverSettings.load(in);
         } catch (IOException e) {
             errorStamp(e,"The file \'"+settingFileName+"\' could not be found or error occurred when reading it!");
+            System.exit(-1);
         }finally {
             //Chiusura del file
             try {
