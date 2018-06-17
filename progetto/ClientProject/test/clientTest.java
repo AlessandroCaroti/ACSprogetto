@@ -6,7 +6,7 @@ public class clientTest {
 
             Client client = new Client("andrea", "ciaozio", "magariunaltravolta", "stessacosa");
             System.out.println("CLIENT PRONTO");
-            if(client.connect("127.0.0.1",1099)){
+            if(client.connect("localhost","ServerInterface",1099)){
                 System.out.println("CONNESSO");
             }else {System.out.println("NON CONNESSO");}
             if(client.register()){

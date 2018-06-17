@@ -22,10 +22,12 @@ import customException.AccountRegistrationException;
 import interfaces.ServerInterface;
 import interfaces.ClientInterface;
 import utility.Account;
+import utility.Message;
 import utility.ResponseCode;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.swing.filechooser.FileSystemView;
 import java.io.*;
 import java.net.UnknownHostException;
 import java.rmi.AlreadyBoundException;
@@ -36,28 +38,47 @@ import java.rmi.server.UnicastRemoteObject;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 public class Server implements ServerInterface,Callable<Integer> {
-    //STRUTTURE DATI
+
+    /* topic and message management fields */
+    //todo se qualcuno trova un nome migliore cambitelo quello che ci ho messo fa schifo
+    private ConcurrentSkipListMap<String,ConcurrentLinkedQueue<Integer>> topicClientList;                 // topic -> lista idAccount    -   PUNTI 1 e 2
+    //invece di rompere sempre le balle all'account manager dandogli id dello stub si potrebbe salvare direttamente lo stub
+    private ConcurrentSkipListMap<String,ConcurrentLinkedQueue<ClientInterface>> topicClientList_2;        // topic -> lista stubClient
+    //NOTA: nella mia idea le varie liste associate ai topic contengono solo i riferimenti ai client che sono attualmente online
+
+    private ConcurrentLinkedQueue<String> topicList;        //utilizzata per tenere traccia di tutti i topic e da utilizzare in getTopicList()
+
     /*
-    *   lista dei topic
-    *   lista dei client anonimi
-    *
-     */
+        1)lista dei topic
+        2)associazioni topic -> lista client che si sono registrati al topic
+                possibili implementazioni ConcurrentSkipListMap
+        3)lista client
+                possibili implementazioni concurrentLikedQueue
+    */
+
+    /* clients management fields */
     private AccountCollectionInterface accountList;                     //monitor della lista contente tutti gli account salvati
-    private ConcurrentHashMap<String, Integer> userNameList;            //coppia nome (nome_account, indice_lista) degli accoun che sono salvati
+    private ConcurrentHashMap<String, Integer> userNameList;            //coppia (userName_account, idAccount) degli accoun che sono salvati
+
+    /* server settings fields */
     private Properties serverSettings=new Properties();                 //setting del server
-    private ConcurrentHashMap<byte[],Integer> topicCookieAssociation;   //aka  hashMap contenente le associazioni topic->accountId
+    private boolean pedantic = true;                                    //utile per il debugging per stampare ogni avvenimento      todo magari anche questo si può importare dal file di config
+
+    /* security fields */
     private AES aesCipher;
     private String serverPublicKey;
     private String serverPrivateKey;
-    private boolean pedantic = false;           //verrà utile per il debugging      todo magari anche questo si può importare dal file di config
 
-    /*rmi fields*/
+    /* rmi fields */
     private Registry registry;
     private int regPort = 1099;                 //Default registry port TODO magari si può importare dal file di config
     private String host;
@@ -77,10 +98,13 @@ public class Server implements ServerInterface,Callable<Integer> {
 
         //TODO             creare un nome per il server utilizzato per il registro
         serverName   = "Server_" + (int)(Math.random()*1000000);
+        topicList    = new ConcurrentLinkedQueue<>();
         userNameList = new ConcurrentHashMap<>();
 
+        System.out.println(System.getProperty("user.dir"));
+
         //Caricamento delle impostazioni del server memorizate su file
-        loadSetting("config.serverSettings");
+        loadSetting("./src/server/config.serverSettings");
         infoStamp("Server settings imported.");
 
         //Creazione del gestore degli account
@@ -129,19 +153,20 @@ public class Server implements ServerInterface,Callable<Integer> {
         aggiungere i metodi elencari nel file che specifica le API del server
      */
     /*
-    Link Remote Java RMI Registry:
+    Link spiegazione funzionamento Remote Java RMI Registry:
         http://collaboration.cmc.ec.gc.ca/science/rpn/biblio/ddj/Website/articles/DDJ/2008/0812/081101oh01/081101oh01.html
      */
 
     // Startup of RMI serverobject, including registration of the instantiated server object
     // with remote RMI registry
     public void start(){
+        pedanticInfo("Starting server ...");
         ServerInterface stub = null;
         Registry r = null;
 
         try {
             //Importing the security policy and ...
-            System.setProperty("java.security.policy","file:./sec.policy");
+            System.setProperty("java.security.policy","file:./src/server/sec.policy");
             //System.setProperty("java.rmi.server.codebase","file:${workspace_loc}/Server/");
             //System.setProperty ("java.rmi.server.codebase", "http://130.251.36.239/hello.jar");
             infoStamp("Policy and codebase setted.");
@@ -155,10 +180,10 @@ public class Server implements ServerInterface,Callable<Integer> {
             //Creating or import the local regestry
             try {
                 r = LocateRegistry.createRegistry(regPort);
-                infoStamp("Registry find.");
+                infoStamp("New registry created on port "+regPort+".");
             } catch (RemoteException e) {
                 r = LocateRegistry.getRegistry(regPort);
-                warningStamp(e, "Registry created.");
+                infoStamp("Registry find on port \"+regPort+\".");
             }
 
             //Making the Remote Object Available to Clients
@@ -166,8 +191,9 @@ public class Server implements ServerInterface,Callable<Integer> {
             infoStamp("Created server remote object.");
 
             //Load the server stub on the Registry
-            r.rebind(serverName, stub);
-            infoStamp("Server stub loaded on registry.");
+            //r.rebind(serverName, stub);
+            r.rebind("ServerInterface", stub);
+            infoStamp("Server stub loaded on registry associate with the  the name \'"+serverName+"\' .");
 
         }catch (RemoteException e){
             errorStamp(e);
@@ -193,6 +219,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     //Usato per stabilire la connesione tra server e client
     public ResponseCode connect() {
         try {
+            pedanticInfo("A new client has connected.");
             return  new ResponseCode( ResponseCode.Codici.R210, ResponseCode.TipoClasse.SERVER,this.serverPublicKey);
         } catch (Exception e){
             errorStamp(e);
@@ -209,7 +236,7 @@ public class Server implements ServerInterface,Callable<Integer> {
                 int posNewAccount =  registerAccount(userName, plainPassword, stub, publicKey, 0,email);
                 cookie = getCookie(posNewAccount);
                 userNameList.replace(userName, posNewAccount);
-                pedanticInfo("Registered new client "+userName+".");
+                pedanticInfo("Registered new client \'"+userName+"\'.");
                 return new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER, cookie);  //OK: Nuovo client registrato
             }
             pedanticInfo("Client registration refused, username \'"+userName+"\' already used.");
@@ -262,17 +289,52 @@ public class Server implements ServerInterface,Callable<Integer> {
 
     @Override
     public void subscribe(String cookie, String topicName)  {
-
+        try {
+            Integer accountId = getAccountId(cookie);
+            //todo controllare che non sia già inscritto al topic
+            topicClientList.get(topicName).add(accountId);
+        }catch (BadPaddingException| IllegalBlockSizeException e){
+            warningStamp(e,"subscribe() - error cookies not recognize");
+        }catch (NullPointerException e){
+            warningStamp(e,"subscibe() - topic"+topicName+"not found");
+        }catch (Exception e){
+            errorStamp(e);
+        }
     }
 
     @Override
     public void unsubscribe(String cookie,String topicName)  {
+        try {
+            Integer accountId = getAccountId(cookie);
+            //todo fose bisogna controllare che sia già inscritto al topic
+            topicClientList.get(topicName).remove(accountId);
+        }catch (BadPaddingException| IllegalBlockSizeException e){
+            warningStamp(e,"subscribe() - error cookies not recognize");
+        }catch (NullPointerException e){
+            warningStamp(e,"subscibe() - topic \'"+topicName+"\' not found");
+        }catch (Exception e){
+            errorStamp(e);
+        }
 
     }
 
     @Override
-    public void publish(String cookie) {
-
+    //Il client che invia il messaggio riceverà una copia del suo stesso messaggio, questo lo gestiremo nel client e si può usare anche come conferma dell'invio tipo la spunta blu di whatsappp
+    public void publish(String cookie, Message msg) {
+        try {
+            Integer accountId = getAccountId(cookie);
+            String topicName  = msg.getTopic();
+            ConcurrentLinkedQueue<Integer> subscibers = topicClientList.putIfAbsent(topicName, new ConcurrentLinkedQueue<Integer>());
+            if(subscibers == null){  //creazione di un nuovo topc
+                topicList.add(topicName);
+                (subscibers = topicClientList.get(topicName)).add(accountId);
+            }
+            notifyAll(subscibers.iterator(), msg);      //todo magari si potrebbe eseguire su un altro thread in modo da non bloccare questa funzione
+        }catch (BadPaddingException| IllegalBlockSizeException e){
+            warningStamp(e,"subscribe() - error cookies not recognize");
+        }catch (Exception e){
+            errorStamp(e);
+        }
     }
 
     @Override
@@ -280,10 +342,26 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     @Override
-    public List<String> getTopicList()  {
-
-        return null;
+    public String[] getTopicList()  {
+        return topicList.toArray(new String[0]);    //guarda esempio in https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ConcurrentLinkedQueue.html#toArray(T[])
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -305,6 +383,7 @@ public class Server implements ServerInterface,Callable<Integer> {
             serverSettings.load(in);
         } catch (IOException e) {
             errorStamp(e,"The file \'"+settingFileName+"\' could not be found or error occurred when reading it!");
+            System.exit(-1);
         }finally {
             //Chiusura del file
             try {
@@ -373,6 +452,24 @@ public class Server implements ServerInterface,Callable<Integer> {
 
 
 
+    private void notifyAll(Iterator<Integer> accounts, Message msg){
+
+            accounts.forEachRemaining(accountId -> {
+                try {
+                    ClientInterface stub = accountList.getStub(accountId);
+                    stub.notify(msg);
+                }catch (java.rmi.RemoteException e){
+                    warningStamp(e, "client not reachable.");
+                    //todo il client corrente va eliminato perchè non più raggiungibile
+                }catch (NullPointerException e){
+                    warningStamp(e, "Client stub not saved.");
+                    //todo il client corrente va eliminato perchè si è disconneddo  -   si potrebbe pensare di farlo durante la chiamata della disconnect(...)
+                }
+            });
+    }
+
+
+
 
 
 
@@ -400,6 +497,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     //METODI UTILIZZATI PER LA GESTIONE DELL'OUTPUT DEL SERVER
 
     private void errorStamp(Exception e){
+        System.out.flush();
         System.err.println("[SERVER-ERROR]");
         System.err.println("\tException type: "    + e.getClass().getSimpleName());
         System.err.println("\tException message: " + e.getMessage());
@@ -407,6 +505,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     private void errorStamp(Exception e, String msg){
+        System.out.flush();
         System.err.println("[SERVER-ERROR]: "      + msg);
         System.err.println("\tException type: "    + e.getClass().getSimpleName());
         System.err.println("\tException message: " + e.getMessage());
@@ -414,7 +513,8 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     private void warningStamp(Exception e, String msg){
-        System.out.println("[SERVER-WARNING]: "    + msg);
+        System.out.flush();
+        System.err.println("[SERVER-WARNING]: "    + msg);
         System.err.println("\tException type: "    + e.getClass().getSimpleName());
         System.err.println("\tException message: " + e.getMessage());
     }

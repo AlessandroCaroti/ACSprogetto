@@ -17,12 +17,12 @@
 **/
 package interfaces;
 
+import utility.Message;
 import utility.ResponseCode;
 
 import java.io.Serializable;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-import java.util.List;
 
 public interface ServerInterface extends Remote,Serializable
 {
@@ -41,9 +41,11 @@ public interface ServerInterface extends Remote,Serializable
 
     void unsubscribe(String cookie,String topicName) throws RemoteException ;
 
-    void publish(String cookie) throws RemoteException;
+    void publish(String cookie, Message msg) throws RemoteException;
 
     void ping() throws RemoteException;
 
-    List<String> getTopicList() throws RemoteException;
+    String[] getTopicList() throws RemoteException;
 }
+
+//todo aggiungere responseCode a subscibe(...), unsubscribe(...), e publish(...)

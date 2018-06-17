@@ -33,8 +33,7 @@ import static utility.ResponseCode.*;
 
 public class Client  implements ClientInterface {
 
-    //Instance variables
-
+    /* client fields */
     private String username;
     private String plainPassword;
     private ClientInterface skeleton;//my stub
@@ -42,12 +41,11 @@ public class Client  implements ClientInterface {
     private String myPrivateKey;
     private String myPublicKey;
 
-
+    /* server fields */
     private String broker;
-    private ServerInterface server_stub;//broker's stub
-    public static final int defaultPort=1099;
-    private int port;
-    private String brokerPublicKey; //broker's public key
+    private ServerInterface server_stub;            //broker's stub
+    private int port = 1099;
+    private String brokerPublicKey;                 //broker's public key
 
     // ************************************************************************************************************
     //CONSTRUCTORS
@@ -85,46 +83,14 @@ public class Client  implements ClientInterface {
     // *************************************************************************************************************
     //API
 
-    //TODO aggiungere i metodi elencati nel file che specifica le API del
 
-
-
-    // *************************************************************************************************************
-    //REMOTE METHOD
-
-    @Override
-    public ResponseCode notify(Message m) /*throws RemoteException*/ {
-        ResponseCode rc;
-        if(m==null) {
-             rc=new ResponseCode(Codici.R500, TipoClasse.CLIENT,
-                    "(-) NOT OK Il server ha ricevuto un messaggio vuoto");
-            return rc;
-        }
-         rc=new ResponseCode(Codici.R200, TipoClasse.CLIENT,
-                "(+) OK il server ha ricevuto il messaggio");
-        return rc;
-    }
-
-    /* is throw remoteException necessary?*/
-    @Override
-    public boolean isAlive()/* throws RemoteException*/ {
-        return true;
-    }
-
-
-
-
-    // *************************************************************************************************************
-    //PRIVATE METHOD
-
-    //Registration on the server
     /**
      *Il client si registra sul server su cui si era connesso con il metodo connect() e viene settato il cookie
      * @return true se registrazione andata a buon fine, false altrimenti
      */
     public boolean register() {
         try {
-            ResponseCode responseCode = server_stub.register(this.username, this.plainPassword, this.skeleton, this.myPublicKey);
+            ResponseCode responseCode = server_stub.register(this.username, this.plainPassword, this.skeleton, this.myPublicKey,"emailTest@qualcosa.org");
             if (responseCode.getCodice().equals(Codici.R100)) {
                 this.cookie = responseCode.getMessaggioInfo();
                 return true;
@@ -143,24 +109,24 @@ public class Client  implements ClientInterface {
     }
 
     public boolean anonymousRegister(){
-            try {
-                ResponseCode responseCode = server_stub.anonymousRegister(this.skeleton, this.myPublicKey);
-                if (responseCode.getCodice().equals(Codici.R100)) {
-                    this.cookie = responseCode.getMessaggioInfo();
-                    return true;
-                } else {
-                    if (responseCode.getCodice().equals(Codici.R610)) {
-                        System.out.println(responseCode.getMessaggioInfo());
+        try {
+            ResponseCode responseCode = server_stub.anonymousRegister(this.skeleton, this.myPublicKey);
+            if (responseCode.getCodice().equals(Codici.R100)) {
+                this.cookie = responseCode.getMessaggioInfo();
+                return true;
+            } else {
+                if (responseCode.getCodice().equals(Codici.R610)) {
+                    System.out.println(responseCode.getMessaggioInfo());
 
-                    } else {
-                        System.out.println(responseCode.getCodice() + ":" + responseCode.getMessaggioInfo() + "  FROM:" + responseCode.getClasseGeneratrice());
-                    }
-                    return false;
+                } else {
+                    System.out.println(responseCode.getCodice() + ":" + responseCode.getMessaggioInfo() + "  FROM:" + responseCode.getClasseGeneratrice());
                 }
-            }catch (RemoteException e){
-                System.err.println("Remote exception:"+e.getClass().getSimpleName());
-            return false;
+                return false;
             }
+        }catch (RemoteException e){
+            System.err.println("Remote exception:"+e.getClass().getSimpleName());
+            return false;
+        }
     }
 
 
@@ -175,21 +141,18 @@ public class Client  implements ClientInterface {
      * @throws NullPointerException se broker == null
      * @return true se andata a buon fine,false altrimenti
      */
-    public boolean connect(String broker,Integer port) throws NullPointerException
+    public boolean connect(String broker, String stubName, Integer port) throws NullPointerException
     {
         /*init*/
         if(broker==null){
             throw new NullPointerException("broker string == null");
         }
-        if(port==null){
-            this.port=defaultPort;
-        }else{
+        if(port!=null)
             this.port=port;
-        }
         this.broker=broker;
         try {
             Registry r = LocateRegistry.getRegistry(this.broker, this.port);
-            this.server_stub = (ServerInterface) r.lookup("ServerInterface");
+            this.server_stub = (ServerInterface) r.lookup(stubName);
             ResponseCode response = server_stub.connect();
 
             switch (response.getCodice()) {
@@ -250,8 +213,8 @@ public class Client  implements ClientInterface {
                 case R220:
                     System.out.println(response.getCodice()+":"+response.getClasseGeneratrice()+":"+response.getMessaggioInfo());
                     return true;
-                    default:
-                        System.err.println(response.getCodice()+":"+response.getClasseGeneratrice()+":"+response.getMessaggioInfo());
+                default:
+                    System.err.println(response.getCodice()+":"+response.getClasseGeneratrice()+":"+response.getMessaggioInfo());
                     return false;
             }
 
@@ -261,5 +224,37 @@ public class Client  implements ClientInterface {
             return false;
         }
     }
+
+
+
+    // *************************************************************************************************************
+    //REMOTE METHOD
+
+    @Override
+    public ResponseCode notify(Message m) /*throws RemoteException*/ {
+        ResponseCode rc;
+        if(m==null) {
+             rc=new ResponseCode(Codici.R500, TipoClasse.CLIENT,
+                    "(-) NOT OK Il server ha ricevuto un messaggio vuoto");
+            return rc;
+        }
+         rc=new ResponseCode(Codici.R200, TipoClasse.CLIENT,
+                "(+) OK il server ha ricevuto il messaggio");
+        return rc;
+    }
+
+    /* is throw remoteException necessary?*/
+    @Override
+    public boolean isAlive()/* throws RemoteException*/ {
+        return true;
+    }
+
+
+
+
+    // *************************************************************************************************************
+    //PRIVATE METHOD
+
+
 
 }
