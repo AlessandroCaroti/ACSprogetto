@@ -175,7 +175,7 @@ public class Client  implements ClientInterface {
      * @throws NullPointerException se broker == null
      * @return true se andata a buon fine,false altrimenti
      */
-    public boolean connect(String broker,Integer port) throws NullPointerException
+    public boolean connect(String broker, String stubName, Integer port) throws NullPointerException
     {
         /*init*/
         if(broker==null){
@@ -189,7 +189,7 @@ public class Client  implements ClientInterface {
         this.broker=broker;
         try {
             Registry r = LocateRegistry.getRegistry(this.broker, this.port);
-            this.server_stub = (ServerInterface) r.lookup("ServerInterface");
+            this.server_stub = (ServerInterface) r.lookup(stubName);
             ResponseCode response = server_stub.connect();
 
             switch (response.getCodice()) {

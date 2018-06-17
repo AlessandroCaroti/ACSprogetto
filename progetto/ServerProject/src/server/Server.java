@@ -166,7 +166,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
         try {
             //Importing the security policy and ...
-            System.setProperty("java.security.policy","file:./sec.policy");
+            System.setProperty("java.security.policy","file:./src/server/sec.policy");
             //System.setProperty("java.rmi.server.codebase","file:${workspace_loc}/Server/");
             //System.setProperty ("java.rmi.server.codebase", "http://130.251.36.239/hello.jar");
             infoStamp("Policy and codebase setted.");
@@ -180,10 +180,10 @@ public class Server implements ServerInterface,Callable<Integer> {
             //Creating or import the local regestry
             try {
                 r = LocateRegistry.createRegistry(regPort);
-                infoStamp("New registry created.");
+                infoStamp("New registry created on port "+regPort+".");
             } catch (RemoteException e) {
                 r = LocateRegistry.getRegistry(regPort);
-                infoStamp("Registry find.");
+                infoStamp("Registry find on port \"+regPort+\".");
             }
 
             //Making the Remote Object Available to Clients
@@ -191,8 +191,9 @@ public class Server implements ServerInterface,Callable<Integer> {
             infoStamp("Created server remote object.");
 
             //Load the server stub on the Registry
-            r.rebind(serverName, stub);
-            infoStamp("Server stub loaded on registry.");
+            //r.rebind(serverName, stub);
+            r.rebind("ServerInterface", stub);
+            infoStamp("Server stub loaded on registry associate with the  the name \'"+serverName+"\' .");
 
         }catch (RemoteException e){
             errorStamp(e);
