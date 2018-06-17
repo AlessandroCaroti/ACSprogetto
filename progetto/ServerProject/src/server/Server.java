@@ -71,7 +71,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
     /* server settings fields */
     private Properties serverSettings=new Properties();                 //setting del server
-    private boolean pedantic = false;                                   //utile per il debugging per stampare ogni avvenimento      todo magari anche questo si può importare dal file di config
+    private boolean pedantic = true;                                    //utile per il debugging per stampare ogni avvenimento      todo magari anche questo si può importare dal file di config
 
     /* security fields */
     private AES aesCipher;
@@ -219,6 +219,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     //Usato per stabilire la connesione tra server e client
     public ResponseCode connect() {
         try {
+            pedanticInfo("A new client has connected.");
             return  new ResponseCode( ResponseCode.Codici.R210, ResponseCode.TipoClasse.SERVER,this.serverPublicKey);
         } catch (Exception e){
             errorStamp(e);
