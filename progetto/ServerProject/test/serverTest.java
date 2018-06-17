@@ -8,6 +8,7 @@ public class serverTest {
         try {
             s = new Server();
             s.start();
+
         }catch (Exception e){
             e.getClass().getSimpleName();
             e.getMessage();
