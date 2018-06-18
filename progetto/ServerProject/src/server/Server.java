@@ -414,7 +414,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     private void warningStamp(Exception e, String msg){
-        System.out.println("[SERVER-WARNING]: "    + msg);
+        System.out.println("[SERVER-WARNING]: "    + msg);     //TODO out or err?
         System.err.println("\tException type: "    + e.getClass().getSimpleName());
         System.err.println("\tException message: " + e.getMessage());
     }
