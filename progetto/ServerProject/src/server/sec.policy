@@ -1,7 +1,8 @@
 grant {
-    permission java.net.SocketPermission "*:1024-", "connect, accept, listen";
-    permission java.lang.RuntimePermission "accessClassInPackage.sun.rmi.*";
-    permission java.io.FilePermission".rrrbindings", "read, write,delete";
+    permission java.security.AllPermission;
+    //permission java.net.SocketPermission "*:1024-", "connect, accept, listen";
+    //permission java.lang.RuntimePermission "accessClassInPackage.sun.rmi.*";
+    //permission java.io.FilePermission".rrrbindings", "read, write,delete";
 };
 
 // Info policy:

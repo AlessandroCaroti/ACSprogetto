@@ -42,7 +42,6 @@ public class ServerInfoRecover extends InfoProviderProtocol {
         String received = new String(packet.getData(), 0, packet.getLength());
         socket.leaveGroup(group);
         socket.close();
-        System.out.println(received);
         return InetAddress.getByName(received);
     }
 

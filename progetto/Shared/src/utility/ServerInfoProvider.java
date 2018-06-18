@@ -33,7 +33,6 @@ public class ServerInfoProvider extends InfoProviderProtocol {
         serverInfoMessage = regHost + "\n" +
                 regPort + "\n" +
                 serverName;
-        System.out.println(serverInfoMessage);
         timer = new Timer();
         timer.schedule(new TimerTask()
         {
@@ -45,7 +44,6 @@ public class ServerInfoProvider extends InfoProviderProtocol {
 
     private void multicastDatagram(){
         try {
-            System.out.print("-");
             socket = new DatagramSocket();
             socket.send(packet);
             socket.close();

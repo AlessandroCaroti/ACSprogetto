@@ -211,8 +211,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     public String getRegHost(){
-        return "localhost";
-        //return AddressIp.getLocalAddres();
+        return AddressIp.getLocalAddres();
     }
 
     public String getServerName(){
