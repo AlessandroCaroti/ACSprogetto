@@ -17,46 +17,40 @@
  */
 package email;
 
-import server.Server;
 
 import javax.mail.*;
-import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import java.util.Collection;
-import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.*;
-import java.util.concurrent.locks.Condition;
-
 import static java.util.Objects.requireNonNull;
 
 //TODO add method which use put method of array blocking queue
 
 public class EmailHandler {
 
-    private String username;
-    private String password;
-    private Session session;
-    private Properties props=new Properties();
+    private final String username;
+    private final String password;
+    private final Session session;
     private final BlockingQueue<Message> messagesList;
     private ExecutorService emailHandlerThread=Executors.newSingleThreadScheduledExecutor();
-    private Integer smtpPort=587;
 
 
     /* ********************************************************
         CONSTRUCTORS
      **********************************************************/
 
-    public EmailHandler(String myEmail,String myPassword,int handlerMaxCapacity){
+    public EmailHandler(String myEmail,String myPassword,int handlerMaxCapacity,int smtpPort) throws   IllegalArgumentException{
         this.username=requireNonNull(myEmail);
         this.password=requireNonNull(myPassword);
+        Integer smtpPort1 = smtpPort;
+        Properties props = new Properties();
         props.put("mail.smtp.starttls.enable", "true");
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.host", "smtp.gmail.com");
         props.put("mail.smtp.port", Integer.toString(smtpPort));
         this.session=Session.getInstance(
-                                            props,
+                props,
                                             new javax.mail.Authenticator(){
                                                 protected PasswordAuthentication getPasswordAuthentication() {
                                                     return new PasswordAuthentication(username, password);
@@ -72,8 +66,14 @@ public class EmailHandler {
     /**
      * Usa le impostazioni salvate nel file di configurazione passato
      */
-    public EmailHandler(Properties serverProperties,int handlerMaxCapacity) {
-        this(serverProperties.getProperty("serveremail"),serverProperties.getProperty("emailpassword"),handlerMaxCapacity);
+    public EmailHandler(Properties serverProperties,int handlerMaxCapacity) throws IllegalArgumentException{
+        this(
+                serverProperties.getProperty("serveremail"),
+                serverProperties.getProperty("emailpassword"),
+                handlerMaxCapacity,
+                Integer.parseInt(serverProperties.getProperty("smtpPort"))
+
+        );
     }
 
 
@@ -132,6 +132,9 @@ public class EmailHandler {
         emailHandlerThread.submit(new EmailThread(this));
     }
 
+    /**
+     *
+     */
 
 
     /* ****************************************************************************
@@ -159,7 +162,7 @@ public class EmailHandler {
                             if(e instanceof InterruptedException) {
                                 return;
                             }
-                            Server.errorStamp(e,"ERROR:unable to send email");
+                            System.err.println("ERROR:unable to send email");
                         }
                     }
                 }
