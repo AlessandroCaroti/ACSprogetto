@@ -25,8 +25,8 @@ import java.net.InetAddress;
 import java.net.URL;
 
 public class AddressIp {
-	private static String localIp = "Unkown";
-	private static String pubblicIp = "Unkown";
+	private static String localIp  = "Unkown";
+	private static String publicIp = "Unkown";
 	
 	static public String getLocalIp()
 	{
@@ -35,14 +35,14 @@ public class AddressIp {
 	
 	static public String getPublicIp()
 	{
-		return pubblicIp;
+		return publicIp;
 	}
 	
 	static public void updateIp() {
 		getExternalAddres();
 	}	
 	
-	static private void getLocalAddres()
+	static public String getLocalAddres()
 	{
 		try(final DatagramSocket socket = new DatagramSocket()){
 			  socket.connect(InetAddress.getByName("1.1.1.1"), 10002);
@@ -50,21 +50,23 @@ public class AddressIp {
 		}catch(Exception e){
 			localIp = "Unkown";
 		}
+		return localIp;
 	}
 	
-	static private void getExternalAddres()
+	static public String getExternalAddres()
 	{
         try {
         	URL whatismyip = new URL("http://checkip.amazonaws.com");
         	BufferedReader in = new BufferedReader(new InputStreamReader(whatismyip.openStream()));
-        	pubblicIp = in.readLine();
+        	publicIp = in.readLine();
             if (in != null)
             	in.close();
             getLocalAddres();
         }catch(IOException e) {
-        	pubblicIp = "Unkown";
+        	publicIp = "Unkown";
         	localIp = "Unkown";
         }
+        return publicIp;
     }
 
 }
