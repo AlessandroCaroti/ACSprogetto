@@ -39,7 +39,7 @@ public class EmailHandler implements EmailController {
         CONSTRUCTORS
      **********************************************************/
 
-     EmailHandler(String myEmail,String myPassword,int handlerMaxCapacity,int smtpPort,String smtpProvider) throws   IllegalArgumentException{
+     public EmailHandler(String myEmail,String myPassword,int handlerMaxCapacity,int smtpPort,String smtpProvider) throws   IllegalArgumentException{
         this.username=requireNonNull(myEmail);
         this.password=requireNonNull(myPassword);
         Integer smtpPort1 = smtpPort;

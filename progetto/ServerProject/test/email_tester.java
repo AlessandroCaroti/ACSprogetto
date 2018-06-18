@@ -11,9 +11,9 @@ public class email_tester {
         String password;
         System.out.println("Inserisci password:");
         password=buff.readLine();
-        EmailHandler emailHandler=new EmailHandler("ACSgroup.unige@gmail.com",password,100);
+        EmailHandler emailHandler=new EmailHandler("ACSgroup.unige@gmail.com",password,100,587,"smtp.gmail.com");
         emailHandler.startEmailHandlerManager();
-        emailHandler.addMessage(emailHandler.createEmailMessage("ACSgroup.unige@gmail.com","ALUA","ciaozi"));
+        emailHandler.sendMessage(emailHandler.createEmailMessage("ACSgroup.unige@gmail.com","ALUA","ciaozi"));
         }catch(Exception exc){
             exc.printStackTrace();
         }
