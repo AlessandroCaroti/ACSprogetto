@@ -51,10 +51,6 @@ public class Server implements ServerInterface,Callable<Integer> {
     /* topic and message management fields */
     //todo se qualcuno trova un nome migliore cambitelo quello che ci ho messo fa schifo
     private ConcurrentSkipListMap<String,ConcurrentLinkedQueue<Integer>> topicClientList;                 // topic -> lista idAccount    -   PUNTI 1 e 2
-    //invece di rompere sempre le balle all'account manager dandogli id dello stub si potrebbe salvare direttamente lo stub
-    private ConcurrentSkipListMap<String,ConcurrentLinkedQueue<ClientInterface>> topicClientList_2;        // topic -> lista stubClient
-    //NOTA: nella mia idea le varie liste associate ai topic contengono solo i riferimenti ai client che sono attualmente online
-
     private ConcurrentLinkedQueue<String> topicList;        //utilizzata per tenere traccia di tutti i topic e da utilizzare in getTopicList()
 
     /*
@@ -149,9 +145,10 @@ public class Server implements ServerInterface,Callable<Integer> {
     /* ********************************************************************************************************** **/
     //API
 
-    /*TODO
-        aggiungere i metodi elencari nel file che specifica le API del server
-     */
+    //TODO         aggiungere i metodi elencari nel file che specifica le API del server.
+
+
+
     /*
     Link spiegazione funzionamento Remote Java RMI Registry:
         http://collaboration.cmc.ec.gc.ca/science/rpn/biblio/ddj/Website/articles/DDJ/2008/0812/081101oh01/081101oh01.html
@@ -167,7 +164,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         try {
             //Importing the security policy and ...
             System.setProperty("java.security.policy","file:./src/server/sec.policy");
-            //System.setProperty("java.rmi.server.codebase","file:${workspace_loc}/Server/");
+            System.setProperty("java.rmi.server.codebase","file:${workspace_loc}/Server/");
             //System.setProperty ("java.rmi.server.codebase", "http://130.251.36.239/hello.jar");
             infoStamp("Policy and codebase setted.");
 
@@ -208,7 +205,18 @@ public class Server implements ServerInterface,Callable<Integer> {
 
 
 
+    /*METOGI GETTER*/
+    public int getRegPort(){
+        return regPort;
+    }
 
+    public String getRegHost(){
+        return "localhost";
+    }
+
+    public String getServerName(){
+        return serverName;
+    }
 
 
     /*************************************************************************************************************

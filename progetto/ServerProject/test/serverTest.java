@@ -1,13 +1,14 @@
 import server.Server;
+import utility.ServerInfoProvider;
 
-import java.io.IOException;
 
 public class serverTest {
-    static Server s;
+    static Server broker;
     public static void main(String[] args) {
         try {
-            s = new Server();
-            s.start();
+            broker = new Server();
+            //ServerInfoProvider infoProvider = new ServerInfoProvider();
+            broker.start();
 
         }catch (Exception e){
             e.getClass().getSimpleName();
