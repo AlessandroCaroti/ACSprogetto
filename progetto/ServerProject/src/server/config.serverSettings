@@ -1,4 +1,5 @@
 #serverSettings
 maxaccountnumber=300
 maxbrokerconnection=300
-email=ACSgroup.unige@gmail.com
+serveremail=ACSgroup.unige@gmail.com
+emailpassword=inserirePasswordEsattaQui
