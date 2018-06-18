@@ -40,14 +40,14 @@ public class EmailHandler {
         CONSTRUCTORS
      **********************************************************/
 
-    public EmailHandler(String myEmail,String myPassword,int handlerMaxCapacity,int smtpPort) throws   IllegalArgumentException{
+    public EmailHandler(String myEmail,String myPassword,int handlerMaxCapacity,int smtpPort,String smtpProvider) throws   IllegalArgumentException{
         this.username=requireNonNull(myEmail);
         this.password=requireNonNull(myPassword);
         Integer smtpPort1 = smtpPort;
         Properties props = new Properties();
         props.put("mail.smtp.starttls.enable", "true");
         props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.host", "smtp.gmail.com");
+        props.put("mail.smtp.host", smtpProvider);
         props.put("mail.smtp.port", Integer.toString(smtpPort));
         this.session=Session.getInstance(
                 props,
@@ -71,8 +71,8 @@ public class EmailHandler {
                 serverProperties.getProperty("serveremail"),
                 serverProperties.getProperty("emailpassword"),
                 handlerMaxCapacity,
-                Integer.parseInt(serverProperties.getProperty("smtpPort"))
-
+                Integer.parseInt(serverProperties.getProperty("smtpPort")),
+                serverProperties.getProperty("smtpProvider")
         );
     }
 
@@ -132,9 +132,6 @@ public class EmailHandler {
         emailHandlerThread.submit(new EmailThread(this));
     }
 
-    /**
-     *
-     */
 
 
     /* ****************************************************************************

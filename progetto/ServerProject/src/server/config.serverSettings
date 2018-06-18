@@ -4,3 +4,4 @@ maxbrokerconnection=300
 serveremail=ACSgroup.unige@gmail.com
 emailpassword=lapasswordesatta__nonquesta_ricordarsi_di_non_fare_l'upload_di_quella_esatta_su_git_hub!
 smtpPort=587
+smtpProvider=smtp.gmail.com
