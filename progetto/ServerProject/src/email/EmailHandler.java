@@ -26,7 +26,7 @@ import java.util.concurrent.*;
 import static java.util.Objects.requireNonNull;
 
 
-public class EmailHandler {
+public class EmailHandler implements EmailController {
 
     private final String username;
     private final String password;
@@ -39,7 +39,7 @@ public class EmailHandler {
         CONSTRUCTORS
      **********************************************************/
 
-    public EmailHandler(String myEmail,String myPassword,int handlerMaxCapacity,int smtpPort,String smtpProvider) throws   IllegalArgumentException{
+     EmailHandler(String myEmail,String myPassword,int handlerMaxCapacity,int smtpPort,String smtpProvider) throws   IllegalArgumentException{
         this.username=requireNonNull(myEmail);
         this.password=requireNonNull(myPassword);
         Integer smtpPort1 = smtpPort;
@@ -86,15 +86,6 @@ public class EmailHandler {
         PUBLIC METHODS
      *********************************************************/
 
-
-    /**
-     * Crea
-     * @param to l'idirizzo email del destinatario
-     * @param subject il titolo della mail
-     * @param bodyText il testo della mail
-     * @return l'oggetto messaggio appena creato
-     * @throws MessagingException MessagingException
-     */
     public  Message createEmailMessage(String to,String subject,String bodyText) throws MessagingException {
         Message message=new MimeMessage(session);
         message.setFrom(new InternetAddress(username));
@@ -105,14 +96,7 @@ public class EmailHandler {
     }
 
 
-
-    /**
-     * Inserisce il messaggio nella coda di quelli da inviare
-     * @param message il messaggio da inviare (non null)
-     * @throws IllegalStateException se è stata raggiunta la capacità massima della coda
-     * @throws NullPointerException se viene passato un ref. messaggio null
-     */
-    public  void addMessage(Message message)throws IllegalStateException,NullPointerException {
+    public  void sendMessage(Message message)throws IllegalStateException,NullPointerException {
 
         if (message == null) {
             throw new NullPointerException("Error:message == null");
@@ -123,10 +107,6 @@ public class EmailHandler {
         }
     }
 
-
-    /**
-     * Avvia il manager delle email (gestore della cosa delle email)
-     */
     public void startEmailHandlerManager(){
         emailHandlerThread.submit(new EmailThread(this));
     }
