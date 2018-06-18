@@ -1,16 +1,18 @@
 import email.EmailHandler;
 
-import java.io.FileInputStream;
-import java.util.Properties;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 public class email_tester {
 
     public static void main(String[] args) {
     try{
-        FileInputStream in=new FileInputStream("localsettings");
-        Properties properties=new Properties();
-        properties.load(in);
-        EmailHandler emailHandler=new EmailHandler(properties,100);
+        BufferedReader buff=new BufferedReader(new InputStreamReader(System.in));
+        String password;
+        System.out.println("Inserisci password:");
+        password=buff.readLine();
+        EmailHandler emailHandler=new EmailHandler("ACSgroup.unige@gmail.com",password,100);
+        emailHandler.startEmailHandlerManager();
         emailHandler.addMessage(emailHandler.createEmailMessage("ACSgroup.unige@gmail.com","ALUA","ciaozi"));
         }catch(Exception exc){
             exc.printStackTrace();

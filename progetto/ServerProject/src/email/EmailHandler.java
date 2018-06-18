@@ -64,6 +64,16 @@ public class EmailHandler {
         this(serverProperties.getProperty("serveremail"),serverProperties.getProperty("emailpassword"));
         if(handlerMaxCapacity<=0){throw  new IllegalArgumentException("Error: emailhandlerCapacity <=0");}
         this.messagesList=new ArrayBlockingQueue<>(handlerMaxCapacity);
+    }
+
+    public EmailHandler(String myEmail,String myPassword,int handlerMaxCapacity){
+        this(myEmail,myPassword);
+        if(handlerMaxCapacity<=0){throw  new IllegalArgumentException("Error: emailhandlerCapacity <=0");}
+        this.messagesList=new ArrayBlockingQueue<>(handlerMaxCapacity);
+    }
+
+
+    public void startEmailHandlerManager(){
         emailHandlerThread.submit(new EmailThread(this));
     }
 
@@ -85,13 +95,17 @@ public class EmailHandler {
      * @throws IllegalStateException se è stata raggiunta la capacità massima della coda
      * @throws NullPointerException se viene passato un ref. messaggio null
      */
-    public void addMessage(Message message)throws IllegalStateException,NullPointerException{
+    public  void addMessage(Message message)throws IllegalStateException,NullPointerException {
 
         if (message == null) {
             throw new NullPointerException("Error:message == null");
         }
         this.messagesList.add(message);
-        this.messagesList.notify();
+        synchronized (messagesList) {
+            System.out.println("NOTIF");
+            this.messagesList.notify();
+        }
+        System.out.println("NOTIFexit");
     }
 
 
@@ -105,16 +119,23 @@ public class EmailHandler {
     private class EmailThread implements Runnable{
             private EmailHandler emailHandlerClass;
 
-            private EmailThread(EmailHandler heandlerClass){
-                this.emailHandlerClass=requireNonNull(emailHandlerClass);
+            private EmailThread(EmailHandler handlerClass){
+                this.emailHandlerClass=requireNonNull(handlerClass);
             }
 
-            public  void run(){
+            public  void run(){/*TODO not sure on this part (Interrupted exception )*/
                 Message toBeSent;
                 while(true){
                     try {
-                            while((toBeSent=emailHandlerClass.messagesList.poll())==null) {emailHandlerClass.messagesList.wait();/*TODO not sure on this part (Interrupted exception )*/}
+                            while((toBeSent=emailHandlerClass.messagesList.poll())==null) {
+                                System.out.println("WAITING");
+                                synchronized(emailHandlerClass.messagesList) {
+                                    emailHandlerClass.messagesList.wait();
+                                }
+                            }
+                            System.out.println("exit from WAITING");
                             Transport.send(toBeSent);
+                            System.out.println("SENT");
                         }
                         catch (InterruptedException |MessagingException e) {
                             if(e instanceof InterruptedException) {
