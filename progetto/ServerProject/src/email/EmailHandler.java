@@ -37,10 +37,10 @@ public class EmailHandler {
     private String password;
     private Session session;
     private Properties props=new Properties();
-    private BlockingQueue<Message> messagesList;
+    private final BlockingQueue<Message> messagesList;
     private ExecutorService emailHandlerThread=Executors.newSingleThreadScheduledExecutor();
 
-    private EmailHandler(String myEmail,String myPassword){
+    private EmailHandler(String myEmail,String myPassword,int handlerMaxCapacity){
         this.username=requireNonNull(myEmail);
         this.password=requireNonNull(myPassword);
         props.put("mail.smtp.starttls.enable", "true");
@@ -55,22 +55,17 @@ public class EmailHandler {
                                                 }
                                             }
         );
+        if(handlerMaxCapacity<=0){throw  new IllegalArgumentException("Error: emailhandlerCapacity <=0");}
+        this.messagesList=new ArrayBlockingQueue<>(handlerMaxCapacity);
     }
 
     /**
      * Usa la mail salvata nel file di configurazione del server
      */
     public EmailHandler(Properties serverProperties,int handlerMaxCapacity) {
-        this(serverProperties.getProperty("serveremail"),serverProperties.getProperty("emailpassword"));
-        if(handlerMaxCapacity<=0){throw  new IllegalArgumentException("Error: emailhandlerCapacity <=0");}
-        this.messagesList=new ArrayBlockingQueue<>(handlerMaxCapacity);
+        this(serverProperties.getProperty("serveremail"),serverProperties.getProperty("emailpassword"),handlerMaxCapacity);
     }
 
-    public EmailHandler(String myEmail,String myPassword,int handlerMaxCapacity){
-        this(myEmail,myPassword);
-        if(handlerMaxCapacity<=0){throw  new IllegalArgumentException("Error: emailhandlerCapacity <=0");}
-        this.messagesList=new ArrayBlockingQueue<>(handlerMaxCapacity);
-    }
 
 
     public void startEmailHandlerManager(){
