@@ -162,7 +162,7 @@ public class Client  implements ClientInterface {
         if(broker==null){
             throw new NullPointerException("broker string == null");
         }
-        if(port!=null)
+        if(port!=null && port>1024)
             this.registryPort = port;
         this.broker=broker;
         try {
@@ -232,8 +232,6 @@ public class Client  implements ClientInterface {
                     System.err.println(response.getCodice()+":"+response.getClasseGeneratrice()+":"+response.getMessaggioInfo());
                     return false;
             }
-
-
         }catch(RemoteException exc){
             System.err.println(exc.getClass().getSimpleName());
             return false;
@@ -242,15 +240,16 @@ public class Client  implements ClientInterface {
 
 
     //metodi non ancora utilizzati ma che penso possano servire più tardi
-    private void setServerInfo(String regHost, String serverName){
+    public void setServerInfo(String regHost, String serverName){
         if(regHost==null || regHost.isEmpty() || serverName==null || serverName.isEmpty()){
             throw new IllegalArgumentException("Invalid argument format of regHost or serverName");
         }
         this.registryHost = regHost;
         this.serverName   = serverName;
+
     }
 
-    private void setServerInfo(String regHost, int regPort, String serverName){
+    public void setServerInfo(String regHost, int regPort, String serverName){
         if(regHost==null || regHost.isEmpty() || serverName==null || serverName.isEmpty()){
             throw new IllegalArgumentException("Invalid argument format of regHost or serverName");
         }

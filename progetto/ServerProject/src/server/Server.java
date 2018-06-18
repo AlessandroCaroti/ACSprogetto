@@ -164,8 +164,9 @@ public class Server implements ServerInterface,Callable<Integer> {
         try {
             //Importing the security policy and ...
             System.setProperty("java.security.policy","file:./src/server/sec.policy");
-            System.setProperty("java.rmi.server.codebase","file:${workspace_loc}/Server/");
+            //System.setProperty("java.rmi.server.codebase","file:${workspace_loc}/Server/");
             //System.setProperty ("java.rmi.server.codebase", "http://130.251.36.239/hello.jar");
+
             infoStamp("Policy and codebase setted.");
 
             //Creating and Installing a Security Manager
