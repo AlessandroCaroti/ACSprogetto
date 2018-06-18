@@ -6,10 +6,7 @@ import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
-
-import gui.ServerGUI;
 import keeptoo.KGradientPanel;
-
 import java.awt.Frame;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
