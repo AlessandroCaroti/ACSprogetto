@@ -33,18 +33,19 @@ public class ServerInfoProvider extends InfoProviderProtocol {
         serverInfoMessage = regHost + "\n" +
                 regPort + "\n" +
                 serverName;
-
+        System.out.println(serverInfoMessage);
         timer = new Timer();
         timer.schedule(new TimerTask()
         {
             @Override
             public void run() { multicastDatagram(); }
-        }, 0L, (15 * 1000));
+        }, 0L, (period * 1000));
     }
 
 
     private void multicastDatagram(){
         try {
+            System.out.print("-");
             socket = new DatagramSocket();
             socket.send(packet);
             socket.close();
@@ -121,7 +122,7 @@ public class ServerInfoProvider extends InfoProviderProtocol {
     public static void main(String[] args) {
         try {
             ServerInfoProvider pr = new ServerInfoProvider("regHost", -1,"serverName");
-            pr.run();
+            pr.start();
         } catch (IOException e) {
             e.printStackTrace();
         }

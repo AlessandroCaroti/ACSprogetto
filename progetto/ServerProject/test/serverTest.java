@@ -7,8 +7,10 @@ public class serverTest {
     public static void main(String[] args) {
         try {
             broker = new Server();
-            //ServerInfoProvider infoProvider = new ServerInfoProvider();
-            broker.start();
+            //broker.start();
+
+            ServerInfoProvider infoProvider = new ServerInfoProvider(broker.getRegHost(),broker.getRegPort(),broker.getServerName());
+            infoProvider.start();
 
         }catch (Exception e){
             e.getClass().getSimpleName();

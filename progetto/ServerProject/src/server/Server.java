@@ -22,6 +22,7 @@ import customException.AccountRegistrationException;
 import interfaces.ServerInterface;
 import interfaces.ClientInterface;
 import utility.Account;
+import utility.AddressIp;
 import utility.Message;
 import utility.ResponseCode;
 import javax.crypto.BadPaddingException;
@@ -164,8 +165,6 @@ public class Server implements ServerInterface,Callable<Integer> {
         try {
             //Importing the security policy and ...
             System.setProperty("java.security.policy","file:./src/server/sec.policy");
-            //System.setProperty("java.rmi.server.codebase","file:${workspace_loc}/Server/");
-            //System.setProperty ("java.rmi.server.codebase", "http://130.251.36.239/hello.jar");
 
             infoStamp("Policy and codebase setted.");
 
@@ -190,7 +189,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
             //Load the server stub on the Registry
             //r.rebind(serverName, stub);
-            r.rebind("ServerInterface", stub);
+            r.rebind(serverName, stub);
             infoStamp("Server stub loaded on registry associate with the  the name \'"+serverName+"\' .");
 
         }catch (RemoteException e){
@@ -213,6 +212,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
     public String getRegHost(){
         return "localhost";
+        //return AddressIp.getLocalAddres();
     }
 
     public String getServerName(){

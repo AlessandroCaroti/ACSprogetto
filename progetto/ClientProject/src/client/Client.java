@@ -44,9 +44,8 @@ public class Client  implements ClientInterface {
     /******************/
     /* server fields */
     private String serverName;                      //the name for the remote reference to look up
-    private String broker;
-    private ServerInterface server_stub;            //broker's stub
     private String brokerPublicKey;                 //broker's public key
+    private ServerInterface server_stub;            //broker's stub
 
     /* remote registry fields */
     private String registryHost;                    //host for the remote registry
@@ -150,38 +149,22 @@ public class Client  implements ClientInterface {
     /**
      * Si connette al server specificato dalla stringa broker e dalla porta regPort facendo il lookup
      * sul registry dell'host
-     * @param broker il broker su cui connettersi
-     * @param port se null viene usata defaultport
-     * @throws NullPointerException se broker == null
+     * @param regHost l'indirizzo della macchina su cui risiede il registry
+     * @param regPort porta su cui connettersi al registro
      * @return true se andata a buon fine,false altrimenti
      */
 
-    public boolean connect(String broker, String stubName, Integer port) throws NullPointerException
+    public ServerInterface connect(String regHost, String server, Integer regPort)
     {
-        /*init*/
-        if(broker==null){
-            throw new NullPointerException("broker string == null");
-        }
-        if(port!=null && port>1024)
-            this.registryPort = port;
-        this.broker=broker;
         try {
-            Registry r = LocateRegistry.getRegistry(this.broker, this.registryPort);
-            this.server_stub = (ServerInterface) r.lookup(stubName);
-            ResponseCode response = server_stub.connect();
-
-            switch (response.getCodice()) {
-                case R210:
-                    this.brokerPublicKey = response.getMessaggioInfo();
-                    return true;
-                default:
-                    System.out.println(response.getCodice()+":"+response.getMessaggioInfo()+"  FROM:"+response.getClasseGeneratrice());
-                    return false;
-            }
+            Registry r = LocateRegistry.getRegistry(regHost, regPort);
+            ServerInterface server_stub = (ServerInterface) r.lookup(server);
+            ResponseCode rc = server_stub.connect();
+            if(rc.IsOK())
+                this.brokerPublicKey = rc.getMessaggioInfo();
+            return server_stub;
         }catch (RemoteException |NotBoundException exc){
-            System.err.println(exc.getClass().getSimpleName());
-            exc.printStackTrace();
-            return false;
+            return null;
         }
     }
 
@@ -209,7 +192,7 @@ public class Client  implements ClientInterface {
                     uscita=false;
                     break;
             }
-            this.broker=null;
+            this.server_stub=null;
             return uscita;
 
         }catch(RemoteException exc){
@@ -239,6 +222,9 @@ public class Client  implements ClientInterface {
     }
 
 
+
+
+
     //metodi non ancora utilizzati ma che penso possano servire più tardi
     public void setServerInfo(String regHost, String serverName){
         if(regHost==null || regHost.isEmpty() || serverName==null || serverName.isEmpty()){
@@ -249,15 +235,21 @@ public class Client  implements ClientInterface {
 
     }
 
-    public void setServerInfo(String regHost, int regPort, String serverName){
+    public void setServerInfo(String regHost, int regPort, String serverName) throws IllegalArgumentException{
         if(regHost==null || regHost.isEmpty() || serverName==null || serverName.isEmpty()){
             throw new IllegalArgumentException("Invalid argument format of regHost or serverName");
         }
-        this.registryHost = regHost;
-        this.registryPort = regPort;
-        this.serverName   = serverName;
-
+        if(regPort>1024 && regPort<=65535)  //Se la porta passata è valida impostala come porta del server
+            this.registryPort = regPort;
+        setServerInfo(regHost, serverName);
+        this.server_stub = connect(regHost, serverName, regPort);
+        if(server_stub!=null){      //connesione al server avvenuta con successo
+            infoStamp("Successful connection to the server.");
+        }else {
+            infoStamp("Unable to reach the server.");
+        }
     }
+
 
 
 

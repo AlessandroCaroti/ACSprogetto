@@ -7,6 +7,8 @@ class InfoProviderProtocol extends Thread{
     final static int multicastPort = 4444;
     static boolean ready = false;
     final boolean pedantic = true;
+    final int period = 5;
+    final int timeOut = 30;//period-10;         //in secondi
     static InetAddress group;
     {
         try {
@@ -19,6 +21,11 @@ class InfoProviderProtocol extends Thread{
 
 
 
+    void infoStamp(String msg){
+        if(pedantic) {
+            System.out.println("[InfoProvider-WARNING]: " + msg);
+        }
+    }
 
     void warningStamp(Exception e, String msg){
         if(pedantic) {
