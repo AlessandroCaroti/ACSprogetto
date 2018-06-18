@@ -1,4 +1,5 @@
 package utility;
+//per funzionare bisogna abilitare la ricezione di messaggi UDP per la rete locale
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,35 +13,31 @@ public class ServerInfoRecover extends InfoProviderProtocol {
 
 
     public ServerInfoRecover() throws IOException {
-        if(!ready)
+        if (!ready)
             throw new UnknownHostException();
+    }
+    
+    public void getServerInfo() throws IOException {
         String fromServer;
-        socket = new MulticastSocket(brodcastPort);
-        socket.joinGroup(group);
-        String received;
-        int i =0;
-        while (true) {
-            i++;
-            System.out.print(i+") ");
-            DatagramPacket packet = new DatagramPacket(buf, buf.length);
-            socket.receive(packet);
-            received = new String(
-                    packet.getData(), 0, packet.getLength());
-            if ("end".equals(received)) {
-                break;
-            }
-            System.out.println(received);
-            Socket s = new Socket(InetAddress.getByName(received),port);
-            BufferedReader in = new BufferedReader(
-                    new InputStreamReader(s.getInputStream()));
-            while ((fromServer = in.readLine()) != null) {
-                System.out.println("Server: " + fromServer);
-            }
-            s.close();
+        InetAddress serverAddres = findServerLocalAddress();
+        Socket s = new Socket(serverAddres, port);
+        BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
+        while ((fromServer = in.readLine()) != null) {
+            System.out.println("Server: " + fromServer);
         }
+        in.close();
+        s.close();
+    }
+    
+    private InetAddress findServerLocalAddress() throws IOException {
+        socket = new MulticastSocket(multicastPort);
+        socket.joinGroup(group);
+        DatagramPacket packet = new DatagramPacket(buf, buf.length);
+        socket.receive(packet);
+        String received = new String(packet.getData(), 0, packet.getLength());
         socket.leaveGroup(group);
         socket.close();
-        System.out.println(received);
+        return InetAddress.getByName(received);
     }
 
 
@@ -77,7 +74,7 @@ public class ServerInfoRecover extends InfoProviderProtocol {
     public static void main(String[] args) {
         try {
             ServerInfoRecover rec = new ServerInfoRecover();
-
+            rec.getServerInfo();
         } catch (IOException e) {
             e.printStackTrace();
         }

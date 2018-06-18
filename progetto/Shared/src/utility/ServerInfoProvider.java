@@ -1,4 +1,5 @@
 package utility;
+//per funzionare bisogna abilitare la ricezione di messaggi UDP e tricheste di connesioni TCP per la rete locale
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -8,61 +9,73 @@ import java.util.TimerTask;
 
 public class ServerInfoProvider extends InfoProviderProtocol {
 
+
+    final private String serverInfoMessage;     //Stringa contente le informazioni del server(registryHost, registryPort, serverStubName)
+    final private DatagramPacket packet;        //Datagram che verra inviato a tutta la rete locale con l'indirizzo della macchina su cui viene eseguito questo codice
+    final private int maxError = 20;
+
     private ServerSocket serverSocket;
-    final private String serverInfoMessage;
-    final private DatagramPacket packet;
     private DatagramSocket socket;
-    private String localIP;
+    private int errorCnt = 0;
     private Timer timer;
-    final private byte[] buf;
+    private boolean stopped = false;
 
     private Socket clientSocket;
-
-    private final boolean pedantic;
 
     public ServerInfoProvider(String regHost, int regPort, String serverName) throws IOException {
         if (!ready)
             throw new UnknownHostException();
 
-        buf = AddressIp.getLocalAddres().getBytes("UTF-8");
-
-        pedantic = true;
-        timer = new Timer();
-        serverSocket = new ServerSocket(port, 5);
-        socket = new DatagramSocket();
-        packet = new DatagramPacket(buf, buf.length, group, brodcastPort);
+        byte[] buf        = AddressIp.getLocalAddres().getBytes("UTF-8");   //Stringa contenente l'indirizzo locale della macchina
+        socket            = new DatagramSocket();
+        packet            = new DatagramPacket(buf, buf.length, group, multicastPort);
+        serverSocket      = new ServerSocket(port, 5);
         serverInfoMessage = regHost + "\n" +
                 regPort + "\n" +
                 serverName;
 
-        timer.schedule(new TimerTask() {
+        timer = new Timer();
+        timer.schedule(new TimerTask()
+        {
             @Override
-            public void run() {
-                try {
-                    socket = new DatagramSocket();
-                    socket.send(packet);
-                    socket.close();
-                    System.out.println("Sent package with: \'"+new String(buf, "UTF-8")+"\'.");
-                } catch (Exception e) {
-
-                }
-            }
-        }, 0L, (10 * 1000));
+            public void run() { multicastDatagram(); }
+        }, 0L, (15 * 1000));
     }
+
+
+    private void multicastDatagram(){
+        try {
+            socket = new DatagramSocket();
+            socket.send(packet);
+            socket.close();
+            errorCnt=0;
+        } catch (Exception e) {
+            errorCnt++;
+            if(tooManyError() || stopped){
+                errorStamp(e,"Info provider has stopped working.");
+                timer.cancel();
+                timer.purge();
+                stopped = true;
+            }
+        }
+    }
+
+
 
     @Override
     public void run() {
-        try {
-            while (true) {
-                System.out.println("\tWaiting a socket bind");
+        while (true) {
+            try {
                 clientSocket = serverSocket.accept();
                 sendInfo();
-                System.out.println("\tServer Info send.");
-            }
-        } catch (Exception e) {
-            if (pedantic) {
-                System.err.println("[InfoProvider-WARNING]: error during accept loop, InfoProvider no more active.");
-                System.err.println("\tError type: " + e.getClass().getSimpleName());
+                errorCnt=0;
+            } catch (Exception e) {
+                warningStamp(e, "Error during accept loop.");
+                if(tooManyError() || stopped){
+                    errorStamp(e,"Info provider has stopped working.");
+                    stopped = true;
+                    break;
+                }
             }
         }
     }
@@ -74,11 +87,16 @@ public class ServerInfoProvider extends InfoProviderProtocol {
             out.flush();
             clientSocket.close();
         } catch (Exception e) {
-            if (pedantic) {
-                System.err.println("[InfoProvider-WARNING]: Unable to send serverInfo.");
-                System.err.println("\tException type: " + e.getClass().getSimpleName());
-            }
+            warningStamp(e, "Unable to send serverInfo.");
         }
+    }
+
+    private boolean tooManyError(){
+        errorCnt++;
+        if(errorCnt>maxError) {
+            return true;
+        }
+        return false;
     }
 
 
