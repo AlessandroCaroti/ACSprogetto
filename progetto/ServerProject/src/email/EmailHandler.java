@@ -25,7 +25,6 @@ import java.util.Properties;
 import java.util.concurrent.*;
 import static java.util.Objects.requireNonNull;
 
-//TODO add method which use put method of array blocking queue
 
 public class EmailHandler {
 
@@ -94,7 +93,7 @@ public class EmailHandler {
      * @param subject il titolo della mail
      * @param bodyText il testo della mail
      * @return l'oggetto messaggio appena creato
-     * @throws MessagingException
+     * @throws MessagingException MessagingException
      */
     public  Message createEmailMessage(String to,String subject,String bodyText) throws MessagingException {
         Message message=new MimeMessage(session);
