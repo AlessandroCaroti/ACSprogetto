@@ -17,6 +17,8 @@
  */
 package email;
 
+import server.Server;
+
 import javax.mail.*;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -39,14 +41,20 @@ public class EmailHandler {
     private Properties props=new Properties();
     private final BlockingQueue<Message> messagesList;
     private ExecutorService emailHandlerThread=Executors.newSingleThreadScheduledExecutor();
+    private Integer smtpPort=587;
+
+
+    /* ********************************************************
+        CONSTRUCTORS
+     **********************************************************/
 
     public EmailHandler(String myEmail,String myPassword,int handlerMaxCapacity){
         this.username=requireNonNull(myEmail);
         this.password=requireNonNull(myPassword);
         props.put("mail.smtp.starttls.enable", "true");
         props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.host", "smtp.gmail.com");//TODO non è detto che sia gmail generalizzare
-        props.put("mail.smtp.port", "587");
+        props.put("mail.smtp.host", "smtp.gmail.com");
+        props.put("mail.smtp.port", Integer.toString(smtpPort));
         this.session=Session.getInstance(
                                             props,
                                             new javax.mail.Authenticator(){
@@ -59,8 +67,10 @@ public class EmailHandler {
         this.messagesList=new ArrayBlockingQueue<>(handlerMaxCapacity);
     }
 
+
+
     /**
-     * Usa la mail salvata nel file di configurazione del server
+     * Usa le impostazioni salvate nel file di configurazione passato
      */
     public EmailHandler(Properties serverProperties,int handlerMaxCapacity) {
         this(serverProperties.getProperty("serveremail"),serverProperties.getProperty("emailpassword"),handlerMaxCapacity);
@@ -68,11 +78,24 @@ public class EmailHandler {
 
 
 
-    public void startEmailHandlerManager(){
-        emailHandlerThread.submit(new EmailThread(this));
-    }
 
 
+
+
+
+    /* *******************************************************
+        PUBLIC METHODS
+     *********************************************************/
+
+
+    /**
+     * Crea
+     * @param to l'idirizzo email del destinatario
+     * @param subject il titolo della mail
+     * @param bodyText il testo della mail
+     * @return l'oggetto messaggio appena creato
+     * @throws MessagingException
+     */
     public  Message createEmailMessage(String to,String subject,String bodyText) throws MessagingException {
         Message message=new MimeMessage(session);
         message.setFrom(new InternetAddress(username));
@@ -97,20 +120,23 @@ public class EmailHandler {
         }
         this.messagesList.add(message);
         synchronized (messagesList) {
-            System.out.println("NOTIF");
             this.messagesList.notify();
         }
-        System.out.println("NOTIFexit");
+    }
+
+
+    /**
+     * Avvia il manager delle email (gestore della cosa delle email)
+     */
+    public void startEmailHandlerManager(){
+        emailHandlerThread.submit(new EmailThread(this));
     }
 
 
 
-
-
-
-
-
-    /*runnable del Thread che gestisce la coda*/
+    /* ****************************************************************************
+        THREAD MANAGER
+     ******************************************************************************/
     private class EmailThread implements Runnable{
             private EmailHandler emailHandlerClass;
 
@@ -123,20 +149,17 @@ public class EmailHandler {
                 while(true){
                     try {
                             while((toBeSent=emailHandlerClass.messagesList.poll())==null) {
-                                System.out.println("WAITING");
                                 synchronized(emailHandlerClass.messagesList) {
                                     emailHandlerClass.messagesList.wait();
                                 }
                             }
-                            System.out.println("exit from WAITING");
                             Transport.send(toBeSent);
-                            System.out.println("SENT");
                         }
                         catch (InterruptedException |MessagingException e) {
                             if(e instanceof InterruptedException) {
                                 return;
                             }
-                            System.err.println("ERROR:unable to send email");
+                            Server.errorStamp(e,"ERROR:unable to send email");
                         }
                     }
                 }
