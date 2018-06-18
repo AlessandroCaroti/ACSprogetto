@@ -40,7 +40,7 @@ public class EmailHandler {
     private final BlockingQueue<Message> messagesList;
     private ExecutorService emailHandlerThread=Executors.newSingleThreadScheduledExecutor();
 
-    private EmailHandler(String myEmail,String myPassword,int handlerMaxCapacity){
+    public EmailHandler(String myEmail,String myPassword,int handlerMaxCapacity){
         this.username=requireNonNull(myEmail);
         this.password=requireNonNull(myPassword);
         props.put("mail.smtp.starttls.enable", "true");
