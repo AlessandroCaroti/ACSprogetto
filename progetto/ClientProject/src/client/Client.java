@@ -41,8 +41,7 @@ public class Client  implements ClientInterface {
     private String cookie;
     private String myPrivateKey;
     private String myPublicKey;
-
-
+    private String myEmail;
     private String broker;
     private ServerInterface server_stub;//broker's stub
     public static final int defaultPort=1099;
@@ -124,7 +123,7 @@ public class Client  implements ClientInterface {
      */
     public boolean register() {
         try {
-            ResponseCode responseCode = server_stub.register(this.username, this.plainPassword, this.skeleton, this.myPublicKey);
+            ResponseCode responseCode = server_stub.register(this.username, this.plainPassword, this.skeleton, this.myPublicKey,this.myEmail);
             if (responseCode.getCodice().equals(Codici.R100)) {
                 this.cookie = responseCode.getMessaggioInfo();
                 return true;
