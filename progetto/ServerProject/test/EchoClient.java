@@ -8,7 +8,7 @@ public class EchoClient {
     private byte[] buf;
 
     public EchoClient() throws SocketException, UnknownHostException {
-        socket = new DatagramSocket();
+        socket = new DatagramSocket(4445);
         socket.setBroadcast(true);
         address = InetAddress.getByName("255.255.255.255");
     }
@@ -27,5 +27,15 @@ public class EchoClient {
 
     public void close() {
         socket.close();
+    }
+
+    public static void main(String[] args) throws IOException {
+        EchoClient client = new EchoClient();
+        String echo = client.sendEcho("hello server");
+        System.out.println(echo);
+        echo = client.sendEcho("server is working");
+        System.out.println(echo);
+        client.sendEcho("end");
+        client.close();
     }
 }
