@@ -66,6 +66,18 @@ public interface AccountCollectionInterface {
      */
      Account removeAccount(int accountId);
 
+
+    /**Controlla se esiste già un account con email OR username  (importante l'OR e non AND)
+     * @param email l'email da cercare
+     * @param username l'username da cercare
+     * @return una copia dell'account che ha email OR password uguale a quelle passate,se l'account non esiste torna null
+     * @throws NullPointerException se email OR username sono  null
+     * NOTA: il valore di ritorno non è  thread safe
+     */
+     Account isMember(String email,String username) throws IllegalArgumentException;
+
+
+
     /**
      * Tutti i getter tornano il valore (null o qualcosa di definito) oppure una delle due eccezioni
      * Nota:torna uno snapshot

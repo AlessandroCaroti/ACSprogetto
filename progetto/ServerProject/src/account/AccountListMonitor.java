@@ -119,8 +119,7 @@ public class AccountListMonitor implements AccountCollectionInterface {
         return prev;
     }
 
-    //Secondo me è più veloce avere un metodo specializato che riutilizare addAccount(Account account, int accountId)
-    //Se preferisci come era prima lo si cambia
+
     public Account removeAccount(int accountId) {
         testRange(accountId);
 
@@ -142,6 +141,22 @@ public class AccountListMonitor implements AccountCollectionInterface {
 
     /* ****************************************************************************************************/
     //METODI GETTER
+
+
+    public Account isMember(String email,String username) throws IllegalArgumentException {
+        if(email==null||username==null){throw new IllegalArgumentException("email==null || username==null");}
+        String[] coppia;
+        for(int i=0;i<this.length;i++){
+            coppia=this.getEmailAndUsername(i);
+            if(email.equalsIgnoreCase(coppia[0])||username.equalsIgnoreCase(coppia[1])){
+                return this.getAccountCopy(i);
+            }
+        }
+        return null;
+    }
+
+
+
     public Account getAccountCopy(int accountId) {
         testRange(accountId);
 
@@ -310,5 +325,18 @@ public class AccountListMonitor implements AccountCollectionInterface {
         }
     }
 
+    private String[] getEmailAndUsername(int accountId){
+        String[] coppia=new String[2];
+        testRange(accountId);
 
+        listLock.readLock().lock();//reentrant lock
+        try{
+            coppia[0]= this.getEmail(accountId);
+            coppia[1]= this.getUsername(accountId);
+            return coppia;
+        }finally{
+            listLock.readLock().unlock();
+        }
+
+    }
 }
