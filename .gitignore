@@ -27,4 +27,8 @@ hs_err_pid*
 *.classpath
 progetto/Shared/bin/out/*
 progetto/ServerProject/out/*
+progetto/ServerProject/bin/*
+progetto/ClientProject/out/*
+progetto/ClientProject/bin/*
 *.project
+*.idea
