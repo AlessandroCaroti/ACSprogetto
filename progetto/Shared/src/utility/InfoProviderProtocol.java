@@ -4,7 +4,7 @@ import java.net.*;
 
 class InfoProviderProtocol extends Thread{
     final static int port = 6666;               //Porta in cui il server ha un serverSocket in ascolto che passa le info del registry
-    final static int multicastPort = 4444;      //Porta su cui il server trasmette in brodcast il proprio IP
+    final static int brodcastPort = 4444;       //Porta su cui il server trasmette in brodcast il proprio IP
     static boolean ready = false;               //Flag che specifica se tutto è stato impostato a dovere (in particolare il campo group
     final boolean pedantic = true;
     final int period = 15;                      //Secondi di distanza tra un brodcast e l'altro da parte del server
@@ -12,7 +12,7 @@ class InfoProviderProtocol extends Thread{
     static InetAddress group;                   //Gruppo su cui trasmettere in brodcast il server, solo quelli che si sono uniti a questo gruppo riceveranno i messeggi tramessi dal server
     {
         try {
-            group = InetAddress.getByName("230.3.2.1");
+            group = InetAddress.getByName("255.255.255.255");
             ready = true;
         } catch (UnknownHostException e) {
             ready = false;

@@ -26,22 +26,24 @@ public class ServerInfoProvider extends InfoProviderProtocol {
         if (!ready)
             throw new UnknownHostException();
 
-        byte[] buf        = AddressIp.getLocalAddres().getBytes("UTF-8");   //Stringa contenente l'indirizzo locale della macchina
+        byte[] buf        = "".getBytes("UTF-8");//AddressIp.getLocalAddres().getBytes("UTF-8");   //Stringa contenente l'indirizzo locale della macchina
         socket            = new DatagramSocket();
-        packet            = new DatagramPacket(buf, buf.length, group, multicastPort);
+        packet            = new DatagramPacket(buf, buf.length, group, brodcastPort);
         serverSocket      = new ServerSocket(port, 5);
         serverInfoMessage = regHost + "\n" +
                 regPort + "\n" +
                 serverName;
         timer = new Timer();
+        System.setProperty("java.net.preferIPv4Stack" , "true");
         infoStamp("Info Provider created.");
     }
 
 
     //Funzione che verrà eseguita dal timer - trasmette in brodcast l'indirisso della macchina su cui viene eseguito il codice
-    private void multicastDatagram(){
+    private void brodcastDatagram(){
         try {
             socket = new DatagramSocket();
+            socket.setBroadcast(true);
             socket.send(packet);
             socket.close();
             errorCnt=0;
@@ -66,9 +68,9 @@ public class ServerInfoProvider extends InfoProviderProtocol {
             timer.schedule(new TimerTask()
             {
                 @Override
-                public void run() { multicastDatagram(); }
+                public void run() { brodcastDatagram(); }
             }, 0L, (period * 1000));
-            infoStamp("Info Provider started. Sendig the server address in multicast on "+multicastPort+" port in the grup "+group.getHostAddress()+", and listening on port "+port);
+            infoStamp("Info Provider started. Sendig the server address in brodcast on "+ brodcastPort +" port, and listening on port "+port);
         }catch (Exception e){
             errorStamp(e, "An error occurred during the start of the Info Provider.");
             stop = true;

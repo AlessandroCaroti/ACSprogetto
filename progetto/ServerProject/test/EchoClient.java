@@ -8,7 +8,7 @@ public class EchoClient {
     private byte[] buf;
 
     public EchoClient() throws SocketException, UnknownHostException {
-        socket = new DatagramSocket(4445);
+        socket = new DatagramSocket(4444);
         socket.setBroadcast(true);
         address = InetAddress.getByName("255.255.255.255");
     }
@@ -16,7 +16,7 @@ public class EchoClient {
     public String sendEcho(String msg) throws IOException {
         buf = msg.getBytes();
         DatagramPacket packet
-                = new DatagramPacket(buf, buf.length, address, 4445);
+                = new DatagramPacket(buf, buf.length, address, 4444);
         socket.send(packet);
         packet = new DatagramPacket(buf, buf.length);
         socket.receive(packet);

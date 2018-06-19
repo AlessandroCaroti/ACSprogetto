@@ -39,17 +39,14 @@ public class ServerInfoRecover extends InfoProviderProtocol {
 
     //Funzione che crea un socket in ascolto di datagram da parte di un server nella rete locale
     private InetAddress findServerLocalAddress() throws IOException {
-        MulticastSocket socket = new MulticastSocket(multicastPort);        //Socket in cui si riceverà l'ip del server
-        socket.joinGroup(group);
+        DatagramSocket socket = new MulticastSocket(brodcastPort);        //Socket in cui si riceverà l'ip del server
         DatagramPacket packet = new DatagramPacket(buf, buf.length);
         infoStamp("Network scan searching for a server ...");
         socket.setSoTimeout(timeOut*1000);                                  //Se dopo un tot di tempo nessun messaggio viene ricevuto significa che nessun sta trasmettendo
         socket.receive(packet);
-        String received = new String(packet.getData(), 0, packet.getLength());
-        socket.leaveGroup(group);
         socket.close();
         infoStamp("Server found.");
-        return InetAddress.getByName(received);
+        return packet.getAddress();
     }
 
 
