@@ -1,10 +1,26 @@
+/**
+    This file is part of ACSprogetto.
+
+    ACSprogetto is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    ACSprogetto is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with ACSprogetto.  If not, see <http://www.gnu.org/licenses/>.
+
+**/
 package utility;
 
 
 import interfaces.ClientInterface;
 
 import java.security.NoSuchAlgorithmException;
-
 import static utility.hashFunctions.compareHashandString;
 import static utility.hashFunctions.stringHash;
 
@@ -15,7 +31,7 @@ public class Account {
     private ClientInterface stub;
     private String publicKey;
     private int accountId;//l'indice dove si trova nella lista degli account
-
+    private String email;//can be null for anonymous users
     /**
      * Crea un nuovo account
      * @param userName l'username :D
@@ -23,12 +39,13 @@ public class Account {
      * @param stub lo del client
      * @param publicKey la chiave pubblica del client
      * @param accountId deve essere >=0 in quanto si riferisce anche alla posizione all'interno della accountList del server
+     * @param email l'email associata all'account
      * @throws NullPointerException() se username o password corrispondono a null;gli altri possono essere passati come null
      */
-    public Account(String userName, String plainPassword, ClientInterface stub, String publicKey,int accountId)
+    public Account(String userName, String plainPassword, ClientInterface stub, String publicKey,int accountId,String email)
     throws  NullPointerException,NoSuchAlgorithmException,IllegalArgumentException {
-        if (userName == null || plainPassword == null) {
-            throw new NullPointerException("username o plainpassword == null");
+        if (userName == null || plainPassword == null ) {
+            throw new NullPointerException("username o plainpassword  == null");
         } else {
             if(accountId<0)
             {
@@ -39,6 +56,7 @@ public class Account {
             this.stub = stub;
             this.publicKey = publicKey;
             this.accountId=accountId;
+            this.email=email;
         }
     }
 
@@ -50,12 +68,13 @@ public class Account {
      * @param stub lo del client
      * @param publicKey la chiave pubblica del client
      * @param accountId deve essere >=0 in quanto si riferisce anche alla posizione all'interno della accountList del server
+     * @param email l'email associata all'account
      * @throws NullPointerException() se username o password corrispondono a null;gli altri possono essere passati come null
      */
-    public Account(String userName, byte[] password, ClientInterface stub, String publicKey,int accountId)
+    public Account(String userName, byte[] password, ClientInterface stub, String publicKey,int accountId,String email)
             throws  NullPointerException,IllegalArgumentException {
         if (userName == null) {
-            throw new NullPointerException("username o plainpassword == null");
+            throw new NullPointerException("username o email==null ");
         } else {
             if(accountId<0)
             {
@@ -66,6 +85,7 @@ public class Account {
             this.stub = stub;
             this.publicKey = publicKey;
             this.accountId=accountId;
+            this.email=email;
         }
 
 
@@ -78,15 +98,16 @@ public class Account {
      * @param plainPassword password in chiaro, se null viene settata come stringa vuota
      * @return true se corrispondono, false altrimenti
      */
-    public boolean cmpPassword(String plainPassword) throws NoSuchAlgorithmException
+    public  boolean cmpPassword(String plainPassword) throws NoSuchAlgorithmException
     {
-        if(plainPassword==null)
+        if(plainPassword==null || plainPassword.isEmpty())
         {
-            plainPassword="";
+            throw new IllegalArgumentException();
         }
         return compareHashandString(this.password, plainPassword);
     }
 
+    /**getter**/
     public int getAccountId() {
         return accountId;
     }
@@ -107,7 +128,45 @@ public class Account {
         return stub;
     }
 
+    public String getEmail(){return email;}
+
+    /**setter*/
     public void setAccountId(int accountId) {
+        if(accountId<0)
+        {
+            throw new IllegalArgumentException("accountId < 0");//non era strettamente necessario ma vabbè
+        }
         this.accountId = accountId;
     }
+
+    public void setEncryptedPassword(byte[] encryptedPassword) {
+        if(password==null)throw new IllegalArgumentException("password==null");
+        this.password = encryptedPassword;
+    }
+
+    public void encryptAndSetPassword(String plainPassword)throws NoSuchAlgorithmException{
+        if(plainPassword==null){throw new IllegalArgumentException("password==null");}
+        setEncryptedPassword(stringHash(plainPassword));
+    }
+
+    public void setStub(ClientInterface stub) {
+        this.stub = stub;
+    }
+
+    public void setPublicKey(String publicKey) {
+        this.publicKey = publicKey;
+    }
+
+    public void setUsername(String username) {
+        if(username==null)throw new IllegalArgumentException("username==null");
+        this.username = username;
+    }
+
+    public void setEmail(String email){ this.email=email; }
+
+
+    public Account copy()  {
+        return new Account(username, password, stub, publicKey, accountId,email);
+    }
+
 }

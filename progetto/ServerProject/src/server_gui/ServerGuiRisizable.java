@@ -18,9 +18,9 @@ import java.awt.Frame;
 import java.awt.Point;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.CardLayout;
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import java.util.Objects;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.border.LineBorder;

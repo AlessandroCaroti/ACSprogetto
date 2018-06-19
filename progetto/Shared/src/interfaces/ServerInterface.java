@@ -1,5 +1,23 @@
+/**
+    This file is part of ACSprogetto.
+
+    ACSprogetto is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    ACSprogetto is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with ACSprogetto.  If not, see <http://www.gnu.org/licenses/>.
+
+**/
 package interfaces;
 
+import utility.Message;
 import utility.ResponseCode;
 
 import java.io.Serializable;
@@ -9,19 +27,25 @@ import java.rmi.RemoteException;
 public interface ServerInterface extends Remote,Serializable
 {
 
-    ResponseCode register(ClientInterface skeleton, String usn, String pwd) throws RemoteException;
+    ResponseCode register(String userName, String plainPassword, ClientInterface stub, String publicKey,String email) throws RemoteException;
 
-    ResponseCode connect(ClientInterface skeleton, String usn, String pwd) throws RemoteException;
+    ResponseCode anonymousRegister(ClientInterface stub, String publicKey)throws RemoteException;
 
-    void disconnect() throws RemoteException;
+    ResponseCode retrieveAccount(String username, String plainPassword, ClientInterface clientStub)throws RemoteException;
 
-    void subscribe() throws RemoteException;
+    ResponseCode connect() throws RemoteException;
 
-    void unsubscribe() throws RemoteException;
+    ResponseCode disconnect(String cookie) throws RemoteException;
 
-    void publish() throws RemoteException;
+    void subscribe(String cookie, String topicName) throws RemoteException;
+
+    void unsubscribe(String cookie,String topicName) throws RemoteException ;
+
+    void publish(String cookie, Message msg) throws RemoteException;
 
     void ping() throws RemoteException;
 
-    void getTopicList() throws RemoteException;
+    String[] getTopicList() throws RemoteException;
 }
+
+//todo aggiungere responseCode a subscibe(...), unsubscribe(...), e publish(...)

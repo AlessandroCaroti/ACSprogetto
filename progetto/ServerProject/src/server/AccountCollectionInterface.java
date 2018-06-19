@@ -1,9 +1,29 @@
+/**
+    This file is part of ACSprogetto.
+
+    ACSprogetto is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    ACSprogetto is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with ACSprogetto.  If not, see <http://www.gnu.org/licenses/>.
+
+**/
 package server;
 
+import client.Client;
 import customException.AccountMonitorRuntimeException;
 import customException.MaxNumberAccountReached;
 import interfaces.ClientInterface;
 import utility.Account;
+
+import java.security.NoSuchAlgorithmException;
 
 public interface AccountCollectionInterface {
 
@@ -62,6 +82,21 @@ public interface AccountCollectionInterface {
 
      ClientInterface getStub(int accountId);
 
+    /**
+     *Tutti i setter tornano il valore sovrascritto (null o qualcosa di definito) oppure una delle due eccezioni
+     * @param accountId la posizione dove è salvato l'account da modificare
+     * @return null or Something
+     * @throws IllegalArgumentException se accountId<0 || accountId>=MAXACCOUNTNUMBER
+     * @throws NullPointerException se nella posizione accountId non è salvato alcun account
+     */
+
+     String setPublicKey(String clientPublicKey,int accountId);
+
+     byte[] setPassword(String plainPassword,int accountId)throws NoSuchAlgorithmException;
+
+     String setUsername(String username,int acountId);
+
+     ClientInterface setStub(ClientInterface clientStub,int accountId);
 
      /**semplici getter**/
      int getNumberOfAccount();
