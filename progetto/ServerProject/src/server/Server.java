@@ -19,6 +19,8 @@
 package server;
 
 import customException.AccountRegistrationException;
+import email.EmailController;
+import email.EmailHandler;
 import interfaces.ServerInterface;
 import interfaces.ClientInterface;
 import utility.Account;
@@ -30,6 +32,8 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.swing.filechooser.FileSystemView;
 import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
@@ -64,7 +68,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
     /* clients management fields */
     private AccountCollectionInterface accountList;                     //monitor della lista contente tutti gli account salvati
-    private ConcurrentHashMap<String, Integer> userNameList;            //coppia (userName_account, idAccount) degli account che sono salvati
+    private ConcurrentHashMap<String, Integer> userNameList;            //coppia (userName_account, idAccount) degli account che sono salvati nell'accountList
 
     /* server settings fields */
     private Properties serverSettings=new Properties();                 //setting del server
@@ -82,6 +86,10 @@ public class Server implements ServerInterface,Callable<Integer> {
     private String serverName;                  //TODO: da creare nel costruttore, il nome con cui si fa la bind dello serverStub sul registro
     private ServerInterface skeleton;
 
+    /*email handler*/
+    private EmailController emailController;
+
+
 
     /*****************************************************************************************************************************/
     /**Costruttore
@@ -94,7 +102,13 @@ public class Server implements ServerInterface,Callable<Integer> {
     public Server() throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchPaddingException, UnsupportedEncodingException, AlreadyBoundException, RemoteException, UnknownHostException {
 
         //TODO             creare un nome per il server utilizzato per il registro
-        serverName   = "Server_" + (int)(Math.random()*1000000);
+        try{
+            serverName   = "Server_" + this.getMyIp();
+        }catch(IOException exc){//se non riesce a reperire  l'ip
+            serverName   = "Server_" + (int)(Math.random()*1000000);
+        }
+
+
         topicList    = new ConcurrentLinkedQueue<>();
         userNameList = new ConcurrentHashMap<>();
 
@@ -114,6 +128,12 @@ public class Server implements ServerInterface,Callable<Integer> {
 
         setupAes();
         infoStamp("Aes created.");
+
+        //Creazione dell'email handler e avvio di quest'ultimo
+
+        emailController=new EmailHandler(serverSettings,accountList.getMAXACCOUNTNUMBER());
+        emailController.startEmailHandlerManager();
+        infoStamp("Email Handler created and started.");
 
         //Ho spostato la roba del regestry nel metodo start
 
@@ -475,6 +495,17 @@ public class Server implements ServerInterface,Callable<Integer> {
             });
     }
 
+    private  String getMyIp() throws IOException {
+        try {
+            URL whatismyip = new URL("http://checkip.amazonaws.com");
+            BufferedReader in = new BufferedReader(new InputStreamReader(
+                    whatismyip.openStream()));
+            return in.readLine();
+        }catch (IOException exc){
+            this.errorStamp(exc,"unable to get server external ip.");
+            throw exc;
+        }
+    }
 
 
 
