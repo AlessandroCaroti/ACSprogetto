@@ -27,7 +27,6 @@ import utility.ResponseCode;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import javax.swing.filechooser.FileSystemView;
 import java.io.*;
 import java.net.UnknownHostException;
 import java.rmi.AlreadyBoundException;
@@ -39,7 +38,6 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -51,7 +49,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     /* topic and message management fields */
     //todo se qualcuno trova un nome migliore cambitelo quello che ci ho messo fa schifo
     private ConcurrentSkipListMap<String,ConcurrentLinkedQueue<Integer>> topicClientList;                 // topic -> lista idAccount    -   PUNTI 1 e 2
-    //invece di rompere sempre le balle all'account manager dandogli id dello stub si potrebbe salvare direttamente lo stub
+
     private ConcurrentSkipListMap<String,ConcurrentLinkedQueue<ClientInterface>> topicClientList_2;        // topic -> lista stubClient
     //NOTA: nella mia idea le varie liste associate ai topic contengono solo i riferimenti ai client che sono attualmente online
 
@@ -67,7 +65,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
     /* clients management fields */
     private AccountCollectionInterface accountList;                     //monitor della lista contente tutti gli account salvati
-    private ConcurrentHashMap<String, Integer> userNameList;            //coppia (userName_account, idAccount) degli accoun che sono salvati
+    private ConcurrentHashMap<String, Integer> userNameList;            //coppia (userName_account, idAccount) degli account che sono salvati
 
     /* server settings fields */
     private Properties serverSettings=new Properties();                 //setting del server
