@@ -68,7 +68,8 @@ public interface AccountCollectionInterface {
      Account removeAccount(int accountId);
 
     /**
-     *Tutti i getter tornano il valore (null o qualcosa di definito) oppure una delle due eccezioni
+     * Tutti i getter tornano il valore (null o qualcosa di definito) oppure una delle due eccezioni
+     * Nota:torna uno snapshot
      * @param accountId la posizione dove è stato salvato
      * @return null or Something
      * @throws IllegalArgumentException se accountId<0 || accountId>=MAXACCOUNTNUMBER
