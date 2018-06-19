@@ -241,6 +241,8 @@ public class Client  implements ClientInterface {
         }
         if(regPort>1024 && regPort<=65535)  //Se la porta passata è valida impostala come porta del server
             this.registryPort = regPort;
+        else
+            this.registryPort = 1099;
         setServerInfo(regHost, serverName);
         this.server_stub = connect(regHost, serverName, regPort);
         if(server_stub!=null){      //connesione al server avvenuta con successo
