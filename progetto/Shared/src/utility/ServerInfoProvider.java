@@ -34,7 +34,6 @@ public class ServerInfoProvider extends InfoProviderProtocol {
                 regPort + "\n" +
                 serverName;
         timer = new Timer();
-        System.setProperty("java.net.preferIPv4Stack" , "true");
         infoStamp("Info Provider created.");
     }
 
