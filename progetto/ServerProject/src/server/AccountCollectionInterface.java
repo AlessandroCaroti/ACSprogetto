@@ -17,7 +17,6 @@
 **/
 package server;
 
-import client.Client;
 import customException.AccountMonitorRuntimeException;
 import customException.MaxNumberAccountReached;
 import interfaces.ClientInterface;
