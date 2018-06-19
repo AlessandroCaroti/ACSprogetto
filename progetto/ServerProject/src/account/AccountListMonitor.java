@@ -1,4 +1,4 @@
-/**
+/*
  * This file is part of ACSprogetto.
  * <p>
  * ACSprogetto is free software: you can redistribute it and/or modify
@@ -20,13 +20,12 @@ package account;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.concurrent.locks.*;
-
 import interfaces.ClientInterface;
 import customException.*;
 import utility.Account;
 
 
-/**
+/* *
  * Implementazione con multiple reader single writer lock
  */
 public class AccountListMonitor implements AccountCollectionInterface {
@@ -41,7 +40,7 @@ public class AccountListMonitor implements AccountCollectionInterface {
     private ReentrantReadWriteLock listLock = new ReentrantReadWriteLock();
 
 
-    /*****************************************************************************************************/
+    /* ****************************************************************************************************/
     //COSTRUTTORI
     public AccountListMonitor(int maxAccountNumber) throws IllegalArgumentException {
         if (maxAccountNumber <= 0) {
@@ -57,7 +56,7 @@ public class AccountListMonitor implements AccountCollectionInterface {
     }
 
 
-    /*****************************************************************************************************/
+    /* ****************************************************************************************************/
     //METODI MODIFICATORI
     public int addAccount(Account account) throws NullPointerException, MaxNumberAccountReached, AccountMonitorRuntimeException {
         int posizione;
@@ -141,7 +140,7 @@ public class AccountListMonitor implements AccountCollectionInterface {
     }
 
 
-    /*****************************************************************************************************/
+    /* ****************************************************************************************************/
     //METODI GETTER
     public Account getAccountCopy(int accountId) {
         testRange(accountId);
@@ -236,7 +235,7 @@ public class AccountListMonitor implements AccountCollectionInterface {
     }
 
 
-    /*****************************************************************************************************/
+    /* ****************************************************************************************************/
     //METODI SETTER
     public String setPublicKey(String clientPublicKey, int accountId) {
         testRange(accountId);
@@ -303,7 +302,7 @@ public class AccountListMonitor implements AccountCollectionInterface {
         }
     }
 
-    /*****************************************************************************************************/
+    /* ****************************************************************************************************/
     //METODI PRIVATI
     private void testRange(int n) {
         if (n >= this.MAXACCOUNTNUMBER || n < 0) {
