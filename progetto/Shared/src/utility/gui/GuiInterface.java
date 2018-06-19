@@ -1,4 +1,4 @@
-package utility;
+package utility.gui;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;

@@ -3,12 +3,11 @@ package server_gui;
 import java.util.Objects;
 import keeptoo.KGradientPanel;
 import utility.AddressIp;
-import utility.MyScrollBar;
-import utility.MyScrollPaneLayout;
+import utility.gui.MyScrollBar;
+import utility.gui.MyScrollPaneLayout;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.EventQueue;
 import java.awt.Dimension;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -84,7 +83,7 @@ public class ServerGuiRisizable extends JFrame {
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		EventQueue.invokeLater(() -> {
+		SwingUtilities.invokeLater(() -> {
 			try {
 				ServerGuiRisizable frame = new ServerGuiRisizable();
 				frame.setMinimumSize(new Dimension(780, 420));
@@ -149,7 +148,7 @@ public class ServerGuiRisizable extends JFrame {
 		top_panel.addMouseMotionListener(new MouseMotionAdapter() {
 			@Override
 			public void mouseDragged(MouseEvent arg0) {
-				EventQueue.invokeLater(() -> {
+				SwingUtilities.invokeLater(() -> {
 					Point p = ServerGuiRisizable.this.getLocationOnScreen();
 					p.x = p.x + arg0.getX() - xx;
 					p.y = p.y + arg0.getY() - xy;
@@ -160,7 +159,7 @@ public class ServerGuiRisizable extends JFrame {
 		top_panel.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent arg0) {
-				EventQueue.invokeLater(() -> {
+				SwingUtilities.invokeLater(() -> {
 					xx = arg0.getX();
 					xy = arg0.getY();
 				});
@@ -169,7 +168,7 @@ public class ServerGuiRisizable extends JFrame {
 
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				EventQueue.invokeLater(() -> {
+				SwingUtilities.invokeLater(() -> {
 					Point p = ServerGuiRisizable.this.getLocationOnScreen();
 					if (Math.abs(p.x) < 12)
 						p.x = 0;
@@ -204,21 +203,21 @@ public class ServerGuiRisizable extends JFrame {
 		btn_shdw.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				EventQueue.invokeLater(() -> {
+				SwingUtilities.invokeLater(() -> {
 					System.exit(0);
 				});
 			}
 
 			@Override
 			public void mouseEntered(MouseEvent e) {
-				EventQueue.invokeLater(() -> {
+				SwingUtilities.invokeLater(() -> {
 					btn_shdw.setIcon(shdwnR);
 				});
 			}
 
 			@Override
 			public void mouseExited(MouseEvent e) {
-				EventQueue.invokeLater(() -> {
+				SwingUtilities.invokeLater(() -> {
 					btn_shdw.setIcon(shdwnL);
 				});
 			}
@@ -234,14 +233,14 @@ public class ServerGuiRisizable extends JFrame {
 		btn_exit.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				EventQueue.invokeLater(() -> {
+				SwingUtilities.invokeLater(() -> {
 					System.exit(0);
 				});
 			}
 
 			@Override
 			public void mouseEntered(MouseEvent e) {
-				EventQueue.invokeLater(() -> {
+				SwingUtilities.invokeLater(() -> {
 					btn_exit.setOpaque(true);
 					btn_exit.setIcon(clsB);
 				});
@@ -249,7 +248,7 @@ public class ServerGuiRisizable extends JFrame {
 
 			@Override
 			public void mouseExited(MouseEvent e) {
-				EventQueue.invokeLater(() -> {
+				SwingUtilities.invokeLater(() -> {
 					btn_exit.setOpaque(false);
 					btn_exit.setIcon(clsL);
 				});
@@ -266,14 +265,14 @@ public class ServerGuiRisizable extends JFrame {
 		btn_minze.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				EventQueue.invokeLater(() -> {
+				SwingUtilities.invokeLater(() -> {
 					ServerGuiRisizable.this.setState(Frame.ICONIFIED);
 				});
 			}
 
 			@Override
 			public void mouseEntered(MouseEvent e) {
-				EventQueue.invokeLater(() -> {
+				SwingUtilities.invokeLater(() -> {
 					btn_minze.setOpaque(true);
 					btn_minze.setIcon(minB);
 				});
@@ -281,7 +280,7 @@ public class ServerGuiRisizable extends JFrame {
 
 			@Override
 			public void mouseExited(MouseEvent e) {
-				EventQueue.invokeLater(() -> {
+				SwingUtilities.invokeLater(() -> {
 					btn_minze.setOpaque(false);
 					btn_minze.setIcon(minL);
 				});
@@ -339,7 +338,7 @@ public class ServerGuiRisizable extends JFrame {
 		sideBtn_1.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				EventQueue.invokeLater(() -> {
+				SwingUtilities.invokeLater(() -> {
 					if (section == 1)
 						return;
 					section = 1;
@@ -375,7 +374,7 @@ public class ServerGuiRisizable extends JFrame {
 		sideBtn_2.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				EventQueue.invokeLater(() -> {
+				SwingUtilities.invokeLater(() -> {
 					if (section == 2)
 						return;
 					section = 2;
@@ -412,7 +411,7 @@ public class ServerGuiRisizable extends JFrame {
 		sideBtn_3.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				EventQueue.invokeLater(() -> {
+				SwingUtilities.invokeLater(() -> {
 					if (section == 3)
 						return;
 					section = 3;
@@ -462,7 +461,7 @@ public class ServerGuiRisizable extends JFrame {
 		label_30.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				EventQueue.invokeLater(() -> {
+				SwingUtilities.invokeLater(() -> {
 					Dimension d = side_panel.getSize();
 					d.width = 60;
 					side_panel.setPreferredSize(d);
@@ -485,14 +484,14 @@ public class ServerGuiRisizable extends JFrame {
 
 			@Override
 			public void mouseEntered(MouseEvent e) {
-				EventQueue.invokeLater(() -> {
+				SwingUtilities.invokeLater(() -> {
 					label_30.setIcon(reduceWhite);
 				});
 			}
 
 			@Override
 			public void mouseExited(MouseEvent e) {
-				EventQueue.invokeLater(() -> {
+				SwingUtilities.invokeLater(() -> {
 					label_30.setIcon(reduceGray);
 				});
 			}
@@ -506,7 +505,7 @@ public class ServerGuiRisizable extends JFrame {
 		label_1.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				EventQueue.invokeLater(() -> {
+				SwingUtilities.invokeLater(() -> {
 					Dimension d = side_panel.getSize();
 					d.width = size_sidePnl;
 					side_panel.setPreferredSize(d);
@@ -530,14 +529,14 @@ public class ServerGuiRisizable extends JFrame {
 
 			@Override
 			public void mouseEntered(MouseEvent e) {
-				EventQueue.invokeLater(() -> {
+				SwingUtilities.invokeLater(() -> {
 					label_1.setIcon(growWhite);
 				});
 			}
 
 			@Override
 			public void mouseExited(MouseEvent e) {
-				EventQueue.invokeLater(() -> {
+				SwingUtilities.invokeLater(() -> {
 					label_1.setIcon(growGray);
 				});
 			}
@@ -555,7 +554,7 @@ public class ServerGuiRisizable extends JFrame {
 		border_right.addMouseMotionListener(new MouseMotionAdapter() {
 			@Override
 			public void mouseDragged(MouseEvent arg0) {
-				EventQueue.invokeLater(() -> {
+				SwingUtilities.invokeLater(() -> {
 					int x = arg0.getX() - Px;
 					Dimension d = ServerGuiRisizable.this.getSize();
 					ServerGuiRisizable.this.setSize(d.width + x, d.height);
@@ -565,7 +564,7 @@ public class ServerGuiRisizable extends JFrame {
 		border_right.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent arg0) {
-				EventQueue.invokeLater(() -> {
+				SwingUtilities.invokeLater(() -> {
 					Px = arg0.getX();
 				});
 			}
@@ -905,7 +904,7 @@ public class ServerGuiRisizable extends JFrame {
 		panel.addMouseMotionListener(new MouseMotionAdapter() {
 			@Override
 			public void mouseDragged(MouseEvent arg0) {
-				EventQueue.invokeLater(() -> {
+				SwingUtilities.invokeLater(() -> {
 					int y = arg0.getY() - Py;
 					Dimension d = ServerGuiRisizable.this.getSize();
 					ServerGuiRisizable.this.setSize(d.width, d.height + y);
@@ -915,7 +914,7 @@ public class ServerGuiRisizable extends JFrame {
 		panel.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent arg0) {
-				EventQueue.invokeLater(() -> {
+				SwingUtilities.invokeLater(() -> {
 					Py = arg0.getY();
 				});
 			}
@@ -928,7 +927,7 @@ public class ServerGuiRisizable extends JFrame {
 		panel_4.addMouseMotionListener(new MouseMotionAdapter() {
 			@Override
 			public void mouseDragged(MouseEvent arg0) {
-				EventQueue.invokeLater(() -> {
+				SwingUtilities.invokeLater(() -> {
 					int x = arg0.getX() - Px;
 					int y = arg0.getY() - Py;
 					Dimension d = ServerGuiRisizable.this.getSize();
@@ -939,7 +938,7 @@ public class ServerGuiRisizable extends JFrame {
 		panel_4.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent arg0) {
-				EventQueue.invokeLater(() -> {
+				SwingUtilities.invokeLater(() -> {
 					Px = arg0.getX();
 					Py = arg0.getY();
 				});
@@ -971,7 +970,7 @@ public class ServerGuiRisizable extends JFrame {
 		panel_1.addMouseMotionListener(new MouseMotionAdapter() {
 			@Override
 			public void mouseDragged(MouseEvent arg0) {
-				EventQueue.invokeLater(() -> {
+				SwingUtilities.invokeLater(() -> {
 					int x = arg0.getX() - Px;
 					Dimension d = ServerGuiRisizable.this.getSize();
 					ServerGuiRisizable.this.setSize(d.width + x, d.height);
@@ -981,7 +980,7 @@ public class ServerGuiRisizable extends JFrame {
 		panel_1.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent arg0) {
-				EventQueue.invokeLater(() -> {
+				SwingUtilities.invokeLater(() -> {
 					Px = arg0.getX();
 				});
 			}

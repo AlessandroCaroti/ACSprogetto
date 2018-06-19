@@ -1,6 +1,6 @@
 package server;
 
-import utility.GuiInterface;
+import utility.gui.GuiInterface;
 import java.util.concurrent.*;
 
 public class Host {
