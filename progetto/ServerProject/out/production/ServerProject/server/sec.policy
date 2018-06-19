@@ -2,5 +2,5 @@ grant {
     permission java.net.SocketPermission "*:1024-", "connect, accept, listen";
 };
 
-//Info policy:
-//https://docs.oracle.com/javase/7/docs/technotes/guides/security/permissions.html
+// Info policy:
+//      https://docs.oracle.com/javase/7/docs/technotes/guides/security/permissions.html
