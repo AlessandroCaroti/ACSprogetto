@@ -3,13 +3,13 @@ package utility;
 import java.net.*;
 
 class InfoProviderProtocol extends Thread{
-    final static int port = 6666;
-    final static int multicastPort = 4444;
-    static boolean ready = false;
+    final static int port = 6666;               //Porta in cui il server ha un serverSocket in ascolto che passa le info del registry
+    final static int multicastPort = 4444;      //Porta su cui il server trasmette in brodcast il proprio IP
+    static boolean ready = false;               //Flag che specifica se tutto è stato impostato a dovere (in particolare il campo group
     final boolean pedantic = true;
-    final int period = 5;
-    final int timeOut = 30;//period-10;         //in secondi
-    static InetAddress group;
+    final int period = 15;                      //Secondi di distanza tra un brodcast e l'altro da parte del server
+    final int timeOut = period+10;              //Secondi di attesa da parte del client dopo i quali si può dire con certezza che nella rete locale non c'è un infoProvider
+    static InetAddress group;                   //Gruppo su cui trasmettere in brodcast il server, solo quelli che si sono uniti a questo gruppo riceveranno i messeggi tramessi dal server
     {
         try {
             group = InetAddress.getByName("230.3.2.1");
@@ -19,28 +19,4 @@ class InfoProviderProtocol extends Thread{
         }
     }
 
-
-
-    void infoStamp(String msg){
-        if(pedantic) {
-            System.out.println("[InfoProvider-WARNING]: " + msg);
-        }
-    }
-
-    void warningStamp(Exception e, String msg){
-        if(pedantic) {
-            System.err.println("[InfoProvider-WARNING]: " + msg);
-            System.err.println("\tException type: " + e.getClass().getSimpleName());
-            System.err.println("\tException message: " + e.getMessage());
-        }
-    }
-
-
-    void errorStamp(Exception e, String msg){
-        System.out.flush();
-        System.err.println("[InfoProvider-ERROR]: "      + msg);
-        System.err.println("\tException type: "    + e.getClass().getSimpleName());
-        System.err.println("\tException message: " + e.getMessage());
-        e.printStackTrace();
-    }
 }

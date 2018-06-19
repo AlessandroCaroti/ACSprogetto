@@ -1,6 +1,8 @@
 import server.Server;
 import utility.ServerInfoProvider;
 
+import java.net.InetAddress;
+
 
 public class serverTest {
     static Server broker;
@@ -8,9 +10,11 @@ public class serverTest {
         try {
             broker = new Server();
             broker.start();
+            SecurityManager security = System.getSecurityManager();
 
             ServerInfoProvider infoProvider = new ServerInfoProvider(broker.getRegHost(),broker.getRegPort(),broker.getServerName());
             infoProvider.start();
+
 
         }catch (Exception e){
             e.getClass().getSimpleName();

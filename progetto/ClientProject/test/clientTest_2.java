@@ -9,7 +9,6 @@ public class clientTest_2 {
             try {
                 ServerInfoRecover infoServer = new ServerInfoRecover();
                 String[] a = infoServer.getServerInfo();
-                System.out.println(a[0]+a[1]+a[2]);     //stampa delle info ricevute
                 c.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
             }catch (Exception e){
                 System.out.println("No server visible in the local network");
