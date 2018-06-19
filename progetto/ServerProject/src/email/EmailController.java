@@ -13,7 +13,7 @@ public interface EmailController {
      * @return l'oggetto messaggio appena creato
      * @throws MessagingException MessagingException
      */
-    Message createEmailMessage(String to, String subject, String bodyText) throws MessagingException ;
+    Message createEmailMessage(String to, String subject, String bodyText) throws MessagingException ;  //Todo controllare con wireshark se usa ssl
 
     /**
      * Inserisce il messaggio nella coda di quelli da inviare
