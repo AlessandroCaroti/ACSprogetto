@@ -85,9 +85,9 @@ public class Server implements ServerInterface,Callable<Integer> {
 
     /*****************************************************************************************************************************/
     /**Costruttore
-     *carica automaticamente i setting da file.
+     * Carica automaticamente i setting da file.
      * Se il file non viene trovato vengono usati i costruttori di default
-     *  se il file di config non viene trovato
+     * se il file di config non viene trovato
      */
 
 
