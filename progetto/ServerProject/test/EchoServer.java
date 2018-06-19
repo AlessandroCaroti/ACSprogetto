@@ -7,9 +7,9 @@ public class EchoServer extends Thread {
     private boolean running;
     private byte[] buf = new byte[256];
 
-    public EchoServer() throws SocketException {
+    public EchoServer() throws SocketException, UnknownHostException {
 
-        socket = new DatagramSocket(4445);
+        socket = new DatagramSocket(4445,InetAddress.getByName("0.0.0.0"));
         socket.setBroadcast(true);
     }
 
@@ -24,7 +24,7 @@ public class EchoServer extends Thread {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
+            System.out.println(new String(packet.getData(), 0, packet.getLength()));
             InetAddress address = null;
             try {
                 address = InetAddress.getByName("255.255.255.255");
@@ -47,5 +47,9 @@ public class EchoServer extends Thread {
             }
         }
         socket.close();
+    }
+
+    public static void main(String[] args) throws SocketException, UnknownHostException {
+        new EchoServer().start();
     }
 }
