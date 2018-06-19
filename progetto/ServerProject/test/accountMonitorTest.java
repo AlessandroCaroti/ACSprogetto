@@ -1,8 +1,8 @@
 
 
 import customException.MaxNumberAccountReached;
-import server.AccountCollectionInterface;
-import server.AccountListMonitor;
+import account.AccountCollectionInterface;
+import account.AccountListMonitor;
 import utility.Account;
 
 import java.util.concurrent.ExecutorService;

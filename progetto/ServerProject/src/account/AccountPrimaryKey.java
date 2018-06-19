@@ -15,7 +15,7 @@
  along with ACSprogetto.  If not, see <http://www.gnu.org/licenses/>.
 
  */
-package server;
+package account;
 
 public class AccountPrimaryKey {
     private String email;

@@ -18,6 +18,8 @@
 
 package server;
 
+import account.AccountCollectionInterface;
+import account.AccountListMonitor;
 import customException.AccountRegistrationException;
 import email.EmailController;
 import email.EmailHandler;
@@ -32,7 +34,6 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.swing.filechooser.FileSystemView;
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.rmi.AlreadyBoundException;

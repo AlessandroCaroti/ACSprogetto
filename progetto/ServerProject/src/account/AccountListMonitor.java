@@ -15,7 +15,7 @@
  * along with ACSprogetto.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-package server;
+package account;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;

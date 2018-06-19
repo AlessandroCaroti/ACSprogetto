@@ -15,7 +15,7 @@
     along with ACSprogetto.  If not, see <http://www.gnu.org/licenses/>.
 
 */
-package server;
+package account;
 
 import customException.AccountMonitorRuntimeException;
 import customException.MaxNumberAccountReached;
