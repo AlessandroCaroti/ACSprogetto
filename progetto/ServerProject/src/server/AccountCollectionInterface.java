@@ -81,7 +81,9 @@ public interface AccountCollectionInterface {
 
      String getUsername(int accountId) ;
 
-     ClientInterface getStub(int accountId);
+     ClientInterface getStub(int accountId);//TODO guardare implementazione metodo nella classe AccountListMonitor (possibile bug)
+
+     String getEmail(int accountId);
 
     /**
      *Tutti i setter tornano il valore sovrascritto (null o qualcosa di definito) oppure una delle due eccezioni
@@ -98,6 +100,8 @@ public interface AccountCollectionInterface {
      String setUsername(String username,int acountId);
 
      ClientInterface setStub(ClientInterface clientStub,int accountId);
+
+     String setEmail(String email,int accountId);
 
      /**semplici getter**/
      int getNumberOfAccount();

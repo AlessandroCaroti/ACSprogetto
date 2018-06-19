@@ -18,6 +18,7 @@
 package server;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.concurrent.locks.*;
 
 import interfaces.ClientInterface;
@@ -163,11 +164,12 @@ public class AccountListMonitor implements AccountCollectionInterface {
 
 
     public String getPublicKey(int accountId) {
-        testRange(accountId);
 
+        testRange(accountId);
         listLock.readLock().lock();
         try {
-            return accountList[accountId].getPublicKey();
+
+            return new String(accountList[accountId].getPublicKey());//è uno snapshot non è ridondante!
         } finally {
             this.listLock.readLock().unlock();
         }
@@ -178,7 +180,9 @@ public class AccountListMonitor implements AccountCollectionInterface {
 
         listLock.readLock().lock();
         try {
-            return accountList[accountId].getPassword();
+            byte[] returnValue;
+            returnValue= Arrays.copyOf(accountList[accountId].getPassword(),accountList[accountId].getPassword().length);//snapshot
+            return returnValue;
         } finally {
             this.listLock.readLock().unlock();
         }
@@ -189,7 +193,7 @@ public class AccountListMonitor implements AccountCollectionInterface {
 
         listLock.readLock().lock();
         try {
-            return accountList[accountId].getUsername();
+            return new String(accountList[accountId].getUsername());//è uno snapshot non è ridondante!
         } finally {
             this.listLock.readLock().unlock();
         }
@@ -200,12 +204,23 @@ public class AccountListMonitor implements AccountCollectionInterface {
 
         listLock.readLock().lock();
         try {
-            return accountList[accountId].getStub();
+            //ClientInterface returnValue=new
+            return  accountList[accountId].getStub();//TODO come faccio a ritornare uno snapshot di clientInterface?
         } finally {
             this.listLock.readLock().unlock();
         }
     }
 
+    public String getEmail(int accountId){
+        testRange(accountId);
+
+        listLock.readLock().lock();
+        try{
+            return new String(accountList[accountId].getEmail());//è uno snapshot non è ridondante!
+        }finally{
+            listLock.readLock().unlock();
+        }
+    }
 
 
     public int getNumberOfAccount() {
@@ -276,6 +291,17 @@ public class AccountListMonitor implements AccountCollectionInterface {
         }
     }
 
+    public String setEmail(String email,int accountId){
+        testRange(accountId);
+        listLock.writeLock().lock();
+        try{
+            String oldEmail=accountList[accountId].getEmail();
+            accountList[accountId].setEmail(email);
+            return oldEmail;
+        }finally{
+            listLock.writeLock().unlock();
+        }
+    }
 
     /*****************************************************************************************************/
     //METODI PRIVATI
