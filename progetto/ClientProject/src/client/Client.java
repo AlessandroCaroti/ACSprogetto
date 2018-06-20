@@ -27,6 +27,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import static utility.ResponseCode.*;
+import static utility.ResponseCode.Codici.R220;
 
 
 public class Client extends AnonymousClient {
@@ -96,21 +97,24 @@ public class Client extends AnonymousClient {
         }
     }
 
-    @Override
+
+
+    /**
+     * Si chiede al server di recuperare le informazioni legate al nostro account
+     * @return true se andata a buon fine,false altrimenti
+     */
     public boolean retrieveAccount(){
         try{
-            ResponseCode response=server_stub.retrieveAccount(username,plainPassword,skeleton);
-            switch(response.getCodice())
+            ResponseCode response=server_stub.retrieveAccount(username,"",skeleton);
+            if(response.getCodice() == R220)
             {
-                case R220:
-                    System.out.println(response.getCodice()+":"+response.getClasseGeneratrice()+":"+response.getMessaggioInfo());
-                    return true;
-                default:
-                    System.err.println(response.getCodice()+":"+response.getClasseGeneratrice()+":"+response.getMessaggioInfo());
-                    return false;
+                infoStamp("Account successfully recovered.");
+                return true;
             }
+            errorStamp(response, "Impossible to retrieve information.");
+            return false;
         }catch(RemoteException exc){
-            System.err.println(exc.getClass().getSimpleName());
+            errorStamp(exc, "Unable to reach the server.");
             return false;
         }
     }
@@ -173,7 +177,7 @@ public class Client extends AnonymousClient {
 
 
     //METODI UTILIZZATI PER LA GESTIONE DELL'OUTPUT DEL CLIENT
-    private void errorStamp(Exception e){
+    protected void errorStamp(Exception e){
         System.out.flush();
         System.err.println("[CLIENT-ERROR]");
         System.err.println("\tException type: "    + e.getClass().getSimpleName());
@@ -181,7 +185,7 @@ public class Client extends AnonymousClient {
         e.printStackTrace();
     }
 
-    private void errorStamp(Exception e, String msg){
+    protected void errorStamp(Exception e, String msg){
         System.out.flush();
         System.err.println("[CLIENT-ERROR]: "      + msg);
         System.err.println("\tException type: "    + e.getClass().getSimpleName());
@@ -189,18 +193,18 @@ public class Client extends AnonymousClient {
         e.printStackTrace();
     }
 
-    private void warningStamp(Exception e, String msg){
+    protected void warningStamp(Exception e, String msg){
         System.out.flush();
         System.err.println("[CLIENT-WARNING]: "    + msg);
         System.err.println("\tException type: "    + e.getClass().getSimpleName());
         System.err.println("\tException message: " + e.getMessage());
     }
 
-    private void infoStamp(String msg){
+    protected void infoStamp(String msg){
         System.out.println("[CLIENT-INFO]: " + msg);
     }
 
-    private void pedanticInfo(String msg){
+    protected void pedanticInfo(String msg){
         if(pedantic){
             infoStamp(msg);
         }
