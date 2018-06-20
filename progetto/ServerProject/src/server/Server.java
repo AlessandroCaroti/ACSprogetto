@@ -1,4 +1,4 @@
-/* *
+/**
     This file is part of ACSprogetto.
 
     ACSprogetto is free software: you can redistribute it and/or modify
@@ -22,11 +22,13 @@ import customException.AccountRegistrationException;
 import interfaces.ServerInterface;
 import interfaces.ClientInterface;
 import utility.Account;
+import utility.AddressIp;
 import utility.Message;
 import utility.ResponseCode;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.swing.filechooser.FileSystemView;
 import java.io.*;
 import java.net.UnknownHostException;
 import java.rmi.AlreadyBoundException;
@@ -38,6 +40,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,10 +52,6 @@ public class Server implements ServerInterface,Callable<Integer> {
     /* topic and message management fields */
     //todo se qualcuno trova un nome migliore cambitelo quello che ci ho messo fa schifo
     private ConcurrentSkipListMap<String,ConcurrentLinkedQueue<Integer>> topicClientList;                 // topic -> lista idAccount    -   PUNTI 1 e 2
-
-    private ConcurrentSkipListMap<String,ConcurrentLinkedQueue<ClientInterface>> topicClientList_2;        // topic -> lista stubClient
-    //NOTA: nella mia idea le varie liste associate ai topic contengono solo i riferimenti ai client che sono attualmente online
-
     private ConcurrentLinkedQueue<String> topicList;        //utilizzata per tenere traccia di tutti i topic e da utilizzare in getTopicList()
 
     /*
@@ -84,7 +83,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     private ServerInterface skeleton;
 
 
-    /* ****************************************************************************************************************************/
+    /*****************************************************************************************************************************/
     /**Costruttore
      *carica automaticamente i setting da file.
      * Se il file non viene trovato vengono usati i costruttori di default
@@ -143,7 +142,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         return 0;
     }
 
-    /* ****************************************************************************************************************************/
+    /*****************************************************************************************************************************/
     /* ********************************************************************************************************** **/
     //API
 
@@ -165,8 +164,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         try {
             //Importing the security policy and ...
             System.setProperty("java.security.policy","file:./src/server/sec.policy");
-            //System.setProperty("java.rmi.server.codebase","file:${workspace_loc}/Server/");
-            //System.setProperty ("java.rmi.server.codebase", "http://130.251.36.239/hello.jar");
+
             infoStamp("Policy and codebase setted.");
 
             //Creating and Installing a Security Manager
@@ -190,7 +188,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
             //Load the server stub on the Registry
             //r.rebind(serverName, stub);
-            r.rebind("ServerInterface", stub);
+            r.rebind(serverName, stub);
             infoStamp("Server stub loaded on registry associate with the  the name \'"+serverName+"\' .");
 
         }catch (RemoteException e){
@@ -206,10 +204,21 @@ public class Server implements ServerInterface,Callable<Integer> {
 
 
 
+    /*METOGI GETTER*/
+    public int getRegPort(){
+        return regPort;
+    }
+
+    public String getRegHost(){
+        return AddressIp.getLocalAddres();
+    }
+
+    public String getServerName(){
+        return serverName;
+    }
 
 
-
-    /* ************************************************************************************************************
+    /*************************************************************************************************************
      ****    METODI REMOTI          ******************************************************************************
      *************************************************************************************************************/
 

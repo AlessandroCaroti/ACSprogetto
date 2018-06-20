@@ -31,12 +31,10 @@ public class accountMonitorTest {
                  } catch(MaxNumberAccountReached | NullPointerException exc)
                  {
                      System.out.println(exc.getClass().getSimpleName());
-
                  } catch(Exception exc)
                  {
                      exc.printStackTrace();
                      System.exit(1);
-                     return ;
                  }
 
              }
