@@ -51,9 +51,6 @@ public  class ResponseCode implements Serializable {
          R630,  //login senza successo
          R666,  //formato cookie non valido
 
-         //internal server error
-         R999
-
     }
 
     private Codici codice;
