@@ -41,11 +41,14 @@ public class Client  implements ClientInterface {
     private String myPublicKey;
     private boolean pedantic = true;
 
+    private String[] topicsSubscribed;                         //topic a cui si è iscritti
+
     /******************/
     /* server fields */
     private String serverName;                      //the name for the remote reference to look up
     private String brokerPublicKey;                 //broker's public key
     private ServerInterface server_stub;            //broker's stub
+    private String[] topicOnServer;                 //topic che gestisce il server
 
     /* remote registry fields */
     private String registryHost;                    //host for the remote registry
@@ -104,19 +107,9 @@ public class Client  implements ClientInterface {
     public boolean register() {
         try {
             ResponseCode responseCode = server_stub.register(this.username, this.plainPassword, this.skeleton, this.myPublicKey,"emailTest@qualcosa.org");
-            if (responseCode.getCodice().equals(Codici.R100)) {
-                this.cookie = responseCode.getMessaggioInfo();
-                return true;
-            }else{
-                if (responseCode.getCodice().equals(Codici.R610)) {
-                    System.out.println(responseCode.getMessaggioInfo());
-                } else {
-                    System.out.println(responseCode.getCodice()+":"+responseCode.getMessaggioInfo()+"  FROM:"+responseCode.getClasseGeneratrice());
-                }
-                return false;
-            }
+            return registered(responseCode);
         }catch (RemoteException e){
-            System.err.println("Remote exception:"+e.getClass().getSimpleName());
+            errorStamp(e, "Unable to reach the server.");
             return false;
         }
     }
@@ -124,20 +117,9 @@ public class Client  implements ClientInterface {
     public boolean anonymousRegister(){
         try {
             ResponseCode responseCode = server_stub.anonymousRegister(this.skeleton, this.myPublicKey);
-            if (responseCode.getCodice().equals(Codici.R100)) {
-                this.cookie = responseCode.getMessaggioInfo();
-                return true;
-            } else {
-                if (responseCode.getCodice().equals(Codici.R610)) {
-                    System.out.println(responseCode.getMessaggioInfo());
-
-                } else {
-                    System.out.println(responseCode.getCodice() + ":" + responseCode.getMessaggioInfo() + "  FROM:" + responseCode.getClasseGeneratrice());
-                }
-                return false;
-            }
+            return registered(responseCode);
         }catch (RemoteException e){
-            System.err.println("Remote exception:"+e.getClass().getSimpleName());
+            errorStamp(e, "Unable to reach the server.");
             return false;
         }
     }
@@ -264,6 +246,7 @@ public class Client  implements ClientInterface {
         if(m==null) {
              rc=new ResponseCode(Codici.R500, TipoClasse.CLIENT,
                     "(-) NOT OK Il server ha ricevuto un messaggio vuoto");
+             pedanticInfo("Receve new message\n"+m.toString());
             return rc;
         }
          rc=new ResponseCode(Codici.R200, TipoClasse.CLIENT,
@@ -282,7 +265,22 @@ public class Client  implements ClientInterface {
 
     // *************************************************************************************************************
     //PRIVATE METHOD
+    /*
 
+     */
+    private boolean registered(ResponseCode response){
+        if(response == null || !response.getCodice().equals(Codici.R100)) {     //Registrazione fallita
+            infoStamp("Server registration failed");
+            infoStamp("Server error code: "    + response.getCodice());
+            infoStamp("Server error message: " + response.getMessaggioInfo());
+            return false;
+        }
+
+        //Registrazione avvenuta con successo
+        this.cookie = response.getMessaggioInfo();
+        infoStamp("Successfully registered on server "+serverName+".");
+        return true;
+    }
 
 
 
