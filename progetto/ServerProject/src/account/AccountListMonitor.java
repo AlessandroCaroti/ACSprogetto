@@ -39,7 +39,6 @@ public class AccountListMonitor implements AccountCollectionInterface {
 
     private ReentrantReadWriteLock listLock = new ReentrantReadWriteLock();
 
-
     /* ****************************************************************************************************/
     //COSTRUTTORI
     public AccountListMonitor(int maxAccountNumber) throws IllegalArgumentException {
@@ -68,7 +67,7 @@ public class AccountListMonitor implements AccountCollectionInterface {
         }
 
 
-        this.listLock.writeLock().lock();
+        listLock.writeLock().lock();
         try {
 
             if (lastFreeposition != -1) {//cache funzionante
@@ -95,9 +94,9 @@ public class AccountListMonitor implements AccountCollectionInterface {
 
     public Account addAccount(Account account, int accountId) {
         testRange(accountId);
-
         Account prev;
-        this.listLock.writeLock().lock();
+
+        listLock.writeLock().lock();
         try {
             prev = accountList[accountId];
 
@@ -124,7 +123,7 @@ public class AccountListMonitor implements AccountCollectionInterface {
         testRange(accountId);
 
         Account toRemove;
-        this.listLock.writeLock().lock();
+        listLock.writeLock().lock();
         try {
             toRemove = accountList[accountId];
             if (toRemove != null) {
@@ -136,6 +135,31 @@ public class AccountListMonitor implements AccountCollectionInterface {
             this.listLock.writeLock().unlock();
         }
         return toRemove;
+    }
+
+    public int putIfAbsentEmailUsername(Account account) throws NullPointerException, MaxNumberAccountReached, IllegalArgumentException, AccountMonitorRuntimeException {
+
+        if(account==null)throw new IllegalArgumentException("account==null");
+        if (this.getNumberOfAccount() >= MAXACCOUNTNUMBER) {
+            throw new MaxNumberAccountReached();
+        }
+        String email=account.getEmail();
+        String username=account.getUsername();
+        if(email==null||username==null)throw new NullPointerException("email or username==null");
+
+        this.listLock.writeLock().lock();
+        try {
+            for (int i = 0; i < this.length; i++) {
+                if (accountList[i] != null) {
+                    if (email.equalsIgnoreCase(accountList[i].getEmail()) || username.equalsIgnoreCase(accountList[i].getUsername())) {
+                        return -1;
+                    }
+                }
+            }//se finisce il for vuol dire che non sono presenti account con quella email o quella password
+            return this.addAccount(account);
+        }finally{
+            listLock.writeLock().unlock();
+        }
     }
 
 
@@ -345,4 +369,10 @@ public class AccountListMonitor implements AccountCollectionInterface {
         }
 
     }
+
+
+
+
+
 }
+
