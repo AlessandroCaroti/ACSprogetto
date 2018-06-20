@@ -58,4 +58,13 @@ public class Message
     }
 
     public String getTopic() { return  topic; }
+
+    @Override
+    public String toString() {
+        return  "From: "     + author          +
+                " - Date: "  + date.toString() +
+                " - Topic: " + topic           +"\n"+
+                "Title: "    + title           +"\n"+
+                text;
+    }
 }
