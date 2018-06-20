@@ -146,13 +146,19 @@ public class AccountListMonitor implements AccountCollectionInterface {
     public Account isMember(String email,String username) throws IllegalArgumentException {
         if(email==null||username==null){throw new IllegalArgumentException("email==null || username==null");}
         String[] coppia;
-        for(int i=0;i<this.length;i++){
-            coppia=this.getEmailAndUsername(i);
-            if(email.equalsIgnoreCase(coppia[0])||username.equalsIgnoreCase(coppia[1])){
-                return this.getAccountCopy(i);
+
+        listLock.readLock().lock();
+        try {
+            for (int i = 0; i < this.length; i++) {
+                coppia = this.getEmailAndUsername(i);
+                if (email.equalsIgnoreCase(coppia[0]) || username.equalsIgnoreCase(coppia[1])) {
+                    return this.getAccountCopy(i);
+                }
             }
+            return null;
+        }finally{
+            listLock.readLock().unlock();
         }
-        return null;
     }
 
 

@@ -72,7 +72,6 @@ public interface AccountCollectionInterface {
      * @param username l'username da cercare
      * @return una copia dell'account che ha email OR password uguale a quelle passate,se l'account non esiste torna null
      * @throws NullPointerException se email OR username sono  null
-     * NOTA: il valore di ritorno non è  thread safe
      */
      Account isMember(String email,String username) throws IllegalArgumentException;
 
