@@ -11,7 +11,8 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import static utility.ResponseCode.Codici.R220;
+import static utility.ResponseCode.Codici.R200;
+
 
 public class AnonymousClient implements ClientInterface {
 
@@ -21,7 +22,7 @@ public class AnonymousClient implements ClientInterface {
     /******************/
     /* client fields */
     private String username;
-    private ClientInterface skeleton;//my stub
+    private ClientInterface skeleton;               //my stub
     private String cookie;
     private String myPrivateKey;
     private String myPublicKey;
@@ -38,7 +39,7 @@ public class AnonymousClient implements ClientInterface {
 
     /* remote registry fields */
     private String registryHost;                    //host for the remote registry
-    private int registryPort = 1099;                //port on which the registry accepts requests
+    private int registryPort;                       //port on which the registry accepts requests
 
 
 
@@ -121,9 +122,46 @@ public class AnonymousClient implements ClientInterface {
     {
         if(connected()){
             try {
-
+                ResponseCode response=null;
+                /*response = */server_stub.subscribe(this.cookie, topic);
+                if(response.IsOK())
+                {
+                    infoStamp("Successfully subscribe in topic.");
+                    return true;
+                }
+                else {
+                    errorStamp(response, "Topic subscription failed.");
+                }
             }catch (Exception e){
+                errorStamp(e, "Unable to reach the server.");
+            }
+        }
+        else
+            errorStamp("Not connected to any server.");
+        return false;
+    }
 
+    /**
+     * Si disiscrive al topic passato come argomento
+     * @param topic a cui ci si vuole iscrivere
+     * @return TRUE se andata a buon fine, FALSE altrimenti
+     */
+    public boolean unsubscribe(String topic)
+    {
+        if(connected()){
+            try {
+                ResponseCode response=null;
+                /*response = */server_stub.unsubscribe(this.cookie, topic);
+                if(response.IsOK())
+                {
+                    infoStamp("Successfully unsubscribe in topic.");
+                    return true;
+                }
+                else {
+                    errorStamp(response, "Topic unsubscription failed.");
+                }
+            }catch (Exception e){
+                errorStamp(e, "Unable to reach the server.");
             }
         }
         else
@@ -194,7 +232,7 @@ public class AnonymousClient implements ClientInterface {
             pedanticInfo("Receved new message\n"+m.toString());
             return rc;
         }
-        rc=new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.CLIENT,
+        rc=new ResponseCode(R200, ResponseCode.TipoClasse.CLIENT,
                 "(+) OK il server ha ricevuto il messaggio");
         return rc;
     }

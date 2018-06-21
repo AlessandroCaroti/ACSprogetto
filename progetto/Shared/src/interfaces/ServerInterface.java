@@ -37,6 +37,7 @@ public interface ServerInterface extends Remote,Serializable
 
     ResponseCode disconnect(String cookie) throws RemoteException;
 
+    //todo aggiungere che ritorna ResponseCode
     void subscribe(String cookie, String topicName) throws RemoteException;
 
     void unsubscribe(String cookie,String topicName) throws RemoteException ;

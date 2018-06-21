@@ -19,14 +19,8 @@ package client;
 
 import interfaces.ClientInterface;
 import interfaces.ServerInterface;
-import utility.Message;
 import utility.ResponseCode;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
-import static utility.ResponseCode.*;
 import static utility.ResponseCode.Codici.R220;
 
 

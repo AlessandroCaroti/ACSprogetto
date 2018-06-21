@@ -46,10 +46,11 @@ public  class ResponseCode implements Serializable {
 
 
          //I messaggi che iniziano per 600 sono di errore del client
-         R610,  //registrazione account fallita
-         R620,  //errore disconnessione
-         R630,  //login senza successo
-         R666,  //formato cookie non valido
+         R610,  //Registrazione account fallita
+         R620,  //Errore disconnessione
+         R630,  //Login senza successo
+         R640,  //Topic non esistente
+         R666,  //Formato cookie non valido
 
     }
 
@@ -70,7 +71,7 @@ public  class ResponseCode implements Serializable {
     {
         if(codiceRisposta==null)
         {
-            throw new NullPointerException("codice  ==null");
+            throw new NullPointerException("codice  == null");
         }
         if( classeGeneratriceMessaggio==null){
             throw new NullPointerException(" classeGeneratrice ==null");
