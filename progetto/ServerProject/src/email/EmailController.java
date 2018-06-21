@@ -23,7 +23,7 @@ import javax.mail.MessagingException;
 public interface EmailController {
 
     /**
-     * Crea
+     * Crea l'oggetto email da spedire
      * @param to l'idirizzo email del destinatario
      * @param subject il titolo della mail
      * @param bodyText il testo della mail
