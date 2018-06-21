@@ -69,7 +69,8 @@ public interface AccountCollectionInterface {
     /**
      *
      * @param account l'account da aggiungere con già i suoi fields settati
-     * @return l'account id se non era presente, -1 altrimenti
+     * @return l'account id se non era presente; Torna -1 se la mail è già presente  ,  -2 se l'username è già presente
+     *  L'esistenza dell'username uguale a quello passato ha "la precedenza" sulla mail
      * @throws NullPointerException  se i fields email o username di account sono settati a null
      * @throws MaxNumberAccountReached se non ci sono più posti disponibili
      * @throws IllegalArgumentException se viene passato un reference null
@@ -86,6 +87,7 @@ public interface AccountCollectionInterface {
      Account isMember(String email,String username) throws IllegalArgumentException;
 
 
+     Account isMember(String email);
 
     /**
      * Tutti i getter tornano il valore (null o qualcosa di definito) oppure una delle due eccezioni

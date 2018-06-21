@@ -151,8 +151,11 @@ public class AccountListMonitor implements AccountCollectionInterface {
         try {
             for (int i = 0; i < this.length; i++) {
                 if (accountList[i] != null) {
-                    if (email.equalsIgnoreCase(accountList[i].getEmail()) || username.equals(accountList[i].getUsername())) {
+                    if (email.equalsIgnoreCase(accountList[i].getEmail())) {
                         return -1;
+                    }
+                    if(username.equals(accountList[i].getUsername())){
+                        return -2;
                     }
                 }
             }//se finisce il for vuol dire che non sono presenti account con quella email o quella password

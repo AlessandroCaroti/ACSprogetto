@@ -49,6 +49,7 @@ public  class ResponseCode implements Serializable {
          R610,  //registrazione account fallita
          R620,  //errore disconnessione
          R630,  //login senza successo
+         R640,  //inserito codice validazione mail errato
          R666,  //formato cookie non valido
 
          //internal server error
