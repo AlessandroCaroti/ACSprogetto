@@ -19,7 +19,7 @@ public class AnonymousClient implements ClientInterface {
     static final private String className = "ANONYMOUS_CLIENT";
 
 
-    /******************/
+    /**************************************************************************/
     /* client fields */
     private String username;
     private ClientInterface skeleton;               //my stub
@@ -30,7 +30,7 @@ public class AnonymousClient implements ClientInterface {
 
     private String[] topicsSubscribed;               //topic a cui si è iscritti
 
-    /******************/
+    /**************************************************************************/
     /* server fields */
     private String serverName;                      //the name for the remote reference to look up
     private String brokerPublicKey;                 //broker's public key
@@ -70,23 +70,32 @@ public class AnonymousClient implements ClientInterface {
     // *************************************************************************************************************
     //API
 
+    public void setServerInfo(String regHost, String serverName){
+        if(regHost==null || regHost.isEmpty() || serverName==null || serverName.isEmpty()){
+            throw new IllegalArgumentException("Invalid argument format of regHost or serverName");
+        }
+        this.registryHost = regHost;
+        this.serverName   = serverName;
+        this.registryPort = 1099;
+    }
 
     /**
-     *Il client si registra sul server su cui si era connesso con il metodo connect() e viene settato il cookie
-     * @return TRUE se registrazione andata a buon fine, FALSE altrimenti
-    **/
-    public boolean register(){
-        if(connected()) {
-            try {
-                ResponseCode responseCode = server_stub.anonymousRegister(this.skeleton, this.myPublicKey);
-                return registered(responseCode);
-            } catch (RemoteException e) {
-                errorStamp(e, "Unable to reach the server.");
-            }
+     *
+     * @param regHost       indirizzo dell'host del registry
+     * @param regPort       porta in cui il registry accetta richieste
+     * @param serverName    il nome con cui il server ha fatto la bind sul registry del suo stub
+     * @throws IllegalArgumentException se uno dei campi passati non è valido
+     */
+    public void setServerInfo(String regHost, int regPort, String serverName) throws IllegalArgumentException{
+        setServerInfo(regHost, serverName);
+        if(regPort>1024 && regPort<=65535)  //Se la porta passata è valida impostala come porta del server altrimenti prova ad usare quella di default
+            this.registryPort = regPort;
+        this.server_stub = connect(regHost, serverName, regPort);
+        if(server_stub!=null){      //Connesione al server avvenuta con successo
+            infoStamp("Successful connection to the server.");
+        }else {                     //Connesione fallita perchè non si è trovato il server o perchè durante la connessione c'è stato un errore
+            infoStamp("Unable to reach the server.");
         }
-        else
-            errorStamp("Not connected to any server.");
-        return false;
     }
 
 
@@ -110,6 +119,25 @@ public class AnonymousClient implements ClientInterface {
         }catch (RemoteException |NotBoundException exc){
             return null;
         }
+    }
+
+
+    /**
+     *Il client si registra sul server su cui si era connesso con il metodo connect() e viene settato il cookie
+     * @return TRUE se registrazione andata a buon fine, FALSE altrimenti
+    **/
+    public boolean register(){
+        if(connected()) {
+            try {
+                ResponseCode responseCode = server_stub.anonymousRegister(this.skeleton, this.myPublicKey);
+                return registered(responseCode);
+            } catch (RemoteException e) {
+                errorStamp(e, "Unable to reach the server.");
+            }
+        }
+        else
+            errorStamp("Not connected to any server.");
+        return false;
     }
 
 
@@ -140,6 +168,7 @@ public class AnonymousClient implements ClientInterface {
             errorStamp("Not connected to any server.");
         return false;
     }
+
 
     /**
      * Si disiscrive al topic passato come argomento
@@ -189,31 +218,6 @@ public class AnonymousClient implements ClientInterface {
         }
         errorStamp("Not connected to any server.");
         return false;
-    }
-
-
-
-
-
-    public void setServerInfo(String regHost, String serverName){
-        if(regHost==null || regHost.isEmpty() || serverName==null || serverName.isEmpty()){
-            throw new IllegalArgumentException("Invalid argument format of regHost or serverName");
-        }
-        this.registryHost = regHost;
-        this.serverName   = serverName;
-        this.registryPort = 1099;
-    }
-
-    public void setServerInfo(String regHost, int regPort, String serverName) throws IllegalArgumentException{
-        setServerInfo(regHost, serverName);
-        if(regPort>1024 && regPort<=65535)  //Se la porta passata è valida impostala come porta del server altrimenti prova ad usare quella di default
-            this.registryPort = regPort;
-        this.server_stub = connect(regHost, serverName, regPort);
-        if(server_stub!=null){      //Connesione al server avvenuta con successo
-            infoStamp("Successful connection to the server.");
-        }else {                     //Connesione fallita perchè non si è trovato il server o perchè durante la connessione c'è stato un errore
-            infoStamp("Unable to reach the server.");
-        }
     }
 
 
