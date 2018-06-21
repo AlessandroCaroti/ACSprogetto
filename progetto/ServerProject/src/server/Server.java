@@ -20,7 +20,9 @@ package server;
 
 import account.AccountCollectionInterface;
 import account.AccountListMonitor;
+import customException.AccountMonitorRuntimeException;
 import customException.AccountRegistrationException;
+import customException.MaxNumberAccountReached;
 import email.EmailController;
 import email.EmailHandler;
 import interfaces.ServerInterface;
@@ -32,6 +34,7 @@ import utility.ResponseCode;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.mail.MessagingException;
 import javax.swing.filechooser.FileSystemView;
 import java.io.*;
 import java.net.URL;
@@ -69,7 +72,6 @@ public class Server implements ServerInterface,Callable<Integer> {
 
     /* clients management fields */
     private AccountCollectionInterface accountList;                     //monitor della lista contente tutti gli account salvati
-    private ConcurrentHashMap<String, Integer> userNameList;            //coppia (userName_account, idAccount) degli account che sono salvati nell'accountList
 
     /* server settings fields */
     private Properties serverSettings=new Properties();                 //setting del server
@@ -111,7 +113,6 @@ public class Server implements ServerInterface,Callable<Integer> {
 
 
         topicList    = new ConcurrentLinkedQueue<>();
-        userNameList = new ConcurrentHashMap<>();
 
         System.out.println(System.getProperty("user.dir"));
 
@@ -174,6 +175,9 @@ public class Server implements ServerInterface,Callable<Integer> {
     Link spiegazione funzionamento Remote Java RMI Registry:
         http://collaboration.cmc.ec.gc.ca/science/rpn/biblio/ddj/Website/articles/DDJ/2008/0812/081101oh01/081101oh01.html
      */
+
+
+
 
     // Startup of RMI serverobject, including registration of the instantiated server object
     // with remote RMI registry
@@ -256,29 +260,42 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     @Override
-    public ResponseCode register(String userName, String plainPassword, ClientInterface stub, String publicKey,String email)  {
+    public ResponseCode register(String userName,String plainPassword,ClientInterface stub,String publicKey,String email)  {
+        int accountId;
         try {
-            String cookie;
-            if (userNameList.putIfAbsent(userName, 0) == null)  //se non c'è già un account con lo stesso nome
-            {
-                int posNewAccount =  registerAccount(userName, plainPassword, stub, publicKey, 0,email);
-                cookie = getCookie(posNewAccount);
-                userNameList.replace(userName, posNewAccount);
-                pedanticInfo("Registered new client \'"+userName+"\'.");
-                return new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER, cookie);  //OK: Nuovo client registrato
+            Account account=new Account(userName,plainPassword,stub,publicKey,0,email);
+            if((accountId=accountList.putIfAbsentEmailUsername(account))>=0){
+
+                if(emailValidation(email)){
+                    pedanticInfo("Registered new client \'"+userName+"\'  \'"+email+"\'");
+                    return new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER, getCookie(accountId));
+                }else{
+                    pedanticInfo("Client registration refused ,\'"+email+"\' has not been validated.");
+                    accountList.removeAccount();//TODO usare una remove che fa il check sulla chiva primaria(email) in quanto ci potrebbero essere problemi di concorrenza con un metodo tipo deleteAccount()
+                    return  ResponseCodeList.WrongCodeValidation;
+                }
+            }else{//email or username already present
+                if(accountId==-1){
+                    pedanticInfo("Client registration refused, email \'"+email+"\' already used.");
+                    sendEmailAccountInfo(email,/*Todo username*/);
+                }
+                if(accountId==-2){
+                    pedanticInfo("Client registration refused, username \'"+userName+"\' already used.");
+                    return ResponseCodeList.InvalidUsername;
+                }
             }
-            pedanticInfo("Client registration refused, username \'"+userName+"\' already used.");
-            return ResponseCodeList.ClientError;
+
         }catch (Exception e){
-            userNameList.remove(userName);
             errorStamp(e);
         }
         return ResponseCodeList.InternalError;
     }
 
+
     @Override
     public ResponseCode anonymousRegister(ClientInterface stub, String publicKey)  {
-        return register("AnonymousAccount","",stub,publicKey,null);
+        //return register("AnonymousAccount","",stub,publicKey,null);
+        //TODO non va più bene il metodo sopra
     }
 
 
@@ -324,7 +341,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         }catch (BadPaddingException| IllegalBlockSizeException e){
             warningStamp(e,"subscribe() - error cookies not recognize");
         }catch (NullPointerException e){
-            warningStamp(e,"subscibe() - topic"+topicName+"not found");
+            warningStamp(e,"subscribe() - topic"+topicName+"not found");
         }catch (Exception e){
             errorStamp(e);
         }
@@ -373,25 +390,6 @@ public class Server implements ServerInterface,Callable<Integer> {
     public String[] getTopicList()  {
         return topicList.toArray(new String[0]);    //guarda esempio in https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ConcurrentLinkedQueue.html#toArray(T[])
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -453,7 +451,9 @@ public class Server implements ServerInterface,Callable<Integer> {
 
 
 
-    //METODI USATI PER LA GESTIONE DEGLI ACCOUNT
+    /*************************************************************************************************************
+     ****METODI USATI PER LA GESTIONE DEGLI ACCOUNT***************************************************************
+     *************************************************************************************************************/
 
 
     private int registerAccount(String userName, String plainPassword, ClientInterface stub, String publicKey,int accountId,String email) throws AccountRegistrationException {
@@ -509,26 +509,29 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
 
+    private boolean emailValidation(String email) throws MessagingException {
+        int codice=(int)(Math.random()*1000000);
+        javax.mail.Message messaggio=emailController.createEmailMessage(email,"EMAIL VALIDATION",
+                "Codice verifica:"+Integer.toString(codice)
+                );
+
+        emailController.sendMessage(messaggio);
+        //TODO
 
 
 
+        return true;
+    }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    private void sendEmailAccountInfo(String email,String username) throws MessagingException {
+        javax.mail.Message message=emailController.createEmailMessage(email,"REGISTRATION ATTEMPT",
+                "Someone tried to register a new account by associating it with this email.\n" +
+                        "If you have not made the request, ignore and delete the message.\n" +
+                        "We remind you that the following email is associated with the username \'"+username+"\'\n"+
+                        "The ACSgroup account team."
+                );
+        emailController.sendMessage(message);
+    }
 
 
 
