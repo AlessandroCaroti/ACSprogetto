@@ -40,7 +40,7 @@ public  class ResponseCode implements Serializable {
          R210,  //"set public key" all'interno del massageinfo è presente la chiave pubblica del server
          R220,  //account successfully retrieved(login a buon fine)
 
-         //I messaggi che iniziano per 600 sono di errore del server
+         //I messaggi che iniziano per 500 sono di errore del server
          R500,  //null message
          R505,  //Internal Server Error
 
@@ -98,5 +98,36 @@ public  class ResponseCode implements Serializable {
     }
     public boolean IsOK(){ return Codici.R200==codice; }
     public boolean IsSetCookie(){ return Codici.R100==codice;}
+
+    public String getStandardMessage(){
+        switch (this.codice){
+            case R100:
+                return "Set Cookie.";
+            case R101:
+                return "Pong Message.";
+            case R200:
+                return "OK.";
+            case R210:
+                return "OK, Set Public Key.";
+            case R220:
+                return "OK, Account Retrieved.";
+            case R500:
+                return "ServerError - Null Message";
+            case R505:
+                return "ServerError - Internal Server Error.";
+            case R610:
+                return "ClientError - Registration Failed.";
+            case R620:
+                return "ClientError - Disconnection Error";
+            case R630:
+                return "ClientError - Login Failed";
+            case R640:
+                return "ClientError - Topics Not Existing";
+            case R666:
+                return "ClientError - Invalid Cookies";
+            default:
+                return "Message Code Not Supported";
+        }
+    }
 }
 
