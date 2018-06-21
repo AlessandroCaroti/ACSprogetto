@@ -126,7 +126,7 @@ public  class ResponseCode implements Serializable {
             case R666:
                 return "ClientError - Invalid Cookies";
             default:
-                return "Message Code Not Supported";
+                return "Message Of Code "+this.codice+" Not Supported";
         }
     }
 }
