@@ -31,6 +31,14 @@ public class Message
     {
         if(title==null||author==null||text==null||topicName==null)
             throw new NullPointerException();
+        if(author.isEmpty())
+            throw new IllegalArgumentException("The author parameter can not be empty");
+        if(topicName.isEmpty())
+            throw new IllegalArgumentException("The topic parameter can not be empty");
+        if(text.isEmpty())
+            throw new IllegalArgumentException("The text parameter can not be empty");
+        if(title.isEmpty())
+            throw new IllegalArgumentException("The title parameter can not be empty");
         this.date = new Date();
         this.title = title;
         this.author = author;

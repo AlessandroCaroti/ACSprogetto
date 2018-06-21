@@ -19,6 +19,7 @@ package client;
 
 import interfaces.ClientInterface;
 import interfaces.ServerInterface;
+import utility.Message;
 import utility.ResponseCode;
 import java.rmi.RemoteException;
 import static utility.ResponseCode.Codici.R220;
@@ -35,7 +36,6 @@ public class Client extends AnonymousClient {
     private String cookie;
     private String myPrivateKey;
     private String myPublicKey;
-    private boolean anonymous = false;
     private boolean pedantic  = true;
 
     private String[] topicsSubscribed;                         //topic a cui si è iscritti
@@ -96,32 +96,76 @@ public class Client extends AnonymousClient {
 
     /**
      * Si chiede al server di recuperare le informazioni legate al nostro account
-     * @return true se andata a buon fine,false altrimenti
+     * @return TRUE se andata a buon fine,FALSE altrimenti
      */
     public boolean retrieveAccount(){
-        try{
-            ResponseCode response=server_stub.retrieveAccount(username,"",skeleton);
-            if(response.getCodice() == R220)
-            {
-                infoStamp("Account successfully recovered.");
-                return true;
+        if(connected()) {
+            try {
+                ResponseCode response = server_stub.retrieveAccount(username, plainPassword, skeleton);
+                if (response.getCodice() == R220) {
+                    infoStamp("Account successfully recovered.");
+                    return true;
+                }
+                errorStamp(response, "Impossible to retrieve information.");
+                return false;
+            } catch (RemoteException exc) {
+                errorStamp(exc, "Unable to reach the server.");
+                return false;
             }
-            errorStamp(response, "Impossible to retrieve information.");
-            return false;
-        }catch(RemoteException exc){
-            errorStamp(exc, "Unable to reach the server.");
-            return false;
         }
+        errorStamp("Not connected to any server.");
+        return false;
     }
 
+
+    /**
+     * pubblica un messaggio sul server a cui si è connessi
+     * @param topic     il topic su cui pubblicare il messsaggio
+     * @param title     il titolo del messaggio da inviare
+     * @param text      il testo  del messaggio da inviare
+     * @return          TRUE se andata a buon fine,FALSE altrimenti
+     */
+    public boolean publish( String topic, String title, String text){
+        if(connected()) {
+            Message msg = createMessage(topic, title, text);
+            if(msg == null)     //errore durante la creazione di un messaggio
+                return false;
+
+            try {
+                ResponseCode response = null;
+                //todo aggiungere un codice di risposta alla publish
+                /*code = */server_stub.publish(this.cookie, msg);
+                if(response.IsOK())
+                {
+                    infoStamp("Message published.");
+                    return true;
+                }
+                else
+                    errorStamp(response, "Error while publishing the message.");
+            }catch (RemoteException e){
+                errorStamp(e, "Unable to reach the server.");
+                return false;
+            }
+        }
+        errorStamp("Not connected to any server.");
+        return false;
+    }
 
 
 
     // *************************************************************************************************************
     //PRIVATE METHOD
-    /*
 
-     */
+
+    private Message createMessage(String topic, String title, String text){
+        Message msg = null;
+        try {
+            msg = new Message(title, this.username, text, topic);
+        } catch (Exception e) {
+            errorStamp("An exception has been thrown during the creation of a message.");
+        }
+        return msg;
+    }
 
 
 

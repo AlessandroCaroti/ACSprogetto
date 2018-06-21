@@ -10,6 +10,8 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Iterator;
+import java.util.TreeSet;
 
 import static utility.ResponseCode.Codici.R200;
 
@@ -28,7 +30,7 @@ public class AnonymousClient implements ClientInterface {
     private String myPublicKey;
     private boolean pedantic  = true;
 
-    private String[] topicsSubscribed;               //topic a cui si è iscritti
+    private TreeSet<String> topicsSubscribed;       //topic a cui si è iscritti, todo non mi sembra che ci sia concorrenza ma se qualcuno ne trova bisoga sostituire TreeSet<> con ConcurrentSkipListSet
 
     /**************************************************************************/
     /* server fields */
@@ -40,6 +42,8 @@ public class AnonymousClient implements ClientInterface {
     /* remote registry fields */
     private String registryHost;                    //host for the remote registry
     private int registryPort;                       //port on which the registry accepts requests
+
+
 
 
 
@@ -61,7 +65,17 @@ public class AnonymousClient implements ClientInterface {
         this.myPublicKey  = my_public_key;
         this.myPrivateKey = my_private_key;
         this.skeleton     = (ClientInterface) UnicastRemoteObject.exportObject(this,0);
+        topicsSubscribed  = new TreeSet<>();
     }
+
+
+
+
+
+
+
+
+
 
 
 
@@ -79,6 +93,7 @@ public class AnonymousClient implements ClientInterface {
         this.registryPort = 1099;
     }
 
+
     /**
      *
      * @param regHost       indirizzo dell'host del registry
@@ -95,6 +110,24 @@ public class AnonymousClient implements ClientInterface {
             infoStamp("Successful connection to the server.");
         }else {                     //Connesione fallita perchè non si è trovato il server o perchè durante la connessione c'è stato un errore
             infoStamp("Unable to reach the server.");
+        }
+    }
+
+    /**
+     * Si connette al server specificato dalla stringa broker e dalla porta regPort facendo il lookup
+     * sul registry dell'host, utilizato per vedere se il server esiste e se è attivo
+     * @return lo STUB del server se andata a buon fine, altrimenti NULL
+     */
+    public ServerInterface connect(){
+        try {
+            Registry r = LocateRegistry.getRegistry(this.registryHost, this.registryPort);
+            ServerInterface server_stub = (ServerInterface) r.lookup(this.serverName);
+            ResponseCode rc = server_stub.connect();
+            if(rc.IsOK())
+                this.brokerPublicKey = rc.getMessaggioInfo();
+            return server_stub;
+        }catch (Exception e){
+            return null;
         }
     }
 
@@ -116,7 +149,7 @@ public class AnonymousClient implements ClientInterface {
             if(rc.IsOK())
                 this.brokerPublicKey = rc.getMessaggioInfo();
             return server_stub;
-        }catch (RemoteException |NotBoundException exc){
+        }catch (Exception e){
             return null;
         }
     }
@@ -132,64 +165,6 @@ public class AnonymousClient implements ClientInterface {
                 ResponseCode responseCode = server_stub.anonymousRegister(this.skeleton, this.myPublicKey);
                 return registered(responseCode);
             } catch (RemoteException e) {
-                errorStamp(e, "Unable to reach the server.");
-            }
-        }
-        else
-            errorStamp("Not connected to any server.");
-        return false;
-    }
-
-
-    /**
-     * Si iscrive al topic passato come argomento
-     * @param topic a cui ci si vuole iscrivere
-     * @return TRUE se andata a buon fine, FALSE altrimenti
-     */
-    public boolean subscribe(String topic)
-    {
-        if(connected()){
-            try {
-                ResponseCode response=null;
-                /*response = */server_stub.subscribe(this.cookie, topic);
-                if(response.IsOK())
-                {
-                    infoStamp("Successfully subscribe in topic.");
-                    return true;
-                }
-                else {
-                    errorStamp(response, "Topic subscription failed.");
-                }
-            }catch (Exception e){
-                errorStamp(e, "Unable to reach the server.");
-            }
-        }
-        else
-            errorStamp("Not connected to any server.");
-        return false;
-    }
-
-
-    /**
-     * Si disiscrive al topic passato come argomento
-     * @param topic a cui ci si vuole iscrivere
-     * @return TRUE se andata a buon fine, FALSE altrimenti
-     */
-    public boolean unsubscribe(String topic)
-    {
-        if(connected()){
-            try {
-                ResponseCode response=null;
-                /*response = */server_stub.unsubscribe(this.cookie, topic);
-                if(response.IsOK())
-                {
-                    infoStamp("Successfully unsubscribe in topic.");
-                    return true;
-                }
-                else {
-                    errorStamp(response, "Topic unsubscription failed.");
-                }
-            }catch (Exception e){
                 errorStamp(e, "Unable to reach the server.");
             }
         }
@@ -219,6 +194,111 @@ public class AnonymousClient implements ClientInterface {
         errorStamp("Not connected to any server.");
         return false;
     }
+
+
+    /**
+     * Si iscrive al topic passato come argomento
+     * @param topic a cui ci si vuole iscrivere
+     * @return TRUE se andata a buon fine, FALSE altrimenti
+     */
+    public boolean subscribe(String topic)    {
+        if(connected()){
+            try {
+                if(topicsSubscribed.contains(topic)){
+                    infoStamp("Already subscribe to the \'"+topic+"\' topic.");
+                    return true;
+                }
+                ResponseCode response=null;
+                //todo aggiungere un codice di risposta alla subscribe
+                /*response = */server_stub.subscribe(this.cookie, topic);
+                if(response.IsOK())
+                {
+                    topicsSubscribed.add(topic);
+                    infoStamp("Successfully subscribe to the topic \'"+topic+"\'.");
+                    return true;
+                }
+                else {
+                    errorStamp(response, "Topic subscription failed.");
+                }
+            }catch (RemoteException e){
+                errorStamp(e, "Unable to reach the server.");
+            }
+        }
+        else
+            errorStamp("Not connected to any server.");
+        return false;
+    }
+
+
+    /**
+     * Si disiscrive al topic passato come argomento
+     * @param topic a cui ci si vuole iscrivere
+     * @return TRUE se andata a buon fine, FALSE altrimenti
+     */
+    public boolean unsubscribe(String topic)
+    {
+        if(connected()){
+            try {
+                if(!topicsSubscribed.contains(topic)){
+                    infoStamp("Topic \'"+topic+"\' not included in the list of subscriptions");
+                    return true;
+                }
+                ResponseCode response=null;
+                //todo aggiungere un codice di risposta alla unsubscribe
+                /*response = */server_stub.unsubscribe(this.cookie, topic);
+                if(response.IsOK())
+                {
+                    topicsSubscribed.remove(topic);
+                    infoStamp("Successfully unsubscribe to the topic \'"+topic+"\'.");
+                    return true;
+                }
+                else {
+                    errorStamp(response, "Topic unsubscription failed.");
+                }
+            }catch (RemoteException e){
+                errorStamp(e, "Unable to reach the server.");
+            }
+        }
+        else
+            errorStamp("Not connected to any server.");
+        return false;
+    }
+
+
+    /**
+     * @return un array con tutti i topic che il server, a cui si è connessi, gestisce. Ritorna null in caso di errore
+     */
+    //TODO magari invece di richiedre sempre la lista dei topic si può implementare un metodo get condizionale( get-if-modified-since) tipo http
+    public String[] getTocpics(){
+        String[] allTopics = null;
+        if(connected()){
+            try {
+                allTopics = server_stub.getTopicList();
+                if(allTopics!=null)
+                    //caching
+                    topicOnServer = allTopics;
+            }catch (RemoteException e){
+                //invalid cache
+                topicOnServer = null;
+                errorStamp(e, "Unable to reach the server.");
+            }
+        }
+        return topicOnServer;
+    }
+
+
+    /**
+     * @return un iterator dei topic a cui si è iscritti
+     */
+    public Iterator<String> getTopicsSubscribed(){
+        return topicsSubscribed.iterator();
+    }
+
+
+
+
+
+
 
 
 
