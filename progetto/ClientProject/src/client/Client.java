@@ -31,6 +31,7 @@ import static utility.ResponseCode.Codici.R220;
 
 
 public class Client extends AnonymousClient {
+    static final private String className = "CLIENT";
 
     /******************/
     /* client fields */
@@ -127,19 +128,6 @@ public class Client extends AnonymousClient {
     /*
 
      */
-    private boolean registered(ResponseCode response){
-        if(response == null || !response.getCodice().equals(Codici.R100)) {     //Registrazione fallita
-            infoStamp("Server registration failed");
-            infoStamp("Server error code: "    + response.getCodice());
-            infoStamp("Server error message: " + response.getMessaggioInfo());
-            return false;
-        }
-
-        //Registrazione avvenuta con successo
-        this.cookie = response.getMessaggioInfo();
-        infoStamp("Successfully registered on server "+serverName+".");
-        return true;
-    }
 
 
 
@@ -147,66 +135,4 @@ public class Client extends AnonymousClient {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    //METODI UTILIZZATI PER LA GESTIONE DELL'OUTPUT DEL CLIENT
-    protected void errorStamp(Exception e){
-        System.out.flush();
-        System.err.println("[CLIENT-ERROR]");
-        System.err.println("\tException type: "    + e.getClass().getSimpleName());
-        System.err.println("\tException message: " + e.getMessage());
-        e.printStackTrace();
-    }
-
-    protected void errorStamp(Exception e, String msg){
-        System.out.flush();
-        System.err.println("[CLIENT-ERROR]: "      + msg);
-        System.err.println("\tException type: "    + e.getClass().getSimpleName());
-        System.err.println("\tException message: " + e.getMessage());
-        e.printStackTrace();
-    }
-
-    protected void warningStamp(Exception e, String msg){
-        System.out.flush();
-        System.err.println("[CLIENT-WARNING]: "    + msg);
-        System.err.println("\tException type: "    + e.getClass().getSimpleName());
-        System.err.println("\tException message: " + e.getMessage());
-    }
-
-    protected void infoStamp(String msg){
-        System.out.println("[CLIENT-INFO]: " + msg);
-    }
-
-    protected void pedanticInfo(String msg){
-        if(pedantic){
-            infoStamp(msg);
-        }
-    }
 }

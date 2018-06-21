@@ -15,6 +15,7 @@ import static utility.ResponseCode.Codici.R220;
 
 public class AnonymousClient implements ClientInterface {
 
+    static final private String className = "ANONYMOUS_CLIENT";
 
 
     /******************/
@@ -71,26 +72,30 @@ public class AnonymousClient implements ClientInterface {
 
     /**
      *Il client si registra sul server su cui si era connesso con il metodo connect() e viene settato il cookie
-     * @return true se registrazione andata a buon fine, false altrimenti
+     * @return TRUE se registrazione andata a buon fine, FALSE altrimenti
     **/
     public boolean register(){
-        try {
-            ResponseCode responseCode = server_stub.anonymousRegister(this.skeleton, this.myPublicKey);
-            return registered(responseCode);
-        }catch (RemoteException e){
-            errorStamp(e, "Unable to reach the server.");
-            return false;
+        if(connected()) {
+            try {
+                ResponseCode responseCode = server_stub.anonymousRegister(this.skeleton, this.myPublicKey);
+                return registered(responseCode);
+            } catch (RemoteException e) {
+                errorStamp(e, "Unable to reach the server.");
+            }
         }
+        else
+            errorStamp("Not connected to any server.");
+        return false;
     }
 
 
     /**
      * Si connette al server specificato dalla stringa broker e dalla porta regPort facendo il lookup
-     * sul registry dell'host, utilizato per vedere se il server esiste ed è attivo nel caso recuperarne lo stub
+     * sul registry dell'host, utilizato per vedere se il server esiste e se è attivo
      * @param regHost l'indirizzo della macchina su cui risiede il registry
      * @param regPort porta su cui connettersi al registry
      * @param server  il nome con cui il server ha fatto la bind del suo stub sul registry
-     * @return true se andata a buon fine,false altrimenti
+     * @return lo STUB del server se andata a buon fine, altrimenti NULL
      */
     public ServerInterface connect(String regHost, String server, Integer regPort)
     {
@@ -110,61 +115,65 @@ public class AnonymousClient implements ClientInterface {
     /**
      * Si iscrive al topic passato come argomento
      * @param topic a cui ci si vuole iscrivere
+     * @return TRUE se andata a buon fine, FALSE altrimenti
      */
-    public void subscribe(String topic)
+    public boolean subscribe(String topic)
     {
+        if(connected()){
+            try {
 
+            }catch (Exception e){
 
+            }
+        }
+        else
+            errorStamp("Not connected to any server.");
+        return false;
     }
 
 
     /**
      * Si disconnette al server a cui si è connessi. Nonostante il server ci invii un messaggio di risposta questo
      * viene ignorato perchè al client non importa.
-     * @return true se ci si è disconnesi con successo, false altrimenti
+     * @return TRUE se ci si è disconnesi con successo, FALSE altrimenti
      */
     public boolean disconnect(){
-        try {
-            ResponseCode response=server_stub.disconnect(cookie);
-            return true;
-
-        }catch(RemoteException exc){
-            System.err.println(exc.getClass().getSimpleName());
-            return false;
-        }finally {
-            //Il fatto che lo stub sia null significa che non si è connessi da alcun server
-            this.server_stub=null;
+        if(connected()) {
+            try {
+                ResponseCode response = server_stub.disconnect(cookie);
+                return true;
+            } catch (RemoteException exc) {
+                System.err.println(exc.getClass().getSimpleName());
+            } finally {
+                //Il fatto che lo stub sia null significa che non si è connessi da alcun server
+                this.server_stub = null;
+            }
         }
-
+        errorStamp("Not connected to any server.");
+        return false;
     }
 
 
 
 
 
-    //metodi non ancora utilizzati ma che penso possano servire più tardi
     public void setServerInfo(String regHost, String serverName){
         if(regHost==null || regHost.isEmpty() || serverName==null || serverName.isEmpty()){
             throw new IllegalArgumentException("Invalid argument format of regHost or serverName");
         }
         this.registryHost = regHost;
         this.serverName   = serverName;
-
+        this.registryPort = 1099;
     }
 
     public void setServerInfo(String regHost, int regPort, String serverName) throws IllegalArgumentException{
-        if(regHost==null || regHost.isEmpty() || serverName==null || serverName.isEmpty()){
-            throw new IllegalArgumentException("Invalid argument format of regHost or serverName");
-        }
-        if(regPort>1024 && regPort<=65535)  //Se la porta passata è valida impostala come porta del server
-            this.registryPort = regPort;
-        else
-            this.registryPort = 1099;
         setServerInfo(regHost, serverName);
+        if(regPort>1024 && regPort<=65535)  //Se la porta passata è valida impostala come porta del server altrimenti prova ad usare quella di default
+            this.registryPort = regPort;
         this.server_stub = connect(regHost, serverName, regPort);
-        if(server_stub!=null){      //connesione al server avvenuta con successo
+        if(server_stub!=null){      //Connesione al server avvenuta con successo
             infoStamp("Successful connection to the server.");
-        }else {
+        }else {                     //Connesione fallita perchè non si è trovato il server o perchè durante la connessione c'è stato un errore
             infoStamp("Unable to reach the server.");
         }
     }
@@ -176,6 +185,7 @@ public class AnonymousClient implements ClientInterface {
     //REMOTE METHOD
 
     @Override
+    //TODO al server non importa del messaggio di risposta quindi si potrebbe mettere che ritorni void
     public ResponseCode notify(Message m) {
         ResponseCode rc;
         if(m==null) {
@@ -198,10 +208,9 @@ public class AnonymousClient implements ClientInterface {
 
     // *************************************************************************************************************
     //PRIVATE METHOD
-    /*
 
-     */
-    private boolean registered(ResponseCode response){
+
+    protected boolean registered(ResponseCode response){
         if(response == null || !response.getCodice().equals(ResponseCode.Codici.R100)) {     //Registrazione fallita
             errorStamp(response, "Server registration failed");
             return false;
@@ -211,6 +220,13 @@ public class AnonymousClient implements ClientInterface {
         this.cookie = response.getMessaggioInfo();
         infoStamp("Successfully registered on server "+serverName+".");
         return true;
+    }
+
+    /**
+     * @return TRUE se si è connessi ad un server, FALSE altrimenti
+     */
+    protected boolean connected(){
+        return (server_stub != null);
     }
 
 
@@ -252,7 +268,7 @@ public class AnonymousClient implements ClientInterface {
 
     protected void errorStamp(Exception e){
         System.out.flush();
-        System.err.println("[ANONYMOUS_CLIENT-ERROR]");
+        System.err.println("["+className+"-ERROR]");
         System.err.println("\tException type: "    + e.getClass().getSimpleName());
         System.err.println("\tException message: " + e.getMessage());
         e.printStackTrace();
@@ -260,28 +276,33 @@ public class AnonymousClient implements ClientInterface {
 
     protected void errorStamp(ResponseCode r, String msg){
         System.out.flush();
-        System.err.println("[ANONYMOUS_CLIENT-ERROR]: "      + msg);
+        System.err.println("["+className+"-ERROR]: "  + msg);
         System.err.println("\tServer error code: "    + r.getCodice());
         System.err.println("\tServer error message: " + r.getMessaggioInfo());
     }
 
     protected void errorStamp(Exception e, String msg){
         System.out.flush();
-        System.err.println("[ANONYMOUS_CLIENT-ERROR]: "      + msg);
-        System.err.println("\tException type: "    + e.getClass().getSimpleName());
-        System.err.println("\tException message: " + e.getMessage());
+        System.err.println("["+className+"-ERROR]: " + msg);
+        System.err.println("\tException type: "      + e.getClass().getSimpleName());
+        System.err.println("\tException message: "   + e.getMessage());
         e.printStackTrace();
+    }
+
+    protected void errorStamp(String msg){
+        System.out.flush();
+        System.err.println("["+className+"-ERROR]: "      + msg);
     }
 
     protected void warningStamp(Exception e, String msg){
         System.out.flush();
-        System.err.println("[ANONYMOUS_CLIENT-WARNING]: "    + msg);
-        System.err.println("\tException type: "    + e.getClass().getSimpleName());
-        System.err.println("\tException message: " + e.getMessage());
+        System.err.println("["+className+"-WARNING]: " + msg);
+        System.err.println("\tException type: "        + e.getClass().getSimpleName());
+        System.err.println("\tException message: "     + e.getMessage());
     }
 
     protected void infoStamp(String msg){
-        System.out.println("[CLIENT-INFO]: " + msg);
+        System.out.println("["+className+"-INFO]: " + msg);
     }
 
     protected void pedanticInfo(String msg){
