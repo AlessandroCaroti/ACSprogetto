@@ -61,10 +61,13 @@ public interface AccountCollectionInterface {
 
     /**Elimina e ritorna l'istanza precedente alla posizione "posizione"
      * @param accountId deve essere >=0 AND <MAXNUMBERACCOUNT
-     * @return l'istanza di account tolta dalla posizione "accountId"
+     * @return l'istanza di account tolta dalla posizione "accountId" (può essere null)
      * @throws IllegalArgumentException se accountId<0 || accountId>=MAXACCOUNTNUMBER
      */
      Account removeAccount(int accountId);
+
+
+     Account removeAccountCheckEmail(int accountId,String email);
 
     /**
      *
@@ -87,7 +90,7 @@ public interface AccountCollectionInterface {
      Account isMember(String email,String username) throws IllegalArgumentException;
 
 
-     Account isMember(String email);
+
 
     /**
      * Tutti i getter tornano il valore (null o qualcosa di definito) oppure una delle due eccezioni

@@ -271,7 +271,7 @@ public class Server implements ServerInterface,Callable<Integer> {
                     return new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER, getCookie(accountId));
                 }else{
                     pedanticInfo("Client registration refused ,\'"+email+"\' has not been validated.");
-                    accountList.removeAccount();//TODO usare una remove che fa il check sulla chiva primaria(email) in quanto ci potrebbero essere problemi di concorrenza con un metodo tipo deleteAccount()
+                    accountList.removeAccountCheckEmail(accountId,email);/* check sulla chiave primaria(email) per  problemi di concorrenza con un metodo tipo deleteAccount()*/
                     return  ResponseCodeList.WrongCodeValidation;
                 }
             }else{//email or username already present
