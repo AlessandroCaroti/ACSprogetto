@@ -5,7 +5,6 @@ import interfaces.ServerInterface;
 import utility.Message;
 import utility.ResponseCode;
 
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -19,6 +18,8 @@ import static utility.ResponseCode.Codici.R200;
 public class AnonymousClient implements ClientInterface {
 
     static final private String className = "ANONYMOUS_CLIENT";
+
+    static final protected int DEFAULT_REGISTRY_PORT = 1099;
 
 
     /**************************************************************************/
@@ -42,6 +43,7 @@ public class AnonymousClient implements ClientInterface {
     /* remote registry fields */
     private String registryHost;                    //host for the remote registry
     private int registryPort;                       //port on which the registry accepts requests
+
 
 
 
@@ -90,7 +92,7 @@ public class AnonymousClient implements ClientInterface {
         }
         this.registryHost = regHost;
         this.serverName   = serverName;
-        this.registryPort = 1099;
+        this.registryPort = DEFAULT_REGISTRY_PORT;
     }
 
 
@@ -122,29 +124,6 @@ public class AnonymousClient implements ClientInterface {
         try {
             Registry r = LocateRegistry.getRegistry(this.registryHost, this.registryPort);
             ServerInterface server_stub = (ServerInterface) r.lookup(this.serverName);
-            ResponseCode rc = server_stub.connect();
-            if(rc.IsOK())
-                this.brokerPublicKey = rc.getMessaggioInfo();
-            return server_stub;
-        }catch (Exception e){
-            return null;
-        }
-    }
-
-
-    /**
-     * Si connette al server specificato dalla stringa broker e dalla porta regPort facendo il lookup
-     * sul registry dell'host, utilizato per vedere se il server esiste e se è attivo
-     * @param regHost l'indirizzo della macchina su cui risiede il registry
-     * @param regPort porta su cui connettersi al registry
-     * @param server  il nome con cui il server ha fatto la bind del suo stub sul registry
-     * @return lo STUB del server se andata a buon fine, altrimenti NULL
-     */
-    public ServerInterface connect(String regHost, String server, Integer regPort)
-    {
-        try {
-            Registry r = LocateRegistry.getRegistry(regHost, regPort);
-            ServerInterface server_stub = (ServerInterface) r.lookup(server);
             ResponseCode rc = server_stub.connect();
             if(rc.IsOK())
                 this.brokerPublicKey = rc.getMessaggioInfo();
@@ -294,9 +273,21 @@ public class AnonymousClient implements ClientInterface {
         return topicsSubscribed.iterator();
     }
 
+    /**
+     * Metodo non supportato
+     * @return false
+     */
+    public boolean retrieveAccount(){
+        throw new UnsupportedOperationException();
+    }
 
-
-
+    /**
+     * Metodo non supportato
+     * @return false
+     */
+    public boolean publish( String topic, String title, String text) {
+        throw new UnsupportedOperationException();
+    }
 
 
 
@@ -331,6 +322,19 @@ public class AnonymousClient implements ClientInterface {
     // *************************************************************************************************************
     //PRIVATE METHOD
 
+    protected ServerInterface connect(String regHost, String server, Integer regPort)
+    {
+        try {
+            Registry r = LocateRegistry.getRegistry(regHost, regPort);
+            ServerInterface server_stub = (ServerInterface) r.lookup(server);
+            ResponseCode rc = server_stub.connect();
+            if(rc.IsOK())
+                this.brokerPublicKey = rc.getMessaggioInfo();
+            return server_stub;
+        }catch (Exception e){
+            return null;
+        }
+    }
 
     protected boolean registered(ResponseCode response){
         if(response == null || !response.getCodice().equals(ResponseCode.Codici.R100)) {     //Registrazione fallita
@@ -393,14 +397,7 @@ public class AnonymousClient implements ClientInterface {
         System.err.println("["+className+"-ERROR]");
         System.err.println("\tException type: "    + e.getClass().getSimpleName());
         System.err.println("\tException message: " + e.getMessage());
-        e.printStackTrace();
-    }
-
-    protected void errorStamp(ResponseCode r, String msg){
-        System.out.flush();
-        System.err.println("["+className+"-ERROR]: "  + msg);
-        System.err.println("\tServer error code: "    + r.getCodice());
-        System.err.println("\tServer error message: " + r.getMessaggioInfo());
+        e.printStackTrace();    //todo da eliminare appena la fase di debigging è finita(solo questa linea non tutto il metodo)
     }
 
     protected void errorStamp(Exception e, String msg){
@@ -408,7 +405,14 @@ public class AnonymousClient implements ClientInterface {
         System.err.println("["+className+"-ERROR]: " + msg);
         System.err.println("\tException type: "      + e.getClass().getSimpleName());
         System.err.println("\tException message: "   + e.getMessage());
-        e.printStackTrace();
+        e.printStackTrace();    //todo da eliminare appena la fase di debigging è finita(solo questa linea non tutto il metodo)
+    }
+
+    protected void errorStamp(ResponseCode r, String msg){
+        System.out.flush();
+        System.err.println("["+className+"-ERROR]: "  + msg);
+        System.err.println("\tError code: "           + r.getCodice());
+        System.err.println("\tError message: "        + r.getMessaggioInfo());
     }
 
     protected void errorStamp(String msg){

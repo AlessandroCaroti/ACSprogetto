@@ -21,7 +21,9 @@ import interfaces.ClientInterface;
 import interfaces.ServerInterface;
 import utility.Message;
 import utility.ResponseCode;
+
 import java.rmi.RemoteException;
+
 import static utility.ResponseCode.Codici.R220;
 
 
@@ -98,6 +100,7 @@ public class Client extends AnonymousClient {
      * Si chiede al server di recuperare le informazioni legate al nostro account
      * @return TRUE se andata a buon fine,FALSE altrimenti
      */
+    @Override
     public boolean retrieveAccount(){
         if(connected()) {
             try {
@@ -125,6 +128,7 @@ public class Client extends AnonymousClient {
      * @param text      il testo  del messaggio da inviare
      * @return          TRUE se andata a buon fine,FALSE altrimenti
      */
+    @Override
     public boolean publish( String topic, String title, String text){
         if(connected()) {
             Message msg = createMessage(topic, title, text);
@@ -153,9 +157,15 @@ public class Client extends AnonymousClient {
 
 
 
+
+
+
+
+
+
+
     // *************************************************************************************************************
     //PRIVATE METHOD
-
 
     private Message createMessage(String topic, String title, String text){
         Message msg = null;
