@@ -21,15 +21,14 @@ import interfaces.ClientInterface;
 import interfaces.ServerInterface;
 import utility.Message;
 import utility.ResponseCode;
-import java.rmi.NotBoundException;
+
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
-import static utility.ResponseCode.*;
+
+import static utility.ResponseCode.Codici.R220;
 
 
-public class Client  implements ClientInterface {
+public class Client extends AnonymousClient {
+    static final private String className = "CLIENT";
 
     /******************/
     /* client fields */
@@ -39,13 +38,16 @@ public class Client  implements ClientInterface {
     private String cookie;
     private String myPrivateKey;
     private String myPublicKey;
-    private boolean pedantic = true;
+    private boolean pedantic  = true;
+
+    private String[] topicsSubscribed;                         //topic a cui si è iscritti
 
     /******************/
     /* server fields */
     private String serverName;                      //the name for the remote reference to look up
     private String brokerPublicKey;                 //broker's public key
     private ServerInterface server_stub;            //broker's stub
+    private String[] topicOnServer;                 //topic che gestisce il server
 
     /* remote registry fields */
     private String registryHost;                    //host for the remote registry
@@ -66,31 +68,11 @@ public class Client  implements ClientInterface {
      */
     public Client(String username, String plainPassword, String my_public_key, String my_private_key ) throws RemoteException
     {
-        if(username==null||plainPassword==null||my_public_key==null||my_private_key==null)
+        super(username,my_public_key,my_private_key);
+        if(plainPassword==null)
             throw new NullPointerException();
-
-        this.username=username;
         this.plainPassword=plainPassword;
-        this.myPublicKey=my_public_key;
-        this.myPrivateKey=my_private_key;
-        this.skeleton=(ClientInterface) UnicastRemoteObject.exportObject(this,0);
-
     }
-
-
-    /**
-     * Anonymous user's constructor
-     * @param username          il mio username
-     * @param my_private_key    la mia chiave privata
-     * @param my_public_key     la mia chiave pubblica
-     */
-    public Client(String username, String my_public_key, String my_private_key)throws RemoteException
-    {
-        this(username,"",my_public_key,my_private_key);
-    }
-
-
-
 
 
     // *************************************************************************************************************
@@ -101,181 +83,83 @@ public class Client  implements ClientInterface {
      *Il client si registra sul server su cui si era connesso con il metodo connect() e viene settato il cookie
      * @return true se registrazione andata a buon fine, false altrimenti
      */
+    @Override
     public boolean register() {
         try {
             ResponseCode responseCode = server_stub.register(this.username, this.plainPassword, this.skeleton, this.myPublicKey,"emailTest@qualcosa.org");
-            if (responseCode.getCodice().equals(Codici.R100)) {
-                this.cookie = responseCode.getMessaggioInfo();
-                return true;
-            }else{
-                if (responseCode.getCodice().equals(Codici.R610)) {
-                    System.out.println(responseCode.getMessaggioInfo());
-                } else {
-                    System.out.println(responseCode.getCodice()+":"+responseCode.getMessaggioInfo()+"  FROM:"+responseCode.getClasseGeneratrice());
-                }
-                return false;
-            }
+            return registered(responseCode);
         }catch (RemoteException e){
-            System.err.println("Remote exception:"+e.getClass().getSimpleName());
+            errorStamp(e, "Unable to reach the server.");
             return false;
         }
     }
-
-    public boolean anonymousRegister(){
-        try {
-            ResponseCode responseCode = server_stub.anonymousRegister(this.skeleton, this.myPublicKey);
-            if (responseCode.getCodice().equals(Codici.R100)) {
-                this.cookie = responseCode.getMessaggioInfo();
-                return true;
-            } else {
-                if (responseCode.getCodice().equals(Codici.R610)) {
-                    System.out.println(responseCode.getMessaggioInfo());
-
-                } else {
-                    System.out.println(responseCode.getCodice() + ":" + responseCode.getMessaggioInfo() + "  FROM:" + responseCode.getClasseGeneratrice());
-                }
-                return false;
-            }
-        }catch (RemoteException e){
-            System.err.println("Remote exception:"+e.getClass().getSimpleName());
-            return false;
-        }
-    }
-
-
 
 
 
     /**
-     * Si connette al server specificato dalla stringa broker e dalla porta regPort facendo il lookup
-     * sul registry dell'host
-     * @param regHost l'indirizzo della macchina su cui risiede il registry
-     * @param regPort porta su cui connettersi al registro
-     * @return true se andata a buon fine,false altrimenti
+     * Si chiede al server di recuperare le informazioni legate al nostro account
+     * @return TRUE se andata a buon fine,FALSE altrimenti
      */
-
-    public ServerInterface connect(String regHost, String server, Integer regPort)
-    {
-        try {
-            Registry r = LocateRegistry.getRegistry(regHost, regPort);
-            ServerInterface server_stub = (ServerInterface) r.lookup(server);
-            ResponseCode rc = server_stub.connect();
-            if(rc.IsOK())
-                this.brokerPublicKey = rc.getMessaggioInfo();
-            return server_stub;
-        }catch (RemoteException |NotBoundException exc){
-            return null;
-        }
-    }
-
-
-    public void subscribe(String topic)
-    {
-
-
-
-
-    }
-
-    public boolean disconnect(){
-        try {
-            boolean uscita=false;
-            ResponseCode response=server_stub.disconnect(cookie);
-            switch(response.getCodice())
-            {
-                case R200:
-                    uscita=true;
-                    System.out.println(response.getCodice()+":"+response.getClasseGeneratrice()+":"+response.getMessaggioInfo());
-                    break;
-                default:
-                    System.err.println(response.getCodice()+":"+response.getClasseGeneratrice()+":"+response.getMessaggioInfo());
-                    uscita=false;
-                    break;
-            }
-            this.server_stub=null;
-            return uscita;
-
-        }catch(RemoteException exc){
-            System.err.println(exc.getClass().getSimpleName());
-            return false;
-        }
-
-    }
-
-
+    @Override
     public boolean retrieveAccount(){
-        try{
-            ResponseCode response=server_stub.retrieveAccount(username,plainPassword,skeleton);
-            switch(response.getCodice())
-            {
-                case R220:
-                    System.out.println(response.getCodice()+":"+response.getClasseGeneratrice()+":"+response.getMessaggioInfo());
+        if(connected()) {
+            try {
+                ResponseCode response = server_stub.retrieveAccount(username, plainPassword, skeleton);
+                if (response.getCodice() == R220) {
+                    infoStamp("Account successfully recovered.");
                     return true;
-                default:
-                    System.err.println(response.getCodice()+":"+response.getClasseGeneratrice()+":"+response.getMessaggioInfo());
-                    return false;
+                }
+                errorStamp(response, "Impossible to retrieve information.");
+                return false;
+            } catch (RemoteException exc) {
+                errorStamp(exc, "Unable to reach the server.");
+                return false;
             }
-        }catch(RemoteException exc){
-            System.err.println(exc.getClass().getSimpleName());
-            return false;
         }
+        errorStamp("Not connected to any server.");
+        return false;
     }
 
 
-
-
-
-    //metodi non ancora utilizzati ma che penso possano servire più tardi
-    public void setServerInfo(String regHost, String serverName){
-        if(regHost==null || regHost.isEmpty() || serverName==null || serverName.isEmpty()){
-            throw new IllegalArgumentException("Invalid argument format of regHost or serverName");
-        }
-        this.registryHost = regHost;
-        this.serverName   = serverName;
-
-    }
-
-    public void setServerInfo(String regHost, int regPort, String serverName) throws IllegalArgumentException{
-        if(regHost==null || regHost.isEmpty() || serverName==null || serverName.isEmpty()){
-            throw new IllegalArgumentException("Invalid argument format of regHost or serverName");
-        }
-        if(regPort>1024 && regPort<=65535)  //Se la porta passata è valida impostala come porta del server
-            this.registryPort = regPort;
-        else
-            this.registryPort = 1099;
-        setServerInfo(regHost, serverName);
-        this.server_stub = connect(regHost, serverName, regPort);
-        if(server_stub!=null){      //connesione al server avvenuta con successo
-            infoStamp("Successful connection to the server.");
-        }else {
-            infoStamp("Unable to reach the server.");
-        }
-    }
-
-
-
-
-    // *************************************************************************************************************
-    //REMOTE METHOD
-
+    /**
+     * pubblica un messaggio sul server a cui si è connessi
+     * @param topic     il topic su cui pubblicare il messsaggio
+     * @param title     il titolo del messaggio da inviare
+     * @param text      il testo  del messaggio da inviare
+     * @return          TRUE se andata a buon fine,FALSE altrimenti
+     */
     @Override
-    public ResponseCode notify(Message m) /*throws RemoteException*/ {
-        ResponseCode rc;
-        if(m==null) {
-             rc=new ResponseCode(Codici.R500, TipoClasse.CLIENT,
-                    "(-) NOT OK Il server ha ricevuto un messaggio vuoto");
-            return rc;
+    public boolean publish( String topic, String title, String text){
+        if(connected()) {
+            Message msg = createMessage(topic, title, text);
+            if(msg == null)     //errore durante la creazione di un messaggio
+                return false;
+
+            try {
+                ResponseCode response = null;
+                //todo aggiungere un codice di risposta alla publish
+                /*code = */server_stub.publish(this.cookie, msg);
+                if(response.IsOK())
+                {
+                    infoStamp("Message published.");
+                    return true;
+                }
+                else
+                    errorStamp(response, "Error while publishing the message.");
+            }catch (RemoteException e){
+                errorStamp(e, "Unable to reach the server.");
+                return false;
+            }
         }
-         rc=new ResponseCode(Codici.R200, TipoClasse.CLIENT,
-                "(+) OK il server ha ricevuto il messaggio");
-        return rc;
+        errorStamp("Not connected to any server.");
+        return false;
     }
 
-    /* is throw remoteException necessary?*/
-    @Override
-    public boolean isAlive()/* throws RemoteException*/ {
-        return true;
-    }
+
+
+
+
+
 
 
 
@@ -283,74 +167,20 @@ public class Client  implements ClientInterface {
     // *************************************************************************************************************
     //PRIVATE METHOD
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    //METODI UTILIZZATI PER LA GESTIONE DELL'OUTPUT DEL CLIENT
-
-    private void errorStamp(Exception e){
-        System.out.flush();
-        System.err.println("[CLIENT-ERROR]");
-        System.err.println("\tException type: "    + e.getClass().getSimpleName());
-        System.err.println("\tException message: " + e.getMessage());
-        e.printStackTrace();
-    }
-
-    private void errorStamp(Exception e, String msg){
-        System.out.flush();
-        System.err.println("[CLIENT-ERROR]: "      + msg);
-        System.err.println("\tException type: "    + e.getClass().getSimpleName());
-        System.err.println("\tException message: " + e.getMessage());
-        e.printStackTrace();
-    }
-
-    private void warningStamp(Exception e, String msg){
-        System.out.flush();
-        System.err.println("[CLIENT-WARNING]: "    + msg);
-        System.err.println("\tException type: "    + e.getClass().getSimpleName());
-        System.err.println("\tException message: " + e.getMessage());
-    }
-
-    private void infoStamp(String msg){
-        System.out.println("[CLIENT-INFO]: " + msg);
-    }
-
-    private void pedanticInfo(String msg){
-        if(pedantic){
-            infoStamp(msg);
+    private Message createMessage(String topic, String title, String text){
+        Message msg = null;
+        try {
+            msg = new Message(title, this.username, text, topic);
+        } catch (Exception e) {
+            errorStamp("An exception has been thrown during the creation of a message.");
         }
+        return msg;
     }
+
+
+
+
+
+
+
 }
