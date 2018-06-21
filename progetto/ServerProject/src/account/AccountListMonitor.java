@@ -151,7 +151,7 @@ public class AccountListMonitor implements AccountCollectionInterface {
         try {
             for (int i = 0; i < this.length; i++) {
                 if (accountList[i] != null) {
-                    if (email.equalsIgnoreCase(accountList[i].getEmail()) || username.equalsIgnoreCase(accountList[i].getUsername())) {
+                    if (email.equalsIgnoreCase(accountList[i].getEmail()) || username.equals(accountList[i].getUsername())) {
                         return -1;
                     }
                 }
