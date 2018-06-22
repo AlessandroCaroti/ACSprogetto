@@ -562,7 +562,8 @@ public class Server implements ServerInterface,Callable<Integer> {
 
     private boolean emailValidation(String email,ClientInterface stub) throws MessagingException, RemoteException {
         final int MAXATTEMPTS = 3;
-        int codice = (int) (Math.random() * 1000000);
+        ResponseCode resp;
+        Integer codice = (int) (Math.random() * 1000000);
         javax.mail.Message messaggio = emailController.createEmailMessage(email, "EMAIL VALIDATION",
                 "Codice verifica:" + Integer.toString(codice)
         );
@@ -570,8 +571,11 @@ public class Server implements ServerInterface,Callable<Integer> {
         emailController.sendMessage(messaggio);
 
         for (int i = MAXATTEMPTS; i >0 ; i--) {
-            if (codice == stub.getEmailCode(i)) {
-                return true;
+            resp=stub.getCode(i);
+            if (resp.IsOK()) {
+                if(codice.equals(resp.getMessaggioInfo())) {
+                    return true;
+                }
             }
         }
         return false;

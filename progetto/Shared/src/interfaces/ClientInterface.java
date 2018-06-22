@@ -19,7 +19,6 @@ package interfaces;
 
 import utility.Message;
 import utility.ResponseCode;
-
 import java.io.Serializable;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -30,7 +29,7 @@ public interface ClientInterface extends Remote,Serializable
 
     void isAlive()  throws RemoteException;
 
-    int getEmailCode(int nAttempts) throws RemoteException;
+    ResponseCode getCode(int nAttempts) throws RemoteException;//lo si può usare sia per la register sia per il forgot password!
 
 }
 

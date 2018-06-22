@@ -5,6 +5,9 @@ import interfaces.ServerInterface;
 import utility.Message;
 import utility.ResponseCode;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -13,6 +16,7 @@ import java.util.Iterator;
 import java.util.TreeSet;
 
 import static utility.ResponseCode.Codici.R200;
+import static utility.ResponseCode.Codici.R670;
 
 
 public class AnonymousClient implements ClientInterface {
@@ -316,6 +320,23 @@ public class AnonymousClient implements ClientInterface {
     public void isAlive() {
     }
 
+    @Override
+    public ResponseCode getCode(int nAttempts){
+       System.out.println("Remaining attempts:"+Integer.toString(nAttempts));
+       System.out.println("Enter code:");
+       //TODO modificare qui l'inserimento
+
+        try {
+            BufferedReader bufferRead = new BufferedReader(new InputStreamReader(System.in));
+            String s = bufferRead.readLine();
+            return  new ResponseCode(R200,ResponseCode.TipoClasse.CLIENT,
+                    s);
+        } catch (IOException e) {
+            errorStamp(e, "Unable to read user input");
+        }
+        return new ResponseCode(R670,ResponseCode.TipoClasse.CLIENT,
+                "(-) Internal client error");
+    }
 
 
 

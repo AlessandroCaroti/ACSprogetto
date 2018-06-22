@@ -53,6 +53,7 @@ public  class ResponseCode implements Serializable {
          R650,  //Codice validazione email inserito errato,Tentativi terminati
          R660,  //Username per la registrazione già in uso,sceglierne un altro
          R666,  //Formato cookie non valido
+         R670   //Internal client error
 
     }
 
