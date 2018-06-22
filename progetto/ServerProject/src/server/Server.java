@@ -359,6 +359,14 @@ public class Server implements ServerInterface,Callable<Integer> {
         return ResponseCodeList.InternalError;
     }
 
+    public ResponseCode retrieveAccoun(String username,String plainPassword,ClientInterface clientStub){
+
+
+
+
+    }
+
+
     @Override
     public void subscribe(String cookie, String topicName)  {
         try {
