@@ -340,30 +340,24 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     @Override
-    public ResponseCode retrieveAccount(String username, String plainPassword, ClientInterface clientStub){
-        try {
-            Integer accountId = userNameList.get(username);     //Returns null if userNameList does not contain the username
-            if(accountId != null) {
-                Account account = accountList.getAccountCopy(accountId);
-                if (account.getUsername().equals(username) && account.cmpPassword(plainPassword)) {//okay -->setto lo stub
-                    accountList.setStub(clientStub, accountId);
+    public ResponseCode retrieveAccount(String username,String plainPassword,ClientInterface clientStub){
+        try{
+            Account account=accountList.getAccountCopyUsername(username);
+            if(account!=null){
+                if(account.cmpPassword(plainPassword)){
+                    accountList.setStub(clientStub, account.getAccountId());
                     pedanticInfo(username + " connected.");
                     return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER, "login andato a buon fine");
                 }
+            }else{
+                pedanticInfo(username + " invalid retrieve account.");
+                return ResponseCodeList.LoginFailed;
             }
-            pedanticInfo(username + " failed to connect.");
-            return ResponseCodeList.LoginFailed;
-        } catch (Exception e) {
+
+        }catch(Exception e){
             errorStamp(e);
         }
         return ResponseCodeList.InternalError;
-    }
-
-    public ResponseCode retrieveAccoun(String username,String plainPassword,ClientInterface clientStub){
-
-
-
-
     }
 
 
