@@ -28,7 +28,7 @@ public interface ClientInterface extends Remote,Serializable
 {
     ResponseCode notify(Message m) throws RemoteException;
 
-    boolean isAlive()  throws RemoteException;
+    void isAlive()  throws RemoteException;
 
 }
 
