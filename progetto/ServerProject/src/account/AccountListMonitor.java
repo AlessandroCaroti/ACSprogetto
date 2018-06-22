@@ -306,6 +306,25 @@ public class AccountListMonitor implements AccountCollectionInterface {
 
     }
 
+    public Account getAccountCopyEmail(String email){
+        if(email==null){throw new IllegalArgumentException("email==null");}
+        listLock.readLock().lock();
+        try {
+            for (int i = 0; i < this.MAXACCOUNTNUMBER; i++) {
+                if(accountList[i]!=null){
+                    if(email.equalsIgnoreCase(accountList[i].getEmail())){
+                        return accountList[i].copy();
+                    }
+                }
+            }
+            return null;
+        }finally{
+            listLock.readLock().unlock();
+        }
+
+    }
+
+
     public int getNumberOfAccount() {
         int l;
         listLock.readLock().lock();

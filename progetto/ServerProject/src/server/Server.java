@@ -282,7 +282,7 @@ public class Server implements ServerInterface,Callable<Integer> {
             }else{//email or username already present
                 if(accountId==-1){
                     pedanticInfo("Client registration refused, email \'"+email+"\' already used.");
-                    sendEmailAccountInfo(email,/*Todo username*/);
+                    sendEmailAccountInfo(email,accountList.getAccountCopyEmail(email).getUsername());
                 }
                 if(accountId==-2){
                     pedanticInfo("Client registration refused, username \'"+userName+"\' already used.");

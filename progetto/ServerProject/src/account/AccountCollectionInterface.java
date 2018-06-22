@@ -55,6 +55,13 @@ public interface AccountCollectionInterface {
      */
      Account getAccountCopyUsername(String userName);
 
+    /**Ritorna uno snapshot della classe account con email uguale a quello passato
+     * @param email l'email da cercare
+     * @return una copia dell'istanza account con email uguale a quello passato
+     * @throws  IllegalArgumentException se l'email passato è null
+     */
+    Account getAccountCopyEmail(String email);
+
     /**
      * Aggiunge o sovrascrive un account in posizione accountId
      * @return l'Account  eliminato(null se non era presente)
