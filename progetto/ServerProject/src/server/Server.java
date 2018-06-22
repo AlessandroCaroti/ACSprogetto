@@ -72,6 +72,8 @@ public class Server implements ServerInterface,Callable<Integer> {
 
     /* clients management fields */
     private AccountCollectionInterface accountList;                     //monitor della lista contente tutti gli account salvati
+    private RandomString randomStringSession;
+    private int anonymousCounter=0;
 
     /* server settings fields */
     private Properties serverSettings=new Properties();                 //setting del server
@@ -136,6 +138,9 @@ public class Server implements ServerInterface,Callable<Integer> {
         emailController=new EmailHandler(serverSettings,accountList.getMAXACCOUNTNUMBER());
         emailController.startEmailHandlerManager();
         infoStamp("Email Handler created and started.");
+
+        randomStringSession=new RandomString();
+        infoStamp("Random String session created");
 
         //Ho spostato la roba del regestry nel metodo start
 
@@ -266,7 +271,7 @@ public class Server implements ServerInterface,Callable<Integer> {
             Account account=new Account(userName,plainPassword,stub,publicKey,0,email);
             if((accountId=accountList.putIfAbsentEmailUsername(account))>=0){
 
-                if(emailValidation(email)){
+                if(this.emailValidation(email)){
                     pedanticInfo("Registered new client \'"+userName+"\'  \'"+email+"\'");
                     return new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER, getCookie(accountId));
                 }else{
@@ -294,8 +299,30 @@ public class Server implements ServerInterface,Callable<Integer> {
 
     @Override
     public ResponseCode anonymousRegister(ClientInterface stub, String publicKey)  {
-        //return register("AnonymousAccount","",stub,publicKey,null);
-        //TODO non va più bene il metodo sopra
+        int accountId;
+        String username;
+        String plainPassword;
+        String email = "anonymous";//Nota bene:un'account anonimo ha sempre la seguente email-quindi il check per sapere se è anonimo o no si fa sulla mail
+        Account account;
+        try {
+            do {
+                username = "anonymous" + Integer.toString(anonymousCounter++);
+                plainPassword = randomStringSession.nextString();
+                account = new Account(username, plainPassword, stub, publicKey, 0, email);
+                if ((accountId = accountList.putIfAbsentEmailUsername(account)) >= 0) {
+                    pedanticInfo("Registered new client \'"+username+"\'  \'"+email+"\'");
+                    return new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER, getCookie(accountId));
+
+                } else {// username already present
+                    if (accountId == -2) {
+                        pedanticInfo("Client registration refused, username \'" + username + "\' already used. Trying to generate another one.");
+                    }
+                }
+            }while(accountId==-2);
+        }catch(Exception e) {
+            errorStamp(e);
+        }
+        return ResponseCodeList.InternalError;
     }
 
 

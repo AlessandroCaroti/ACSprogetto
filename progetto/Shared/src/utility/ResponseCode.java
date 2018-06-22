@@ -50,6 +50,8 @@ public  class ResponseCode implements Serializable {
          R620,  //Errore disconnessione
          R630,  //Login senza successo
          R640,  //Topic non esistente
+         R650,  //Codice validazione email inserito errato,Tentativi terminati
+         R660,  //Username per la registrazione già in uso,sceglierne un altro
          R666,  //Formato cookie non valido
 
     }
@@ -123,6 +125,10 @@ public  class ResponseCode implements Serializable {
                 return "ClientError - Login Failed";
             case R640:
                 return "ClientError - Topics Not Existing";
+            case R650:
+                return "ClientError - Wrong Code, Attempts Terminated";
+            case R660:
+                return "ClientError - Username already in use";
             case R666:
                 return "ClientError - Invalid Cookies";
             default:
