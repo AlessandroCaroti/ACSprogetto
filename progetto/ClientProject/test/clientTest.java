@@ -14,7 +14,7 @@ public class clientTest {
             String servername;
             BufferedReader bufferRead = new BufferedReader(new InputStreamReader(System.in));
             servername= bufferRead.readLine();
-            client.setServerInfo("localhost",servername);
+            client.setServerInfo("localhost",1099,servername);
 
 
             if(client.connect()!=null){
