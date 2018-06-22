@@ -149,7 +149,7 @@ public class AccountListMonitor implements AccountCollectionInterface {
 
         this.listLock.writeLock().lock();
         try {
-            for (int i = 0; i < this.length; i++) {
+            for (int i = 0; i < this.MAXACCOUNTNUMBER; i++) {
                 if (accountList[i] != null) {
                     if (email.equalsIgnoreCase(accountList[i].getEmail())) {
                         return -1;
@@ -195,7 +195,7 @@ public class AccountListMonitor implements AccountCollectionInterface {
 
         listLock.readLock().lock();
         try {
-            for (int i = 0; i < this.length; i++) {
+            for (int i = 0; i < this.MAXACCOUNTNUMBER; i++) {
                 coppia = this.getEmailAndUsername(i);
                 if (email.equalsIgnoreCase(coppia[0]) || username.equalsIgnoreCase(coppia[1])) {
                     return this.getAccountCopy(i);
@@ -288,6 +288,23 @@ public class AccountListMonitor implements AccountCollectionInterface {
         }
     }
 
+    public Account getAccountCopyUsername(String username){
+        if(username==null){throw new IllegalArgumentException("username==null");}
+        listLock.readLock().lock();
+        try {
+            for (int i = 0; i < this.MAXACCOUNTNUMBER; i++) {
+                if(accountList[i]!=null){
+                    if(username.equals(accountList[i].getUsername())){
+                        return accountList[i].copy();
+                    }
+                }
+            }
+            return null;
+        }finally{
+            listLock.readLock().unlock();
+        }
+
+    }
 
     public int getNumberOfAccount() {
         int l;
