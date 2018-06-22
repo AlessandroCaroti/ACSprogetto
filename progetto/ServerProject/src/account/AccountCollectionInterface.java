@@ -59,14 +59,19 @@ public interface AccountCollectionInterface {
      Account addAccount(Account account,int accountId);
 
 
-    /**Elimina e ritorna l'istanza precedente alla posizione "posizione"
+    /**Elimina e ritorna l'istanza precedente alla posizione accountId
      * @param accountId deve essere >=0 AND <MAXNUMBERACCOUNT
      * @return l'istanza di account tolta dalla posizione "accountId" (può essere null)
      * @throws IllegalArgumentException se accountId<0 || accountId>=MAXACCOUNTNUMBER
      */
      Account removeAccount(int accountId);
 
-
+    /**Elimina e ritorna l'istanza precedente alla posizione accountId, controllando però che la mail salvata nell'account
+     * corrisponda a quella passata (equalsIgnoreCase). Se non corrisponde torna null
+     * @param accountId la posizione dell'accoutn da eliminare
+     * @param email l'email da controllare
+     * @return null se non corrisponde o se non trovata, l'istanza account eliminata altrimenti
+     */
      Account removeAccountCheckEmail(int accountId,String email);
 
     /**

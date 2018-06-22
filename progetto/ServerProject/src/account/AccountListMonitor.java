@@ -165,6 +165,25 @@ public class AccountListMonitor implements AccountCollectionInterface {
         }
     }
 
+    public Account removeAccountCheckEmail(int accountId,String email){
+        testRange(accountId);
+
+        Account toRemove;
+        listLock.writeLock().lock();
+        try {
+            toRemove = accountList[accountId];
+            if (toRemove != null) {
+                if(email.equalsIgnoreCase(toRemove.getEmail())) {
+                    this.length--;
+                    accountList[accountId] = null;
+                    lastFreeposition = accountId;
+                }
+            }
+        } finally {
+            this.listLock.writeLock().unlock();
+        }
+        return toRemove;
+    }
 
     /* ****************************************************************************************************/
     //METODI GETTER
