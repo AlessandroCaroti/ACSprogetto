@@ -119,7 +119,8 @@ public class Server implements ServerInterface,Callable<Integer> {
         System.out.println(System.getProperty("user.dir"));
 
         //Caricamento delle impostazioni del server memorizate su file
-        loadSetting("./src/server/config.serverSettings");
+        System.out.println("Working Directory = " + System.getProperty("user.dir"));
+        loadSetting("./progetto/ServerProject/src/server/config.serverSettings");//con ./src/server/config.serverSettings non andava
         infoStamp("Server settings imported.");
 
         //Creazione del gestore degli account
