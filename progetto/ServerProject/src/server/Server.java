@@ -120,7 +120,6 @@ public class Server implements ServerInterface,Callable<Integer> {
 
         //Caricamento delle impostazioni del server memorizate su file
         System.out.println("Working Directory = " + System.getProperty("user.dir"));
-//        loadSetting("./progetto/ServerProject/src/server/config.serverSettings");//con ./src/server/config.serverSettings non andava
         loadSetting("./src/server/config.serverSettings");
         infoStamp("Server settings imported.");
 
