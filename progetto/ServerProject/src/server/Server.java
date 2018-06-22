@@ -331,7 +331,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     public ResponseCode disconnect(String cookie) {
         try {
             int accountId = getAccountId(cookie);
-            this.accountList.setStub(null, accountId);//Se poi si ricambia quando uno si connette non è un pò inutile impostarlo a null
+            this.accountList.setStub(null, accountId);
             pedanticInfo(accountId + "disconnected.");
             return new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER,"disconnessione avvenuta con successo");
         }catch (BadPaddingException | IllegalBlockSizeException exc){
@@ -360,6 +360,26 @@ public class Server implements ServerInterface,Callable<Integer> {
         return ResponseCodeList.InternalError;
     }
 
+    @Override
+    public ResponseCode retrieveAccount(int cookie,String plainPassword,ClientInterface clientStub){
+        try{
+            Account account=accountList.getAccountCopy(cookie);
+            if(account!=null){
+                if(account.cmpPassword(plainPassword)){
+                    accountList.setStub(clientStub, account.getAccountId());
+                    pedanticInfo(account.getUsername() + " connected.");
+                    return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER, "login andato a buon fine");
+                }
+            }else{
+                pedanticInfo("Invalid cookie.");
+                return ResponseCodeList.LoginFailed;
+            }
+
+        }catch(Exception e){
+            errorStamp(e);
+        }
+        return ResponseCodeList.InternalError;
+    }
 
     @Override
     public void subscribe(String cookie, String topicName)  {
