@@ -6,7 +6,6 @@ public class ServerTest2 {
         try {
             broker = new Server();
             broker.start();
-            SecurityManager security = System.getSecurityManager();
 
 
         }catch (Exception e){
