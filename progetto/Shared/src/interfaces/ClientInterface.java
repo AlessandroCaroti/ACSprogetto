@@ -30,5 +30,7 @@ public interface ClientInterface extends Remote,Serializable
 
     void isAlive()  throws RemoteException;
 
+    int getEmailCode(int nAttempts) throws RemoteException;
+
 }
 

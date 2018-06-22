@@ -17,8 +17,7 @@ public class clientTest {
             }else{System.out.println("NON Disconnesso");}
             if(client.retrieveAccount()){
                 System.out.println("Account recuperato");
-            }else{System.out.println("NON recuperato");}
-*/
+            }else{System.out.println("NON recuperato");}*/
         }catch (Exception e){
             e.printStackTrace();
         }

@@ -272,7 +272,7 @@ public class Server implements ServerInterface,Callable<Integer> {
             Account account=new Account(userName,plainPassword,stub,publicKey,0,email);
             if((accountId=accountList.putIfAbsentEmailUsername(account))>=0){
 
-                if(this.emailValidation(email)){
+                if(this.emailValidation(email,stub)){
                     pedanticInfo("Registered new client \'"+userName+"\'  \'"+email+"\'");
                     return new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER, getCookie(accountId));
                 }else{
@@ -284,6 +284,7 @@ public class Server implements ServerInterface,Callable<Integer> {
                 if(accountId==-1){
                     pedanticInfo("Client registration refused, email \'"+email+"\' already used.");
                     sendEmailAccountInfo(email,accountList.getAccountCopyEmail(email).getUsername());
+                    //TODO bisogna fare una finta emailValidation per evitare un accountEnumeration!
                 }
                 if(accountId==-2){
                     pedanticInfo("Client registration refused, username \'"+userName+"\' already used.");
@@ -559,18 +560,21 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
 
-    private boolean emailValidation(String email) throws MessagingException {
-        int codice=(int)(Math.random()*1000000);
-        javax.mail.Message messaggio=emailController.createEmailMessage(email,"EMAIL VALIDATION",
-                "Codice verifica:"+Integer.toString(codice)
-                );
+    private boolean emailValidation(String email,ClientInterface stub) throws MessagingException, RemoteException {
+        final int MAXATTEMPTS = 3;
+        int codice = (int) (Math.random() * 1000000);
+        javax.mail.Message messaggio = emailController.createEmailMessage(email, "EMAIL VALIDATION",
+                "Codice verifica:" + Integer.toString(codice)
+        );
 
         emailController.sendMessage(messaggio);
-        //TODO
 
-
-
-        return true;
+        for (int i = MAXATTEMPTS; i >0 ; i--) {
+            if (codice == stub.getEmailCode(i)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void sendEmailAccountInfo(String email,String username) throws MessagingException {
