@@ -120,7 +120,8 @@ public class Server implements ServerInterface,Callable<Integer> {
 
         //Caricamento delle impostazioni del server memorizate su file
         System.out.println("Working Directory = " + System.getProperty("user.dir"));
-        loadSetting("./progetto/ServerProject/src/server/config.serverSettings");//con ./src/server/config.serverSettings non andava
+//        loadSetting("./progetto/ServerProject/src/server/config.serverSettings");//con ./src/server/config.serverSettings non andava
+        loadSetting("./src/server/config.serverSettings");
         infoStamp("Server settings imported.");
 
         //Creazione del gestore degli account
@@ -202,6 +203,7 @@ public class Server implements ServerInterface,Callable<Integer> {
             if (System.getSecurityManager() == null) {
                 System.setSecurityManager(new SecurityManager());
             }
+            testPolicy(System.getSecurityManager());
             infoStamp("Security Manager installed.");
 
             //Creating or import the local regestry
@@ -498,6 +500,16 @@ public class Server implements ServerInterface,Callable<Integer> {
             accManager = new AccountListMonitor();        //Utilizzo del costruttore di default
         }
         return accManager;
+    }
+
+    private void testPolicy(SecurityManager sm){
+        try {
+            sm.checkListen(0);
+            //sm.checkPackageAccess("sun.rmi.*");
+        }catch (Exception e){
+            errorStamp(e, "Policies not imported properly");
+            System.exit(1);
+        }
     }
 
 
