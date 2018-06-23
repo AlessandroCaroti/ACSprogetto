@@ -378,6 +378,43 @@ public class AnonymousClient implements ClientInterface {
 
 
 
+    /*GETTER and SETTER*/
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getCookie() {
+        return cookie;
+    }
+
+    public void setCookie(String cookie) {
+        this.cookie = cookie;
+    }
+
+    public String getMyPrivateKey() {
+        return myPrivateKey;
+    }
+
+    public void setMyPrivateKey(String myPrivateKey) {
+        this.myPrivateKey = myPrivateKey;
+    }
+
+    public String getMyPublicKey() {
+        return myPublicKey;
+    }
+
+    public void setMyPublicKey(String myPublicKey) {
+        this.myPublicKey = myPublicKey;
+    }
+
+
+
+
 
     //METODI UTILIZZATI PER LA GESTIONE DELL'OUTPUT DEL CLIENT
 
