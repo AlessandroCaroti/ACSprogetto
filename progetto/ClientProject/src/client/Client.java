@@ -28,7 +28,7 @@ import static utility.ResponseCode.Codici.R220;
 
 
 public class Client extends AnonymousClient {
-    static final private String className = "CLIENT";
+    static  private String className = "CLIENT";
 
     /******************/
     /* client fields */

@@ -21,15 +21,16 @@ public class ManualClientTester {
 
         while (true) {
             try{
-            System.out.println("Cosa vuoi fare:" +
-                    "1:create client and set as current" +
-                    "2:create anonymousclient and set as current" +
-                    "3:print client list" +
-                    "4:select client"+
-                    "5:print currentclient info"+
-                    "6:connect to server automatic"+
-                    "7:register"+
-                    "8:disconnect"
+            System.out.println("Cosa vuoi fare:\n" +
+                    "1:create client and set as current\n" +
+                    "2:create anonymousclient and set as current\n" +
+                    "3:print client list\n" +
+                    "4:select client\n"+
+                    "5:print currentclient info\n"+
+                    "6:connect current to server automatic\n"+
+                    "7:register current\n"+
+                    "8:disconnect current\n"+
+                    "9:retrieve current account1"
 
             );
             scelta = Integer.parseInt(bufferRead.readLine());
@@ -47,9 +48,6 @@ public class ManualClientTester {
                 case 2:
                     System.out.println("Inserisci username");
                     username=bufferRead.readLine();
-                    System.out.println("Inserisci password");
-                    password=bufferRead.readLine();
-                    email=null;
                     clients.add(currentClient=new AnonymousClient(username,pubKey,privKey));
                     break;
                 case 3:
@@ -58,7 +56,7 @@ public class ManualClientTester {
                         if(it instanceof Client) {
                             System.out.println("i:"+i+"  username:" + it.getUsername() + "  password"+((Client) it).getPlainPassword()+"   email:"+((Client)it).getEmail()+"  cookie:"+it.getCookie());
                         }else if(it !=null){
-                            System.out.println("i:"+"  username:" + it.getUsername() +"  cookie:"+it.getCookie());
+                            System.out.println("i:"+i+"  username:" + it.getUsername() +"  cookie:"+it.getCookie());
                         }
                     }
 
@@ -84,10 +82,19 @@ public class ManualClientTester {
                     break;
                 case 7:
                     if(currentClient==null){System.out.println("currentclient==null");break;}
-                    if(currentClient.register()){
-                        System.out.println("REGISTRATO");
-                    }else{System.out.println("NON REGISTRATO");}
-                    break;
+                    if(currentClient instanceof Client){
+                        if (currentClient.register()) {
+                            System.out.println("REGISTRATO");
+                        } else {
+                            System.out.println("NON REGISTRATO");
+                        }
+                    }else {
+                        if (currentClient.register()) {
+                            System.out.println("REGISTRATO");
+                        } else {
+                            System.out.println("NON REGISTRATO");
+                        }
+                    }break;
                 case 8:
                     if(currentClient==null){System.out.println("currentclient==null");break;}
                     if(currentClient.disconnect()){

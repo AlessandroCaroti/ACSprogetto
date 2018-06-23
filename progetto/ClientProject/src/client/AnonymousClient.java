@@ -21,7 +21,7 @@ import static utility.ResponseCode.Codici.R670;
 
 public class AnonymousClient implements ClientInterface {
 
-    static final protected String className = "ANONYMOUS_CLIENT";
+    static  protected String className = "ANONYMOUS_CLIENT";
 
     static final protected int DEFAULT_REGISTRY_PORT = 1099;
 
