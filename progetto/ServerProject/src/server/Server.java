@@ -580,7 +580,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         );
 
         emailController.sendMessage(messaggio);
-
+        this.infoStamp("message sent code:"+Integer.toString(codice));
         for (int i = MAXATTEMPTS; i >0 ; i--) {
             resp=stub.getCode(i);
             if (resp.IsOK()) {
