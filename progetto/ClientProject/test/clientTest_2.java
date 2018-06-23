@@ -15,7 +15,7 @@ public class clientTest_2 {
                 e.printStackTrace();
                 return;
             }
-            if(client.register()){//TODO lo stub non viene settato bisogna fare in modo che la infoserver.getServerInfo faccia il set
+            if(client.register()){
                 System.out.println("REGISTRATO");
             }else{System.out.println("NON REGISTRATO");return;}
 

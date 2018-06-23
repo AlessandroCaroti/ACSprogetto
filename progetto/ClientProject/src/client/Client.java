@@ -85,6 +85,7 @@ public class Client extends AnonymousClient {
      */
     @Override
     public boolean register() {
+        if(server_stub==null){System.err.println("ciao");}//TODO DA ELIMINARE --->lo stub non viene settato
         try {
             ResponseCode responseCode = server_stub.register(this.username, this.plainPassword, this.skeleton, this.myPublicKey,"emailTest@qualcosa.org");
             return registered(responseCode);
