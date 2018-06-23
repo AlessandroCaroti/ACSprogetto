@@ -412,7 +412,9 @@ public class AnonymousClient implements ClientInterface {
         this.myPublicKey = myPublicKey;
     }
 
-
+    public static String getClassName() {
+        return className;
+    }
 
 
 

@@ -32,30 +32,8 @@ public class Client extends AnonymousClient {
 
     /******************/
     /* client fields */
-    //private String username;
     private String plainPassword;
-    //private ClientInterface skeleton;//my stub
-    //private String cookie;
-    //private String myPrivateKey;
-    //private String myPublicKey;
-    //private boolean pedantic  = true;
-
-    //private String[] topicsSubscribed;                         //topic a cui si è iscritti
-
-    /******************/
-    /* server fields */
-    //private String serverName;                      //the name for the remote reference to look up
-    //private String brokerPublicKey;                 //broker's public key
-    //private ServerInterface server_stub;            //broker's stub
-    //private String[] topicOnServer;                 //topic che gestisce il server
-
-    /* remote registry fields */
-    //private String registryHost;                    //host for the remote registry
-    //private int registryPort = 1099;                //port on which the registry accepts requests
-
-
-
-
+    private String email;
     // ************************************************************************************************************
     //CONSTRUCTORS
 
@@ -65,13 +43,15 @@ public class Client extends AnonymousClient {
      * @param plainPassword     password in chiaro
      * @param my_private_key    la mia chiave privata
      * @param my_public_key     la mia chiave pubblica
+     * @param email             la mail associata all'account
      */
-    public Client(String username, String plainPassword, String my_public_key, String my_private_key ) throws RemoteException
+    public Client(String username, String plainPassword, String my_public_key, String my_private_key,String email ) throws RemoteException
     {
         super(username,my_public_key,my_private_key);
-        if(plainPassword==null)
+        if(plainPassword==null||email==null)
             throw new NullPointerException();
         this.plainPassword=plainPassword;
+        this.email=email;
     }
 
 
@@ -85,9 +65,8 @@ public class Client extends AnonymousClient {
      */
     @Override
     public boolean register() {
-        if(server_stub==null){System.err.println("ciao");}//TODO DA ELIMINARE --->lo stub non viene settato
         try {
-            ResponseCode responseCode = server_stub.register(this.username, this.plainPassword, this.skeleton, this.myPublicKey,"emailTest@qualcosa.org");
+            ResponseCode responseCode = server_stub.register(this.username, this.plainPassword, this.skeleton, this.myPublicKey,this.email);
             return registered(responseCode);
         }catch (RemoteException e){
             errorStamp(e, "Unable to reach the server.");
@@ -156,15 +135,25 @@ public class Client extends AnonymousClient {
         return false;
     }
 
+    public String getPlainPassword() {
+        return plainPassword;
+    }
 
+    public void setPlainPassword(String plainPassword) {
+        this.plainPassword = plainPassword;
+    }
 
+    public static String getClassName() {
+        return className;
+    }
 
+    public String getEmail() {
+        return email;
+    }
 
-
-
-
-
-
+    public void setEmail(String email) {
+        this.email = email;
+    }
     // *************************************************************************************************************
     //PRIVATE METHOD
 

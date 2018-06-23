@@ -5,7 +5,7 @@ public class clientTest_2 {
     static Client client;
     public static void main(String[] args) {
         try {
-            client = new Client("user_1", "password","pki_pubblica", "pki_privata");
+            client = new Client("user_1", "password","pki_pubblica", "pki_privata","email");
             try {
                 ServerInfoRecover infoServer = new ServerInfoRecover();
                 String[] a = infoServer.getServerInfo();
