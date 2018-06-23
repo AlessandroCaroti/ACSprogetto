@@ -379,38 +379,6 @@ public class AnonymousClient implements ClientInterface {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     //METODI UTILIZZATI PER LA GESTIONE DELL'OUTPUT DEL CLIENT
 
     protected void errorStamp(Exception e){
