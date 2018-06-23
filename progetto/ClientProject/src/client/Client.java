@@ -32,26 +32,26 @@ public class Client extends AnonymousClient {
 
     /******************/
     /* client fields */
-    private String username;
+    //private String username;
     private String plainPassword;
-    private ClientInterface skeleton;//my stub
-    private String cookie;
-    private String myPrivateKey;
-    private String myPublicKey;
-    private boolean pedantic  = true;
+    //private ClientInterface skeleton;//my stub
+    //private String cookie;
+    //private String myPrivateKey;
+    //private String myPublicKey;
+    //private boolean pedantic  = true;
 
-    private String[] topicsSubscribed;                         //topic a cui si è iscritti
+    //private String[] topicsSubscribed;                         //topic a cui si è iscritti
 
     /******************/
     /* server fields */
-    private String serverName;                      //the name for the remote reference to look up
-    private String brokerPublicKey;                 //broker's public key
-    private ServerInterface server_stub;            //broker's stub
-    private String[] topicOnServer;                 //topic che gestisce il server
+    //private String serverName;                      //the name for the remote reference to look up
+    //private String brokerPublicKey;                 //broker's public key
+    //private ServerInterface server_stub;            //broker's stub
+    //private String[] topicOnServer;                 //topic che gestisce il server
 
     /* remote registry fields */
-    private String registryHost;                    //host for the remote registry
-    private int registryPort = 1099;                //port on which the registry accepts requests
+    //private String registryHost;                    //host for the remote registry
+    //private int registryPort = 1099;                //port on which the registry accepts requests
 
 
 
