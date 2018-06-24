@@ -26,41 +26,39 @@ import java.util.concurrent.*;
 import static java.util.Objects.requireNonNull;
 
 
-public class EmailHandler implements EmailController {
+public class EmailHandlerTLS implements EmailController {
 
     private final String username;
     private final String password;
     private final Session session;
     private final BlockingQueue<Message> messagesList;
     private ExecutorService emailHandlerThread=Executors.newSingleThreadScheduledExecutor();
-    private Transport transport;
 
 
     /* ********************************************************
         CONSTRUCTORS
      **********************************************************/
 
-     public EmailHandler(String myEmail,String myPassword,int handlerMaxCapacity,int smtpPort,String smtpProvider) throws   IllegalArgumentException{
-         infoStamp("connecting to:"+myEmail+"; password:"+myPassword+";  smtpPort:"+smtpPort+"  smtpProvider:"+smtpProvider+";");
-        this.username=requireNonNull(myEmail);
-        this.password=requireNonNull(myPassword);
-        Properties props = new Properties();
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.host", smtpProvider);
-        props.put("mail.smtp.port", Integer.toString(smtpPort));
-        props.put("mail.smtp.connectiontimeout", "2000");
-        props.put("mail.smtp.timeout", "2000");
-        this.session=Session.getDefaultInstance(
-                props,
-                                            new javax.mail.Authenticator(){
-                                                protected PasswordAuthentication getPasswordAuthentication() {
-                                                    return new PasswordAuthentication(username, password);
-                                                }
-                                            }
-        );
+    public EmailHandlerTLS(String myEmail,String myPassword,int handlerMaxCapacity,int smtpPort,String smtpProvider) throws   IllegalArgumentException{
         if(handlerMaxCapacity<=0){throw  new IllegalArgumentException("Error: emailhandlerCapacity <=0");}
         this.messagesList=new ArrayBlockingQueue<>(handlerMaxCapacity);
+        this.username=requireNonNull(myEmail);
+        this.password=requireNonNull(myPassword);
+        infoStamp("connecting to:"+this.username+"; password:"+this.password+";  smtpPort:"+Integer.toString(smtpPort)+";  smtpProvider:"+smtpProvider+";");
+
+        Properties props=new Properties();
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.host", smtpProvider);
+        props.put("mail.smtp.port",Integer.toString(smtpPort));
+
+        this.session=Session.getInstance(props,
+                new javax.mail.Authenticator(){
+                    protected PasswordAuthentication getPasswordAuthentication(){
+                return new PasswordAuthentication(myEmail,myPassword);
+            }
+                });
+
     }
 
 
@@ -68,7 +66,7 @@ public class EmailHandler implements EmailController {
     /**
      * Usa le impostazioni salvate nel file di configurazione passato
      */
-    public EmailHandler(Properties serverProperties,int handlerMaxCapacity) throws IllegalArgumentException{
+    public EmailHandlerTLS(Properties serverProperties,int handlerMaxCapacity) throws IllegalArgumentException{
         this(
                 serverProperties.getProperty("serveremail"),
                 serverProperties.getProperty("emailpassword"),
@@ -78,11 +76,9 @@ public class EmailHandler implements EmailController {
         );
     }
 
-
-
-
-
-
+    public BlockingQueue<Message> getMessagesList() {
+        return messagesList;
+    }
 
 
     /* *******************************************************
@@ -121,35 +117,35 @@ public class EmailHandler implements EmailController {
         THREAD MANAGER
      ******************************************************************************/
     private class EmailThread implements Runnable{
-            private EmailHandler emailHandlerClass;
+        private EmailHandlerTLS emailHandlerClass;
 
-            private EmailThread(EmailHandler handlerClass){
-                this.emailHandlerClass=requireNonNull(handlerClass);
-            }
+        private EmailThread(EmailHandlerTLS handlerClass){
+            this.emailHandlerClass=requireNonNull(handlerClass);
+        }
 
-            public  void run(){/*TODO not sure on this part (Interrupted exception )*/
-                Message toBeSent;
-                while(true){
-                    try {
-                            while((toBeSent=emailHandlerClass.messagesList.poll())==null) {
-                                synchronized(emailHandlerClass.messagesList) {
-                                    infoStamp("email daemon's going to sleep.");
-                                    emailHandlerClass.messagesList.wait();
-                                }
-                            }
-                            infoStamp("trying to send message.");
-                            transport.sendMessage(toBeSent,toBeSent.getAllRecipients());
-                            infoStamp("message sent!");
-                        }
-                        catch (InterruptedException |MessagingException e) {
-                            if(e instanceof InterruptedException) {
-                                return;
-                            }
-                            errorStamp(new RuntimeException() ,"unable to send email");
+        public  void run(){/*TODO not sure on this part (Interrupted exception )*/
+            Message toBeSent;
+            while(true){
+                try {
+                    while((toBeSent=emailHandlerClass.messagesList.poll())==null) {
+                        synchronized(emailHandlerClass.messagesList) {
+                            infoStamp("email daemon's going to sleep.");
+                            emailHandlerClass.messagesList.wait();
                         }
                     }
-
+                    infoStamp("trying to send message.");
+                    Transport.send(toBeSent);
+                    infoStamp("message sent!");
                 }
+                catch (InterruptedException |MessagingException e) {
+                    if(e instanceof InterruptedException) {
+                        return;
+                    }
+                    errorStamp(e,"unable to send email");
+                }
+            }
+
+        }
     }
 
     private void errorStamp(Exception e){

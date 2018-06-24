@@ -20,11 +20,9 @@ package server;
 
 import account.AccountCollectionInterface;
 import account.AccountListMonitor;
-import customException.AccountMonitorRuntimeException;
 import customException.AccountRegistrationException;
-import customException.MaxNumberAccountReached;
 import email.EmailController;
-import email.EmailHandler;
+import email.EmailHandlerTLS;
 import interfaces.ServerInterface;
 import interfaces.ClientInterface;
 import utility.Account;
@@ -35,7 +33,6 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.mail.MessagingException;
-import javax.swing.filechooser.FileSystemView;
 import java.io.*;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -48,10 +45,8 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListMap;
 
@@ -135,7 +130,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         infoStamp("Aes created.");
 
         //Creazione dell'email handler e avvio di quest'ultimo
-        emailController=new EmailHandler("ACSgroup.unige@gmail.com","Evvivaladroga@",100,587,"smtp.gmail.com");
+        emailController=new EmailHandlerTLS("acsgroup.unige@gmail.com","Pcadlol100lol",100,587,"smtp.gmail.com");
         //emailController=new EmailHandler(serverSettings,accountList.getMAXACCOUNTNUMBER());
         emailController.startEmailHandlerManager();
         infoStamp("Email Handler created and started.");
