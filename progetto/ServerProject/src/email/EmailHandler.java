@@ -33,6 +33,7 @@ public class EmailHandler implements EmailController {
     private final Session session;
     private final BlockingQueue<Message> messagesList;
     private ExecutorService emailHandlerThread=Executors.newSingleThreadScheduledExecutor();
+    private Transport transport;
 
 
     /* ********************************************************
@@ -40,15 +41,17 @@ public class EmailHandler implements EmailController {
      **********************************************************/
 
      public EmailHandler(String myEmail,String myPassword,int handlerMaxCapacity,int smtpPort,String smtpProvider) throws   IllegalArgumentException{
+         infoStamp("connecting to:"+myEmail+"; password:"+myPassword+";  smtpPort:"+smtpPort+"  smtpProvider:"+smtpProvider+";");
         this.username=requireNonNull(myEmail);
         this.password=requireNonNull(myPassword);
-        Integer smtpPort1 = smtpPort;
         Properties props = new Properties();
         props.put("mail.smtp.starttls.enable", "true");
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.host", smtpProvider);
         props.put("mail.smtp.port", Integer.toString(smtpPort));
-        this.session=Session.getInstance(
+        props.put("mail.smtp.connectiontimeout", "2000");
+        props.put("mail.smtp.timeout", "2000");
+        this.session=Session.getDefaultInstance(
                 props,
                                             new javax.mail.Authenticator(){
                                                 protected PasswordAuthentication getPasswordAuthentication() {
@@ -103,6 +106,7 @@ public class EmailHandler implements EmailController {
         }
         this.messagesList.add(message);
         synchronized (messagesList) {
+            infoStamp("waking up the email demon.");
             this.messagesList.notify();
         }
     }
@@ -129,19 +133,48 @@ public class EmailHandler implements EmailController {
                     try {
                             while((toBeSent=emailHandlerClass.messagesList.poll())==null) {
                                 synchronized(emailHandlerClass.messagesList) {
+                                    infoStamp("email daemon's going to sleep.");
                                     emailHandlerClass.messagesList.wait();
                                 }
                             }
-                            Transport.send(toBeSent);
+                            infoStamp("trying to send message.");
+                            transport.sendMessage(toBeSent,toBeSent.getAllRecipients());
+                            infoStamp("message sent!");
                         }
                         catch (InterruptedException |MessagingException e) {
                             if(e instanceof InterruptedException) {
                                 return;
                             }
-                            System.err.println("ERROR:unable to send email");
+                            errorStamp(new RuntimeException() ,"unable to send email");
                         }
                     }
+
                 }
     }
 
+    private void errorStamp(Exception e){
+        System.out.flush();
+        System.err.println("[EMAILHANDLER-ERROR]");
+        System.err.println("\tException type: "    + e.getClass().getSimpleName());
+        System.err.println("\tException message: " + e.getMessage());
+        e.printStackTrace();
+    }
+
+    private void errorStamp(Exception e, String msg){
+        System.out.flush();
+        System.err.println("[EMAILHANDLER-ERROR]: "      + msg);
+        System.err.println("\tException type: "    + e.getClass().getSimpleName());
+        System.err.println("\tException message: " + e.getMessage());
+        e.printStackTrace();
+    }
+
+    private void warningStamp(Exception e, String msg){
+        System.out.flush();
+        System.err.println("[EMAILHANDLER-WARNING]: "    + msg);
+        System.err.println("\tException type: "    + e.getClass().getSimpleName());
+        System.err.println("\tException message: " + e.getMessage());
+    }
+    private void infoStamp(String msg){
+        System.out.println("[EMAILHANDLER-INFO]: " + msg);
+    }
 }

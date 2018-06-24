@@ -135,8 +135,8 @@ public class Server implements ServerInterface,Callable<Integer> {
         infoStamp("Aes created.");
 
         //Creazione dell'email handler e avvio di quest'ultimo
-
-        emailController=new EmailHandler(serverSettings,accountList.getMAXACCOUNTNUMBER());
+        emailController=new EmailHandler("ACSgroup.unige@gmail.com","Evvivaladroga@",100,587,"smtp.gmail.com");
+        //emailController=new EmailHandler(serverSettings,accountList.getMAXACCOUNTNUMBER());
         emailController.startEmailHandlerManager();
         infoStamp("Email Handler created and started.");
 
@@ -335,7 +335,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         try {
             int accountId = getAccountId(cookie);
             this.accountList.setStub(null, accountId);
-            pedanticInfo(accountId + "disconnected.");
+            pedanticInfo("user:"+accountId + "  disconnected.");
             return new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER,"disconnessione avvenuta con successo");
         }catch (BadPaddingException | IllegalBlockSizeException exc){
             return new ResponseCode(ResponseCode.Codici.R620, ResponseCode.TipoClasse.SERVER,"errore disconnessione");
@@ -575,12 +575,12 @@ public class Server implements ServerInterface,Callable<Integer> {
         final int MAXATTEMPTS = 3;
         ResponseCode resp;
         Integer codice = (int) (Math.random() * 1000000);
-        javax.mail.Message messaggio = emailController.createEmailMessage(email, "EMAIL VALIDATION",
-                "Codice verifica:" + Integer.toString(codice)
-        );
 
-        emailController.sendMessage(messaggio);
-        infoStamp("message sent code:"+Integer.toString(codice));
+
+        emailController.sendMessage(emailController.createEmailMessage(email, "EMAIL VALIDATION",
+                "Codice verifica:" + Integer.toString(codice)
+        ));
+        infoStamp("message to:"+email+"; added to queue code:"+Integer.toString(codice));
         for (int i = MAXATTEMPTS; i >0 ; i--) {
             resp=stub.getCode(i);
             if (resp.IsOK()) {
