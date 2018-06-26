@@ -512,21 +512,7 @@ public class Server implements ServerInterface,Callable<Integer> {
      ****METODI USATI PER LA GESTIONE DEGLI ACCOUNT***************************************************************
      *************************************************************************************************************/
 
-
-    private int registerAccount(String userName, String plainPassword, ClientInterface stub, String publicKey,int accountId,String email) throws AccountRegistrationException {
-        //sarebbe utile aggiungere un metodo per controllare se l'account esiste già
-        //però solleva dei problemi sul testing(localhost non può avere più di un account)->soluzione chiave primaria email associata all'account
-
-        try {
-            Account account = new Account(userName, plainPassword, stub, publicKey, accountId,email);
-            return accountList.addAccount(account);
-        }catch (Exception exc){
-            errorStamp(exc,"Unable to register new account");
-            throw new AccountRegistrationException("Unable to register new account");
-        }
-    }
-
-
+    
     private String getCookie(int accountId) throws BadPaddingException, IllegalBlockSizeException {
         return aesCipher.encrypt(String.valueOf(accountId));
     }
