@@ -20,7 +20,6 @@ package server;
 
 import account.AccountCollectionInterface;
 import account.AccountListMonitor;
-import customException.AccountRegistrationException;
 import email.EmailController;
 import email.EmailHandlerTLS;
 import interfaces.ServerInterface;
@@ -512,7 +511,7 @@ public class Server implements ServerInterface,Callable<Integer> {
      ****METODI USATI PER LA GESTIONE DEGLI ACCOUNT***************************************************************
      *************************************************************************************************************/
 
-    
+
     private String getCookie(int accountId) throws BadPaddingException, IllegalBlockSizeException {
         return aesCipher.encrypt(String.valueOf(accountId));
     }
