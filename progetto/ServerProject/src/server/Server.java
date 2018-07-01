@@ -45,6 +45,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -552,11 +553,15 @@ public class Server implements ServerInterface,Callable<Integer> {
 
 
     private boolean emailValidation(String email,ClientInterface stub) throws MessagingException, RemoteException {
+
+        String temp;
+        StringTokenizer tokenizer=new StringTokenizer(email);
+        temp=tokenizer.nextToken();
+        if(temp.equalsIgnoreCase("test"))return true;//TODO REMOVE 4 LINES up
+
         final int MAXATTEMPTS = 3;
         ResponseCode resp;
         Integer codice = (int) (Math.random() * 1000000);
-
-
         emailController.sendMessage(emailController.createEmailMessage(email, "EMAIL VALIDATION",
                 "Codice verifica:" + Integer.toString(codice)
         ));
@@ -574,6 +579,12 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     private void sendEmailAccountInfo(String email,String username) throws MessagingException {
+
+        String temp;
+        StringTokenizer tokenizer=new StringTokenizer(email);
+        temp=tokenizer.nextToken();
+        if(temp.equalsIgnoreCase("test"))return;//TODO REMOVE 4 LINES up
+
         javax.mail.Message message=emailController.createEmailMessage(email,"REGISTRATION ATTEMPT",
                 "Someone tried to register a new account by associating it with this email.\n" +
                         "If you have not made the request, ignore and delete the message.\n" +
