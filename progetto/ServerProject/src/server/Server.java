@@ -284,7 +284,7 @@ public class Server implements ServerInterface,Callable<Integer> {
                 }
                 if(accountId==-2){
                     pedanticInfo("Client registration refused, username \'"+userName+"\' already used.");
-                    return ResponseCodeList.InvalidUsername;
+                    return ResponseCodeList.InvalidUsernameOrEmail;
                 }
             }
 
@@ -365,7 +365,7 @@ public class Server implements ServerInterface,Callable<Integer> {
             if(account!=null){
                 if(account.cmpPassword(plainPassword)){
                     accountList.setStub(clientStub, account.getAccountId());
-                    pedanticInfo(account.getUsername() + " connected.");
+                    pedanticInfo("anonymous"+account.getUsername() + " connected.");
                     return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER, "login andato a buon fine");
                 }
             }else{
