@@ -343,17 +343,16 @@ public class Server implements ServerInterface,Callable<Integer> {
     public ResponseCode retrieveAccount(String username,String plainPassword,ClientInterface clientStub){
         try{
             Account account=accountList.getAccountCopyUsername(username);
-            if(account!=null){
-                if(account.cmpPassword(plainPassword)){
+            if(account!=null) {
+                if (account.cmpPassword(plainPassword)) {
                     accountList.setStub(clientStub, account.getAccountId());
                     pedanticInfo(username + " connected.");
                     return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER, "login andato a buon fine");
+                } else {
+                    pedanticInfo(username + " invalid retrieve account.");
+                    return ResponseCodeList.LoginFailed;
                 }
-            }else{
-                pedanticInfo(username + " invalid retrieve account.");
-                return ResponseCodeList.LoginFailed;
             }
-
         }catch(Exception e){
             errorStamp(e);
         }
@@ -361,9 +360,9 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     @Override
-    public ResponseCode retrieveAccount(int cookie,String plainPassword,ClientInterface clientStub){
+    public ResponseCode retrieveAccountByCookie(String cookie,String plainPassword,ClientInterface clientStub){
         try{
-            Account account=accountList.getAccountCopy(cookie);
+            Account account=accountList.getAccountCopy(cookie);//TODO to be modified calcolare l'id tramite il cookie
             if(account!=null){
                 if(account.cmpPassword(plainPassword)){
                     accountList.setStub(clientStub, account.getAccountId());
@@ -440,6 +439,30 @@ public class Server implements ServerInterface,Callable<Integer> {
         return topicList.toArray(new String[0]);    //guarda esempio in https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ConcurrentLinkedQueue.html#toArray(T[])
     }
 
+    //TODO
+    @Override
+    public ResponseCode retrieveCookie(String username,String plainPassword){
+            try {
+                Account account = this.accountList.getAccountCopyUsername(username);
+                if (account.cmpPassword(plainPassword)) {
+                    pedanticInfo("Sending " + username + " cookie.");
+                    return new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER, getCookie(account.getAccountId()));
+                } else {
+                    pedanticInfo("Invalid password.");
+                    return ResponseCodeList.LoginFailed;
+                }
+                //nosuch
+            }catch(Exception exc){
+                if(exc instanceof IllegalArgumentException){
+                    pedanticInfo("Invalid username (null).");
+                    return ResponseCodeList.LoginFailed;
+                }
+                else{
+                    errorStamp(exc);
+                }
+            }
+        return ResponseCodeList.InternalError;
+    }
 
 
     /*************************************************************************************************************

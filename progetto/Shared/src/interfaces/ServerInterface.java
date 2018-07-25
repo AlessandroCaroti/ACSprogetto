@@ -33,7 +33,9 @@ public interface ServerInterface extends Remote,Serializable
 
     ResponseCode retrieveAccount(String username, String plainPassword, ClientInterface clientStub)throws RemoteException;
 
-    ResponseCode retrieveAccount( int cookie, String plainPassword, ClientInterface clientStub) throws RemoteException;
+    ResponseCode retrieveAccountByCookie( String cookie, String plainPassword, ClientInterface clientStub) throws RemoteException;
+
+    ResponseCode retrieveCookie(String username,String plainPassword) throws  RemoteException;
 
     ResponseCode connect() throws RemoteException;
 

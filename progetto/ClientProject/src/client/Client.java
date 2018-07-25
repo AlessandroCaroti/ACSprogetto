@@ -78,15 +78,27 @@ public class Client extends AnonymousClient {
 
     /**
      * Si chiede al server di recuperare le informazioni legate al nostro account
+     * Viene prima tentato l'accesso tramite (cookie,password) se fallisce tenta con (username,password)
      * @return TRUE se andata a buon fine,FALSE altrimenti
      */
     @Override
     public boolean retrieveAccount(){
+        ResponseCode response;
         if(connected()) {
             try {
-                ResponseCode response = server_stub.retrieveAccount(username, plainPassword, skeleton);
-                if (response.getCodice() == R220) {
-                    infoStamp("Account successfully recovered.");
+
+                if(this.getCookie()!=null) {
+                    response = server_stub.retrieveAccountByCookie(this.getCookie(),this.plainPassword,this.skeleton);
+                    if (response.getCodice() == R220) {
+                        infoStamp("Account successfully recovered.");
+                        return true;
+                    }else{
+                        infoStamp("Invalid cookie trying with username and password");
+                    }
+                }
+                response = server_stub.retrieveAccount(username, plainPassword, skeleton);
+                if (response.getCodice() == R220 && this.retrieveCookie()) {
+                    infoStamp("Account and cookie successfully recovered.");
                     return true;
                 }
                 errorStamp(response, "Impossible to retrieve information.");
@@ -168,7 +180,27 @@ public class Client extends AnonymousClient {
     }
 
 
+    private boolean retrieveCookie(){
 
+        try {
+            if(connected()) {
+                ResponseCode response = server_stub.retrieveCookie(this.username, this.plainPassword);
+                if (response == null || !response.getCodice().equals(ResponseCode.Codici.R100)) {
+                    errorStamp(response, "cookie retrieve failed");
+                    return false;
+                }
+                this.cookie = response.getMessaggioInfo();
+                infoStamp("Cookie successfully retrieved.");
+                return true;
+            }else{
+                errorStamp("Not connected to any server.");
+                return false;
+            }
+        }catch (RemoteException e){
+            errorStamp(e, "Unable to reach the server.");
+            return false;
+        }
+    }
 
 
 
