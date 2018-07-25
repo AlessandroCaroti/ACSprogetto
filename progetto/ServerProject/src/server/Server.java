@@ -281,11 +281,12 @@ public class Server implements ServerInterface,Callable<Integer> {
                 if(accountId==-1){
                     pedanticInfo("Client registration refused, email \'"+email+"\' already used.");
                     sendEmailAccountInfo(email,accountList.getAccountCopyEmail(email).getUsername());
-                    //TODO bisogna fare una finta emailValidation per evitare un accountEnumeration!
+                    this.antiAccountEnum(stub);
+                    return  ResponseCodeList.WrongCodeValidation;
                 }
                 if(accountId==-2){
                     pedanticInfo("Client registration refused, username \'"+userName+"\' already used.");
-                    return ResponseCodeList.InvalidUsernameOrEmail;
+                    return ResponseCodeList.InvalidUsername;
                 }
             }
 
@@ -577,6 +578,17 @@ public class Server implements ServerInterface,Callable<Integer> {
             }
         }
         return false;
+    }
+
+    /*fa finta di fare una emailValidation per non permettere di listare le email registrate al server*/
+    private void antiAccountEnum(ClientInterface stub) throws RemoteException {
+        final int MAXATTEMPTS = 3;
+        ResponseCode resp;
+        Integer codice = (int) (Math.random() * 1000000);
+        for (int i = MAXATTEMPTS; i >0 ; i--) {
+            resp=stub.getCode(i);
+            infoStamp("(antiAccountEnum)the user has entered the code:"+resp.getMessaggioInfo()+";");
+        }
     }
 
     private void sendEmailAccountInfo(String email,String username) throws MessagingException {

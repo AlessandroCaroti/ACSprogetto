@@ -51,7 +51,7 @@ public  class ResponseCode implements Serializable {
          R630,  //Login senza successo
          R640,  //Topic non esistente
          R650,  //Codice validazione email inserito errato,Tentativi terminati
-         R660,  //Username o email per la registrazione già in uso,sceglierne un altro
+         R660,  //Username per la registrazione già in uso,sceglierne un altro
          R666,  //Formato cookie non valido
          R670   //Internal client error
 
