@@ -5,6 +5,9 @@ import interfaces.ServerInterface;
 import utility.Message;
 import utility.ResponseCode;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -13,36 +16,37 @@ import java.util.Iterator;
 import java.util.TreeSet;
 
 import static utility.ResponseCode.Codici.R200;
+import static utility.ResponseCode.Codici.R670;
 
 
 public class AnonymousClient implements ClientInterface {
 
-    static final private String className = "ANONYMOUS_CLIENT";
+    static  protected String className = "ANONYMOUS_CLIENT";
 
     static final protected int DEFAULT_REGISTRY_PORT = 1099;
 
 
     /**************************************************************************/
     /* client fields */
-    private String username;
-    private ClientInterface skeleton;               //my stub
-    private String cookie;
-    private String myPrivateKey;
-    private String myPublicKey;
-    private boolean pedantic  = true;
+    protected String username;
+    protected ClientInterface skeleton;               //my stub
+    protected String cookie;
+    protected String myPrivateKey;
+    protected String myPublicKey;
+    protected boolean pedantic  = true;
 
-    private TreeSet<String> topicsSubscribed;       //topic a cui si è iscritti, todo non mi sembra che ci sia concorrenza ma se qualcuno ne trova bisoga sostituire TreeSet<> con ConcurrentSkipListSet
+    protected TreeSet<String> topicsSubscribed;       //topic a cui si è iscritti, todo non mi sembra che ci sia concorrenza ma se qualcuno ne trova bisoga sostituire TreeSet<> con ConcurrentSkipListSet
 
     /**************************************************************************/
     /* server fields */
-    private String serverName;                      //the name for the remote reference to look up
-    private String brokerPublicKey;                 //broker's public key
-    private ServerInterface server_stub;            //broker's stub, se è null allora non si è connessi ad alcun server
-    private String[] topicOnServer;                 //topic che gestisce il server
+    protected String serverName;                      //the name for the remote reference to look up
+    protected String brokerPublicKey;                 //broker's public key
+    protected ServerInterface server_stub;            //broker's stub, se è null allora non si è connessi ad alcun server
+    protected String[] topicOnServer;                 //topic che gestisce il server
 
     /* remote registry fields */
-    private String registryHost;                    //host for the remote registry
-    private int registryPort;                       //port on which the registry accepts requests
+    protected String registryHost;                    //host for the remote registry
+    protected int registryPort;                       //port on which the registry accepts requests
 
 
 
@@ -316,11 +320,28 @@ public class AnonymousClient implements ClientInterface {
     public void isAlive() {
     }
 
+    @Override
+    public ResponseCode getCode(int nAttempts){
+       System.out.println("Remaining attempts:"+Integer.toString(nAttempts));
+       System.out.println("Enter code:");
+       //TODO modificare qui l'inserimento
+
+        try {
+            BufferedReader bufferRead = new BufferedReader(new InputStreamReader(System.in));
+            String s = bufferRead.readLine();
+            return  new ResponseCode(R200,ResponseCode.TipoClasse.CLIENT,
+                    s);
+        } catch (IOException e) {
+            errorStamp(e, "Unable to read user input");
+        }
+        return new ResponseCode(R670,ResponseCode.TipoClasse.CLIENT,
+                "(-) Internal client error");
+    }
 
 
 
     // *************************************************************************************************************
-    //PRIVATE METHOD
+    //PROTECTED METHOD
 
     protected ServerInterface connect(String regHost, String server, Integer regPort)
     {
@@ -357,36 +378,43 @@ public class AnonymousClient implements ClientInterface {
 
 
 
+    /*GETTER and SETTER*/
 
+    public String getUsername() {
+        return username;
+    }
 
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
+    public String getCookie() {
+        return cookie;
+    }
 
+    public void setCookie(String cookie) {
+        this.cookie = cookie;
+    }
 
+    public String getMyPrivateKey() {
+        return myPrivateKey;
+    }
 
+    public void setMyPrivateKey(String myPrivateKey) {
+        this.myPrivateKey = myPrivateKey;
+    }
 
+    public String getMyPublicKey() {
+        return myPublicKey;
+    }
 
+    public void setMyPublicKey(String myPublicKey) {
+        this.myPublicKey = myPublicKey;
+    }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    public static String getClassName() {
+        return className;
+    }
 
 
 

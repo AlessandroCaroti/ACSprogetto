@@ -18,7 +18,10 @@
 
 package server;
 
-import customException.AccountRegistrationException;
+import account.AccountCollectionInterface;
+import account.AccountListMonitor;
+import email.EmailController;
+import email.EmailHandlerTLS;
 import interfaces.ServerInterface;
 import interfaces.ClientInterface;
 import utility.Account;
@@ -28,8 +31,9 @@ import utility.ResponseCode;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import javax.swing.filechooser.FileSystemView;
+import javax.mail.MessagingException;
 import java.io.*;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
@@ -40,10 +44,9 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Properties;
+import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListMap;
 
@@ -64,7 +67,8 @@ public class Server implements ServerInterface,Callable<Integer> {
 
     /* clients management fields */
     private AccountCollectionInterface accountList;                     //monitor della lista contente tutti gli account salvati
-    private ConcurrentHashMap<String, Integer> userNameList;            //coppia (userName_account, idAccount) degli account che sono salvati
+    private RandomString randomStringSession;
+    private int anonymousCounter=0;
 
     /* server settings fields */
     private Properties serverSettings=new Properties();                 //setting del server
@@ -82,25 +86,35 @@ public class Server implements ServerInterface,Callable<Integer> {
     private String serverName;                  //TODO: da creare nel costruttore, il nome con cui si fa la bind dello serverStub sul registro
     private ServerInterface skeleton;
 
+    /*email handler*/
+    private EmailController emailController;
+
+
 
     /*****************************************************************************************************************************/
     /**Costruttore
-     *carica automaticamente i setting da file.
+     * Carica automaticamente i setting da file.
      * Se il file non viene trovato vengono usati i costruttori di default
-     *  se il file di config non viene trovato
+     * se il file di config non viene trovato
      */
 
 
     public Server() throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchPaddingException, UnsupportedEncodingException, AlreadyBoundException, RemoteException, UnknownHostException {
 
         //TODO             creare un nome per il server utilizzato per il registro
-        serverName   = "Server_" + (int)(Math.random()*1000000);
+        try{
+            serverName   = "Server_" + this.getMyIp();
+        }catch(IOException exc){//se non riesce a reperire  l'ip
+            serverName   = "Server_" + (int)(Math.random()*1000000);
+        }
+
+
         topicList    = new ConcurrentLinkedQueue<>();
-        userNameList = new ConcurrentHashMap<>();
 
         System.out.println(System.getProperty("user.dir"));
 
         //Caricamento delle impostazioni del server memorizate su file
+        System.out.println("Working Directory = " + System.getProperty("user.dir"));
         loadSetting("./src/server/config.serverSettings");
         infoStamp("Server settings imported.");
 
@@ -114,6 +128,15 @@ public class Server implements ServerInterface,Callable<Integer> {
 
         setupAes();
         infoStamp("Aes created.");
+
+        //Creazione dell'email handler e avvio di quest'ultimo
+        emailController=new EmailHandlerTLS("acsgroup.unige@gmail.com","@CIAOZIOCOMESTAI1",100,587,"smtp.gmail.com");
+        //emailController=new EmailHandler(serverSettings,accountList.getMAXACCOUNTNUMBER());
+        emailController.startEmailHandlerManager();
+        infoStamp("Email Handler created and started.");
+
+        randomStringSession=new RandomString();
+        infoStamp("Random String session created");
 
         //Ho spostato la roba del regestry nel metodo start
 
@@ -154,6 +177,9 @@ public class Server implements ServerInterface,Callable<Integer> {
         http://collaboration.cmc.ec.gc.ca/science/rpn/biblio/ddj/Website/articles/DDJ/2008/0812/081101oh01/081101oh01.html
      */
 
+
+
+
     // Startup of RMI serverobject, including registration of the instantiated server object
     // with remote RMI registry
     public void start(){
@@ -171,6 +197,7 @@ public class Server implements ServerInterface,Callable<Integer> {
             if (System.getSecurityManager() == null) {
                 System.setSecurityManager(new SecurityManager());
             }
+            testPolicy(System.getSecurityManager());
             infoStamp("Security Manager installed.");
 
             //Creating or import the local regestry
@@ -235,29 +262,65 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     @Override
-    public ResponseCode register(String userName, String plainPassword, ClientInterface stub, String publicKey,String email)  {
+    public ResponseCode register(String userName,String plainPassword,ClientInterface stub,String publicKey,String email)  {
+        int accountId;
         try {
-            String cookie;
-            if (userNameList.putIfAbsent(userName, 0) == null)  //se non c'è già un account con lo stesso nome
-            {
-                int posNewAccount =  registerAccount(userName, plainPassword, stub, publicKey, 0,email);
-                cookie = getCookie(posNewAccount);
-                userNameList.replace(userName, posNewAccount);
-                pedanticInfo("Registered new client \'"+userName+"\'.");
-                return new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER, cookie);  //OK: Nuovo client registrato
+            Account account=new Account(userName,plainPassword,stub,publicKey,0,email);
+            if((accountId=accountList.putIfAbsentEmailUsername(account))>=0){
+
+                if(this.emailValidation(email,stub)){
+                    pedanticInfo("Registered new client \'"+userName+"\'  \'"+email+"\'");
+                    return new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER, getCookie(accountId));
+                }else{
+                    pedanticInfo("Client registration refused ,\'"+email+"\' has not been validated.");
+                    accountList.removeAccountCheckEmail(accountId,email);/* check sulla chiave primaria(email) per  problemi di concorrenza con un metodo tipo deleteAccount()*/
+                    return  ResponseCodeList.WrongCodeValidation;
+                }
+            }else{//email or username already present
+                if(accountId==-1){
+                    pedanticInfo("Client registration refused, email \'"+email+"\' already used.");
+                    sendEmailAccountInfo(email,accountList.getAccountCopyEmail(email).getUsername());
+                    //TODO bisogna fare una finta emailValidation per evitare un accountEnumeration!
+                }
+                if(accountId==-2){
+                    pedanticInfo("Client registration refused, username \'"+userName+"\' already used.");
+                    return ResponseCodeList.InvalidUsernameOrEmail;
+                }
             }
-            pedanticInfo("Client registration refused, username \'"+userName+"\' already used.");
-            return ResponseCodeList.ClientError;
+
         }catch (Exception e){
-            userNameList.remove(userName);
             errorStamp(e);
         }
         return ResponseCodeList.InternalError;
     }
 
+
     @Override
     public ResponseCode anonymousRegister(ClientInterface stub, String publicKey)  {
-        return register("AnonymousAccount","",stub,publicKey,null);
+        int accountId;
+        String username;
+        String plainPassword;
+        String email = "anonymous";//Nota bene:un'account anonimo ha sempre la seguente email-quindi il check per sapere se è anonimo o no si fa sulla mail
+        Account account;
+        try {
+            do {
+                username = "anonymous" + Integer.toString(anonymousCounter++);
+                plainPassword = randomStringSession.nextString();
+                account = new Account(username, plainPassword, stub, publicKey, 0, email);
+                if ((accountId = accountList.putIfAbsentEmailUsername(account)) >= 0) {
+                    pedanticInfo("Registered new client \'"+username+"\'  \'"+email+"\'");
+                    return new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER, getCookie(accountId));
+
+                } else {// username already present
+                    if (accountId == -2) {
+                        pedanticInfo("Client registration refused, username \'" + username + "\' already used. Trying to generate another one.");
+                    }
+                }
+            }while(accountId==-2);
+        }catch(Exception e) {
+            errorStamp(e);
+        }
+        return ResponseCodeList.InternalError;
     }
 
 
@@ -266,8 +329,8 @@ public class Server implements ServerInterface,Callable<Integer> {
     public ResponseCode disconnect(String cookie) {
         try {
             int accountId = getAccountId(cookie);
-            this.accountList.setStub(null, accountId);//Se poi si ricambia quando uno si connette non è un pò inutile impostarlo a null
-            pedanticInfo(accountId + "disconnected.");
+            this.accountList.setStub(null, accountId);
+            pedanticInfo("user:"+accountId + "  disconnected.");
             return new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER,"disconnessione avvenuta con successo");
         }catch (BadPaddingException | IllegalBlockSizeException exc){
             return new ResponseCode(ResponseCode.Codici.R620, ResponseCode.TipoClasse.SERVER,"errore disconnessione");
@@ -275,20 +338,42 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     @Override
-    public ResponseCode retrieveAccount(String username, String plainPassword, ClientInterface clientStub){
-        try {
-            Integer accountId = userNameList.get(username);     //Returns null if userNameList does not contain the username
-            if(accountId != null) {
-                Account account = accountList.getAccountCopy(accountId);
-                if (account.getUsername().equals(username) && account.cmpPassword(plainPassword)) {//okay -->setto lo stub
-                    accountList.setStub(clientStub, accountId);
+    public ResponseCode retrieveAccount(String username,String plainPassword,ClientInterface clientStub){
+        try{
+            Account account=accountList.getAccountCopyUsername(username);
+            if(account!=null){
+                if(account.cmpPassword(plainPassword)){
+                    accountList.setStub(clientStub, account.getAccountId());
                     pedanticInfo(username + " connected.");
                     return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER, "login andato a buon fine");
                 }
+            }else{
+                pedanticInfo(username + " invalid retrieve account.");
+                return ResponseCodeList.LoginFailed;
             }
-            pedanticInfo(username + " failed to connect.");
-            return ResponseCodeList.LoginFailed;
-        } catch (Exception e) {
+
+        }catch(Exception e){
+            errorStamp(e);
+        }
+        return ResponseCodeList.InternalError;
+    }
+
+    @Override
+    public ResponseCode retrieveAccount(int cookie,String plainPassword,ClientInterface clientStub){
+        try{
+            Account account=accountList.getAccountCopy(cookie);
+            if(account!=null){
+                if(account.cmpPassword(plainPassword)){
+                    accountList.setStub(clientStub, account.getAccountId());
+                    pedanticInfo("anonymous"+account.getUsername() + " connected.");
+                    return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER, "login andato a buon fine");
+                }
+            }else{
+                pedanticInfo("Invalid cookie.");
+                return ResponseCodeList.LoginFailed;
+            }
+
+        }catch(Exception e){
             errorStamp(e);
         }
         return ResponseCodeList.InternalError;
@@ -303,7 +388,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         }catch (BadPaddingException| IllegalBlockSizeException e){
             warningStamp(e,"subscribe() - error cookies not recognize");
         }catch (NullPointerException e){
-            warningStamp(e,"subscibe() - topic"+topicName+"not found");
+            warningStamp(e,"subscribe() - topic"+topicName+"not found");
         }catch (Exception e){
             errorStamp(e);
         }
@@ -352,25 +437,6 @@ public class Server implements ServerInterface,Callable<Integer> {
     public String[] getTopicList()  {
         return topicList.toArray(new String[0]);    //guarda esempio in https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ConcurrentLinkedQueue.html#toArray(T[])
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -430,23 +496,21 @@ public class Server implements ServerInterface,Callable<Integer> {
         return accManager;
     }
 
-
-
-    //METODI USATI PER LA GESTIONE DEGLI ACCOUNT
-
-
-    private int registerAccount(String userName, String plainPassword, ClientInterface stub, String publicKey,int accountId,String email) throws AccountRegistrationException {
-        //sarebbe utile aggiungere un metodo per controllare se l'account esiste già
-        //però solleva dei problemi sul testing(localhost non può avere più di un account)->soluzione chiave primaria email associata all'account
-
+    private void testPolicy(SecurityManager sm){
         try {
-            Account account = new Account(userName, plainPassword, stub, publicKey, accountId,email);
-            return accountList.addAccount(account);
-        }catch (Exception exc){
-            errorStamp(exc,"Unable to register new account");
-            throw new AccountRegistrationException("Unable to register new account");
+            sm.checkListen(0);
+            //sm.checkPackageAccess("sun.rmi.*");
+        }catch (Exception e){
+            errorStamp(e, "Policies not imported properly");
+            System.exit(1);
         }
     }
+
+
+
+    /*************************************************************************************************************
+     ****METODI USATI PER LA GESTIONE DEGLI ACCOUNT***************************************************************
+     *************************************************************************************************************/
 
 
     private String getCookie(int accountId) throws BadPaddingException, IllegalBlockSizeException {
@@ -475,28 +539,60 @@ public class Server implements ServerInterface,Callable<Integer> {
             });
     }
 
+    private  String getMyIp() throws IOException {
+        try {
+            URL whatismyip = new URL("http://checkip.amazonaws.com");
+            BufferedReader in = new BufferedReader(new InputStreamReader(
+                    whatismyip.openStream()));
+            return in.readLine();
+        }catch (IOException exc){
+            this.errorStamp(exc,"unable to get server external ip.");
+            throw exc;
+        }
+    }
 
 
+    private boolean emailValidation(String email,ClientInterface stub) throws MessagingException, RemoteException {
 
+        String temp;
+        StringTokenizer tokenizer=new StringTokenizer(email);
+        temp=tokenizer.nextToken();
+        if(temp.equalsIgnoreCase("test"))return true;//TODO REMOVE 4 LINES up
 
+        final int MAXATTEMPTS = 3;
+        ResponseCode resp;
+        Integer codice = (int) (Math.random() * 1000000);
+        emailController.sendMessage(emailController.createEmailMessage(email, "EMAIL VALIDATION",
+                "Codice verifica:" + Integer.toString(codice)
+        ));
+        infoStamp("message to:"+email+"; added to queue code:"+Integer.toString(codice));
+        for (int i = MAXATTEMPTS; i >0 ; i--) {
+            resp=stub.getCode(i);
+            if (resp.IsOK()) {
+                infoStamp("the user has entered the code:"+resp.getMessaggioInfo()+";");
+                if(codice.equals(Integer.parseInt(resp.getMessaggioInfo()))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
+    private void sendEmailAccountInfo(String email,String username) throws MessagingException {
 
+        String temp;
+        StringTokenizer tokenizer=new StringTokenizer(email);
+        temp=tokenizer.nextToken();
+        if(temp.equalsIgnoreCase("test"))return;//TODO REMOVE 4 LINES up
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        javax.mail.Message message=emailController.createEmailMessage(email,"REGISTRATION ATTEMPT",
+                "Someone tried to register a new account by associating it with this email.\n" +
+                        "If you have not made the request, ignore and delete the message.\n" +
+                        "We remind you that the following email is associated with the username \'"+username+"\'\n"+
+                        "The ACSgroup account team."
+                );
+        emailController.sendMessage(message);
+    }
 
 
 

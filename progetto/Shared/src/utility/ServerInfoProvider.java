@@ -26,6 +26,7 @@ public class ServerInfoProvider extends InfoProviderProtocol {
         if (!ready)
             throw new UnknownHostException();
 
+        timer = new Timer();
         byte[] buf        = "".getBytes("UTF-8");//AddressIp.getLocalAddres().getBytes("UTF-8");   //Stringa contenente l'indirizzo locale della macchina
         socket            = new DatagramSocket();
         packet            = new DatagramPacket(buf, buf.length, group, brodcastPort);
@@ -33,7 +34,6 @@ public class ServerInfoProvider extends InfoProviderProtocol {
         serverInfoMessage = regHost + "\n" +
                 regPort + "\n" +
                 serverName;
-        timer = new Timer();
         infoStamp("Info Provider created.");
     }
 

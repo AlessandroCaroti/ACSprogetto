@@ -1,0 +1,6 @@
+grant {
+     	permission java.security.AllPermission;
+  };
+// Info policy:
+//      https://docs.oracle.com/javase/7/docs/technotes/guides/security/permissions.html
+//permission java.security.AllPermission;

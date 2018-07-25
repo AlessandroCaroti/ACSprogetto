@@ -1,17 +1,11 @@
 import server.Server;
-import utility.ServerInfoProvider;
 
-
-
-public class serverTest {
+public class ServerTest2 {
     static Server broker;
     public static void main(String[] args) {
         try {
             broker = new Server();
             broker.start();
-
-            ServerInfoProvider infoProvider = new ServerInfoProvider(broker.getRegHost(),broker.getRegPort(),broker.getServerName());
-            infoProvider.start();
 
 
         }catch (Exception e){

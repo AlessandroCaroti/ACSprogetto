@@ -1,4 +1,4 @@
-/**
+/*
     This file is part of ACSprogetto.
 
     ACSprogetto is free software: you can redistribute it and/or modify
@@ -14,10 +14,9 @@
     You should have received a copy of the GNU General Public License
     along with ACSprogetto.  If not, see <http://www.gnu.org/licenses/>.
 
-**/
-package server;
+*/
+package account;
 
-import client.Client;
 import customException.AccountMonitorRuntimeException;
 import customException.MaxNumberAccountReached;
 import interfaces.ClientInterface;
@@ -49,6 +48,19 @@ public interface AccountCollectionInterface {
      **/
      Account getAccountCopy(int accountId);
 
+    /**Ritorna uno snapshot della classe account con username uguale a quello passato
+     * @param userName l'username da cercare
+     * @return una copia dell'istanza account con username uguale a quello passato
+     * @throws  IllegalArgumentException se l'username passato è null
+     */
+     Account getAccountCopyUsername(String userName);
+
+    /**Ritorna uno snapshot della classe account con email uguale a quello passato
+     * @param email l'email da cercare
+     * @return una copia dell'istanza account con email uguale a quello passato
+     * @throws  IllegalArgumentException se l'email passato è null
+     */
+    Account getAccountCopyEmail(String email);
 
     /**
      * Aggiunge o sovrascrive un account in posizione accountId
@@ -60,15 +72,47 @@ public interface AccountCollectionInterface {
      Account addAccount(Account account,int accountId);
 
 
-    /**Elimina e ritorna l'istanza precedente alla posizione "posizione"
+    /**Elimina e ritorna l'istanza precedente alla posizione accountId
      * @param accountId deve essere >=0 AND <MAXNUMBERACCOUNT
-     * @return l'istanza di account tolta dalla posizione "accountId"
+     * @return l'istanza di account tolta dalla posizione "accountId" (può essere null)
      * @throws IllegalArgumentException se accountId<0 || accountId>=MAXACCOUNTNUMBER
      */
      Account removeAccount(int accountId);
 
+    /**Elimina e ritorna l'istanza precedente alla posizione accountId, controllando però che la mail salvata nell'account
+     * corrisponda a quella passata (equalsIgnoreCase). Se non corrisponde torna null
+     * @param accountId la posizione dell'accoutn da eliminare
+     * @param email l'email da controllare
+     * @return null se non corrisponde o se non trovata, l'istanza account eliminata altrimenti
+     */
+     Account removeAccountCheckEmail(int accountId,String email);
+
     /**
-     *Tutti i getter tornano il valore (null o qualcosa di definito) oppure una delle due eccezioni
+     *
+     * @param account l'account da aggiungere con già i suoi fields settati
+     * @return l'account id se non era presente; Torna -1 se la mail è già presente  ,  -2 se l'username è già presente
+     *  L'esistenza dell'username uguale a quello passato ha "la precedenza" sulla mail
+     * @throws NullPointerException  se i fields email o username di account sono settati a null
+     * @throws MaxNumberAccountReached se non ci sono più posti disponibili
+     * @throws IllegalArgumentException se viene passato un reference null
+     * @throws AccountMonitorRuntimeException errore irreversibile (non dovrebbe mai succedere)
+     */
+     int putIfAbsentEmailUsername(Account account) throws NullPointerException, MaxNumberAccountReached, IllegalArgumentException, AccountMonitorRuntimeException ;
+
+    /**Controlla se esiste già un account con email OR username  (importante l'OR e non AND)
+     * @param email l'email da cercare
+     * @param username l'username da cercare
+     * @return una copia dell'account che ha email OR password uguale a quelle passate,se l'account non esiste torna null
+     * @throws NullPointerException se email OR username sono  null
+     */
+     Account isMember(String email,String username) throws IllegalArgumentException;
+
+
+
+
+    /**
+     * Tutti i getter tornano il valore (null o qualcosa di definito) oppure una delle due eccezioni
+     * Nota:torna uno snapshot
      * @param accountId la posizione dove è stato salvato
      * @return null or Something
      * @throws IllegalArgumentException se accountId<0 || accountId>=MAXACCOUNTNUMBER
@@ -80,7 +124,9 @@ public interface AccountCollectionInterface {
 
      String getUsername(int accountId) ;
 
-     ClientInterface getStub(int accountId);
+     ClientInterface getStub(int accountId);//TODO guardare implementazione metodo nella classe AccountListMonitor (possibile bug)
+
+     String getEmail(int accountId);
 
     /**
      *Tutti i setter tornano il valore sovrascritto (null o qualcosa di definito) oppure una delle due eccezioni
@@ -97,6 +143,8 @@ public interface AccountCollectionInterface {
      String setUsername(String username,int acountId);
 
      ClientInterface setStub(ClientInterface clientStub,int accountId);
+
+     String setEmail(String email,int accountId);
 
      /**semplici getter**/
      int getNumberOfAccount();
