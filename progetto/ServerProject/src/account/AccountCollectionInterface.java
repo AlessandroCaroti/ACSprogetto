@@ -99,6 +99,19 @@ public interface AccountCollectionInterface {
      */
      int putIfAbsentEmailUsername(Account account) throws NullPointerException, MaxNumberAccountReached, IllegalArgumentException, AccountMonitorRuntimeException ;
 
+    /**
+     *
+     * @param account l'account da aggiungere con già i suoi fields settati
+     * @return l'account id se non era presente; Torna  -2 se l'username è già presente
+     * @throws NullPointerException  se i fields email o username di account sono settati a null
+     * @throws MaxNumberAccountReached se non ci sono più posti disponibili
+     * @throws IllegalArgumentException se viene passato un reference null
+     * @throws AccountMonitorRuntimeException errore irreversibile (non dovrebbe mai succedere)
+     */
+    int putIfAbsentUsername(Account account) throws NullPointerException, MaxNumberAccountReached, IllegalArgumentException, AccountMonitorRuntimeException ;
+
+
+
     /**Controlla se esiste già un account con email OR username  (importante l'OR e non AND)
      * @param email l'email da cercare
      * @param username l'username da cercare

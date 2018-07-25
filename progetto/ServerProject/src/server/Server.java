@@ -49,6 +49,7 @@ import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Server implements ServerInterface,Callable<Integer> {
 
@@ -68,7 +69,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     /* clients management fields */
     private AccountCollectionInterface accountList;                     //monitor della lista contente tutti gli account salvati
     private RandomString randomStringSession;
-    private int anonymousCounter=0;
+    private AtomicInteger anonymousCounter=new AtomicInteger(0);
 
     /* server settings fields */
     private Properties serverSettings=new Properties();                 //setting del server
@@ -304,10 +305,10 @@ public class Server implements ServerInterface,Callable<Integer> {
         Account account;
         try {
             do {
-                username = "anonymous" + Integer.toString(anonymousCounter++);
+                username = "anonymous" + Integer.toString(anonymousCounter.incrementAndGet());
                 plainPassword = randomStringSession.nextString();
                 account = new Account(username, plainPassword, stub, publicKey, 0, email);
-                if ((accountId = accountList.putIfAbsentEmailUsername(account)) >= 0) {
+                if ((accountId = accountList.putIfAbsentUsername(account)) >= 0) {
                     pedanticInfo("Registered new client \'"+username+"\'  \'"+email+"\'");
                     return new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER, getCookie(accountId));
 
@@ -316,7 +317,7 @@ public class Server implements ServerInterface,Callable<Integer> {
                         pedanticInfo("Client registration refused, username \'" + username + "\' already used. Trying to generate another one.");
                     }
                 }
-            }while(accountId==-2);
+            }while(accountId==-2);//questo while non dovrebbe essere necessario in quanto anonymouscounter è atomic
         }catch(Exception e) {
             errorStamp(e);
         }
