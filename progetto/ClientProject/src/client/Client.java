@@ -19,9 +19,7 @@ package client;
 
 import utility.Message;
 import utility.ResponseCode;
-
 import java.rmi.RemoteException;
-
 import static utility.ResponseCode.Codici.R220;
 
 
