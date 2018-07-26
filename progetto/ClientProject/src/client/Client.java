@@ -17,8 +17,6 @@
 */
 package client;
 
-import interfaces.ClientInterface;
-import interfaces.ServerInterface;
 import utility.Message;
 import utility.ResponseCode;
 

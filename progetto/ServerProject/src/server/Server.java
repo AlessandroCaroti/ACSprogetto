@@ -608,7 +608,6 @@ public class Server implements ServerInterface,Callable<Integer> {
     private void antiAccountEnum(ClientInterface stub) throws RemoteException {
         final int MAXATTEMPTS = 3;
         ResponseCode resp;
-        Integer codice = (int) (Math.random() * 1000000);
         for (int i = MAXATTEMPTS; i >0 ; i--) {
             resp=stub.getCode(i);
             infoStamp("(antiAccountEnum)the user has entered the code:"+resp.getMessaggioInfo()+";");
