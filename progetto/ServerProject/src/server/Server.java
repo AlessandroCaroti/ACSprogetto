@@ -131,7 +131,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         infoStamp("Aes created.");
 
         //Creazione dell'email handler e avvio di quest'ultimo
-        emailController=new EmailHandlerTLS("acsgroup.unige@gmail.com","@CIAOZIOCOMESTAI1",100,587,"smtp.gmail.com");
+        emailController=new EmailHandlerTLS("acsgroup.unige@gmail.com","password",100,587,"smtp.gmail.com");
         //emailController=new EmailHandler(serverSettings,accountList.getMAXACCOUNTNUMBER());
         emailController.startEmailHandlerManager();
         infoStamp("Email Handler created and started.");
