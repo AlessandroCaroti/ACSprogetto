@@ -93,6 +93,7 @@ public class Client extends AnonymousClient {
                         infoStamp("Account successfully recovered.");
                         return true;
                     }else{
+                        this.cookie=null;
                         infoStamp("Invalid cookie trying with username and password");
                     }
                 }

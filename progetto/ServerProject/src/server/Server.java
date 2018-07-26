@@ -362,7 +362,8 @@ public class Server implements ServerInterface,Callable<Integer> {
     @Override
     public ResponseCode retrieveAccountByCookie(String cookie,String plainPassword,ClientInterface clientStub){
         try{
-            Account account=accountList.getAccountCopy(cookie);//TODO to be modified calcolare l'id tramite il cookie
+            int accountId=this.getAccountId(cookie);
+            Account account=accountList.getAccountCopy(accountId);
             if(account!=null){
                 if(account.cmpPassword(plainPassword)){
                     accountList.setStub(clientStub, account.getAccountId());
