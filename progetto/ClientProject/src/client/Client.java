@@ -37,8 +37,12 @@ public class Client extends AnonymousClient {
     private String plainPassword;
     private String email;
 
+    /* security fields */
     final private String curveName = "prime192v1";
     final private KeyPair ECDH_kayPair;
+    private PublicKey serverPubblicKey;
+    private byte[] sheredSecretKey;
+
     // ************************************************************************************************************
     //CONSTRUCTORS
 
