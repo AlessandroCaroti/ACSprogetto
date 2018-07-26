@@ -21,13 +21,14 @@ import static utility.ResponseCode.Codici.R670;
 
 public class AnonymousClient implements ClientInterface {
 
-    static  protected String className = "ANONYMOUS_CLIENT";
+
 
     static final protected int DEFAULT_REGISTRY_PORT = 1099;
 
 
     /**************************************************************************/
     /* client fields */
+    protected String className = "ANONYMOUS_CLIENT";
     protected String username;
     protected ClientInterface skeleton;               //my stub
     protected String cookie;
@@ -412,8 +413,8 @@ public class AnonymousClient implements ClientInterface {
         this.myPublicKey = myPublicKey;
     }
 
-    public static String getClassName() {
-        return className;
+    public  String getClassName() {
+        return this.className;
     }
 
 

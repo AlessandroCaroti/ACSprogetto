@@ -28,7 +28,6 @@ import static utility.ResponseCode.Codici.R220;
 
 
 public class Client extends AnonymousClient {
-    static  private String className = "CLIENT";
 
     /******************/
     /* client fields */
@@ -52,6 +51,7 @@ public class Client extends AnonymousClient {
             throw new NullPointerException();
         this.plainPassword=plainPassword;
         this.email=email;
+        this.className="CLIENT";
     }
 
 
@@ -156,8 +156,8 @@ public class Client extends AnonymousClient {
         this.plainPassword = plainPassword;
     }
 
-    public static String getClassName() {
-        return className;
+    public String getClassName() {
+        return this.className;
     }
 
     public String getEmail() {
