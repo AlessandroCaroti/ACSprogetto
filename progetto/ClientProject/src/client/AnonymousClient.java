@@ -12,6 +12,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.security.PublicKey;
 import java.util.Iterator;
 import java.util.TreeSet;
 
@@ -21,7 +22,7 @@ import static utility.ResponseCode.Codici.R670;
 
 public class AnonymousClient implements ClientInterface {
 
-    static  protected String className = "ANONYMOUS_CLIENT";
+    static protected String className = "ANONYMOUS_CLIENT";
 
     static final protected int DEFAULT_REGISTRY_PORT = 1099;
 
@@ -184,7 +185,7 @@ public class AnonymousClient implements ClientInterface {
      * @param topic a cui ci si vuole iscrivere
      * @return TRUE se andata a buon fine, FALSE altrimenti
      */
-    public boolean subscribe(String topic)    {
+    public boolean subscribe(String topic) {
         if(connected()){
             try {
                 if(topicsSubscribed.contains(topic)){
@@ -336,6 +337,10 @@ public class AnonymousClient implements ClientInterface {
         }
         return new ResponseCode(R670,ResponseCode.TipoClasse.CLIENT,
                 "(-) Internal client error");
+    }
+
+    public PublicKey publicKeyExchange(PublicKey serverPubKey_encripted){
+        throw new UnsupportedOperationException();
     }
 
 

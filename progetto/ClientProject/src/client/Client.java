@@ -21,10 +21,15 @@ import interfaces.ClientInterface;
 import interfaces.ServerInterface;
 import utility.ECDH;
 import utility.Message;
+import utility.RSA;
 import utility.ResponseCode;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.rmi.RemoteException;
 import java.security.*;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Arrays;
 
 import static utility.ResponseCode.Codici.R220;
 
@@ -39,9 +44,10 @@ public class Client extends AnonymousClient {
 
     /* security fields */
     final private String curveName = "prime192v1";
-    final private KeyPair ECDH_kayPair;
-    private PublicKey serverPubblicKey;
-    private byte[] sheredSecretKey;
+    private KeyPair ECDH_kayPair;       //todo cercare di renderla final
+    private PublicKey serverPubblicKey_RSA;
+    private SecretKey secretAesKey;
+
 
     // ************************************************************************************************************
     //CONSTRUCTORS
@@ -64,7 +70,7 @@ public class Client extends AnonymousClient {
         try {
             ECDH_kayPair = ECDH.generateKeyPair(curveName);
         } catch (NoSuchProviderException | NoSuchAlgorithmException | InvalidAlgorithmParameterException e) {
-            ECDH_kayPair = null;
+            //ECDH_kayPair = null;
             errorStamp(e, "Error during generation of the keys for the ECDH algorithm.");
             System.exit(1);
         }
@@ -170,6 +176,36 @@ public class Client extends AnonymousClient {
     public void setEmail(String email) {
         this.email = email;
     }
+
+    /**************************************************
+     * REMOTE METHOD **********************************
+     **************************************************/
+
+    /** Metodo che produce una chiave segreta utilizzando il protocollo Diffie–Hellman con la variante che utilizza le curve ellittiche (Elliptic-curve Diffie–Hellman)
+     *
+     * @param serverPubKey_encripted la chiave pubblica ECDH del server criptata con la chiave privata RSA del server
+     * @return la chiave pubblica ECDH del client
+     */
+    public PublicKey publicKeyExchange(byte[] serverPubKey_encripted){
+        try {
+            byte[] bytes = RSA.decrypt(serverPubblicKey_RSA, serverPubKey_encripted);
+            PublicKey serverPubKey = KeyFactory.getInstance("ECDH", "BC").generatePublic(new X509EncodedKeySpec(bytes));
+            byte[] sheredSecret = ECDH.sheredSecretKey(ECDH_kayPair.getPrivate(), serverPubKey);
+            infoStamp("Created secret key.\n");
+            pedanticInfo("Secret key: " + Arrays.toString(sheredSecret));
+            secretAesKey = new SecretKeySpec(sheredSecret, "AES");
+            return ECDH_kayPair.getPublic();
+        } catch (Exception e) {
+            errorStamp(e, "Error during creation of shard secret key whit server.");
+        }
+        return null;
+    }
+
+    public byte[] testSecretKey(byte[] messageEncripted){
+        return null;
+        //todo da implemntare una volta deciso l'algoritmo da usare per criptare i messaggi
+    }
+
     // *************************************************************************************************************
     //PRIVATE METHOD
 
