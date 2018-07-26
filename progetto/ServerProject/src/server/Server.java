@@ -228,8 +228,11 @@ public class Server implements ServerInterface,Callable<Integer> {
 
     }
 
-
-
+    //inverte lo stato del campo pedantic
+    public void togglePedantic(){
+        pedantic = !pedantic;
+        infoStamp("Pedantic status: " + pedantic + ".");
+    }
 
     /*METOGI GETTER*/
     public int getRegPort(){
@@ -436,13 +439,6 @@ public class Server implements ServerInterface,Callable<Integer> {
     @Override
     public String[] getTopicList()  {
         return topicList.toArray(new String[0]);    //per spiegazioni a cosa server 'new String[0]' guarda esempio in https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ConcurrentLinkedQueue.html#toArray(T[])
-    }
-
-
-
-    public void togglePedantic(){
-        pedantic = !pedantic;
-        infoStamp("Pedantic status: " + pedantic + ".");
     }
 
 
