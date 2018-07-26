@@ -8,7 +8,7 @@ import javax.crypto.KeyAgreement;
 import java.security.*;
 
 final public class ECDH {
-    
+
     public static KeyPair generateKeyPair(String curveName) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
         Security.addProvider(new BouncyCastleProvider());
         ECParameterSpec ecSpec = ECNamedCurveTable.getParameterSpec(curveName);
