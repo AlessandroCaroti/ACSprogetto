@@ -104,7 +104,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         serverName = tmp_name;
 
 
-        topicList    = new ConcurrentLinkedQueue<>();
+        topicList = new ConcurrentLinkedQueue<>();
 
         System.out.println(System.getProperty("user.dir"));
 
@@ -137,8 +137,6 @@ public class Server implements ServerInterface,Callable<Integer> {
 
         randomStringSession=new RandomString();
         infoStamp("Random String session created");
-
-        //Ho spostato la roba del regestry nel metodo start
 
         System.out.println("SERVER PRONTO (lookup)registryName:\"ServerInterface\" on port:");
     }
@@ -257,7 +255,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     public ResponseCode connect() {
         try {
             pedanticInfo("A new client has connected.");
-            return  new ResponseCode( ResponseCode.Codici.R210, ResponseCode.TipoClasse.SERVER,"da aggiustare");//todo aggiustare
+            return  new ResponseCode( ResponseCode.Codici.R210, ResponseCode.TipoClasse.SERVER,"da aggiustare");//todo aggiustare, passare la RSA_pubKey
         } catch (Exception e){
             errorStamp(e);
         }

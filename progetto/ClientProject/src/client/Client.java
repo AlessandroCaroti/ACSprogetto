@@ -19,21 +19,26 @@ package client;
 
 import interfaces.ClientInterface;
 import interfaces.ServerInterface;
+import utility.ECDH;
 import utility.Message;
 import utility.ResponseCode;
 
 import java.rmi.RemoteException;
+import java.security.*;
 
 import static utility.ResponseCode.Codici.R220;
 
 
 public class Client extends AnonymousClient {
-    static  private String className = "CLIENT";
+    static private String className = "CLIENT";
 
     /******************/
     /* client fields */
     private String plainPassword;
     private String email;
+
+    final private String curveName = "prime192v1";
+    final private KeyPair ECDH_kayPair;
     // ************************************************************************************************************
     //CONSTRUCTORS
 
@@ -52,6 +57,13 @@ public class Client extends AnonymousClient {
             throw new NullPointerException();
         this.plainPassword=plainPassword;
         this.email=email;
+        try {
+            ECDH_kayPair = ECDH.generateKeyPair(curveName);
+        } catch (NoSuchProviderException | NoSuchAlgorithmException | InvalidAlgorithmParameterException e) {
+            ECDH_kayPair = null;
+            errorStamp(e, "Error during generation of the keys for the ECDH algorithm.");
+            System.exit(1);
+        }
     }
 
 
