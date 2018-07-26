@@ -84,7 +84,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     private Registry registry;
     private int regPort = 1099;                 //Default registry port TODO magari si può importare dal file di config
     private String host;
-    private String serverName;                  //TODO: da creare nel costruttore, il nome con cui si fa la bind dello serverStub sul registro
+    private String serverName;
     private ServerInterface skeleton;
 
     /*email handler*/
