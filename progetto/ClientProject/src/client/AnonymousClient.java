@@ -4,7 +4,6 @@ import interfaces.ClientInterface;
 import interfaces.ServerInterface;
 import utility.Message;
 import utility.ResponseCode;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -422,11 +421,7 @@ public class AnonymousClient implements ClientInterface {
     //METODI UTILIZZATI PER LA GESTIONE DELL'OUTPUT DEL CLIENT
 
     protected void errorStamp(Exception e){
-        System.out.flush();
-        System.err.println("["+className+"-ERROR]");
-        System.err.println("\tException type: "    + e.getClass().getSimpleName());
-        System.err.println("\tException message: " + e.getMessage());
-        e.printStackTrace();    //todo da eliminare appena la fase di debigging è finita(solo questa linea non tutto il metodo)
+       this.errorStamp(e,"");
     }
 
     protected void errorStamp(Exception e, String msg){
