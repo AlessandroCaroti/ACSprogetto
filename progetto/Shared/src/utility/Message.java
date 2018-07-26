@@ -27,10 +27,9 @@ public class Message
     final private String topic;
     final private Date date;
 
-    public Message(String title, String author, String text, String topicName)
-    {
+    public Message(String title, String author, String text, String topicName) throws IllegalArgumentException, NullPointerException {
         if(title==null||author==null||text==null||topicName==null)
-            throw new NullPointerException();
+            throw new NullPointerException("Null reference during the  message creation");
         if(author.isEmpty())
             throw new IllegalArgumentException("The author parameter can not be empty");
         if(topicName.isEmpty())

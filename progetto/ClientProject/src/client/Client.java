@@ -120,23 +120,20 @@ public class Client extends AnonymousClient {
     @Override
     public boolean publish( String topic, String title, String text){
         if(connected()) {
-            Message msg = createMessage(topic, title, text);
-            if(msg == null)     //errore durante la creazione di un messaggio
-                return false;
-
             try {
-                ResponseCode response = null;
-                //todo aggiungere un codice di risposta alla publish
-                /*code = */server_stub.publish(this.cookie, msg);
-                if(response.IsOK())
+                Message msg = createMessage(topic, title, text);
+                ResponseCode response;
+                response=server_stub.publish(this.cookie, msg);
+                if(response.is())
                 {
                     infoStamp("Message published.");
                     return true;
                 }
-                else
+                else {
                     errorStamp(response, "Error while publishing the message.");
-            }catch (RemoteException e){
-                errorStamp(e, "Unable to reach the server.");
+                }
+            }catch (Exception e) {
+                errorStamp(e);
                 return false;
             }
         }
