@@ -24,10 +24,8 @@ import email.EmailController;
 import email.EmailHandlerTLS;
 import interfaces.ServerInterface;
 import interfaces.ClientInterface;
-import utility.Account;
-import utility.AddressIp;
-import utility.Message;
-import utility.ResponseCode;
+import utility.*;
+
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
@@ -40,9 +38,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
+import java.security.*;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -57,33 +53,30 @@ public class Server implements ServerInterface,Callable<Integer> {
     private ConcurrentSkipListMap<String,ConcurrentLinkedQueue<Integer>> topicClientList;                 // topic -> lista idAccount    -   PUNTI 1 e 2
     private ConcurrentLinkedQueue<String> topicList;        //utilizzata per tenere traccia di tutti i topic e da utilizzare in getTopicList()
 
-    /*
-        1)lista dei topic
-        2)associazioni topic -> lista client che si sono registrati al topic
-                possibili implementazioni ConcurrentSkipListMap
-        3)lista client
-                possibili implementazioni concurrentLikedQueue
-    */
-
     /* clients management fields */
     private AccountCollectionInterface accountList;                     //monitor della lista contente tutti gli account salvati
     private RandomString randomStringSession;
     private int anonymousCounter=0;
 
     /* server settings fields */
-    private Properties serverSettings=new Properties();                 //setting del server
+    private Properties serverSettings = new Properties();                 //setting del server
     private boolean pedantic = true;                                    //utile per il debugging per stampare ogni avvenimento      todo magari anche questo si può importare dal file di config
 
     /* security fields */
     private AES aesCipher;
-    private String serverPublicKey;
-    private String serverPrivateKey;
+    final private String curveName = "prime192v1";
+    private KeyPair RSA_kayPair;
+    private KeyPair ECDH_kayPair;
+    final private PrivateKey RSA_privateKey;
+    final private PublicKey  RSA_pubKey;
+    final private PrivateKey ECDH_privateKey;
+    final private PublicKey  ECDH_pubKey;
 
     /* rmi fields */
     private Registry registry;
     private int regPort = 1099;                 //Default registry port TODO magari si può importare dal file di config
     private String host;
-    private String serverName;                  //TODO: da creare nel costruttore, il nome con cui si fa la bind dello serverStub sul registro
+    final private String serverName;                  //TODO: da creare nel costruttore, il nome con cui si fa la bind dello serverStub sul registro
     private ServerInterface skeleton;
 
     /*email handler*/
@@ -102,11 +95,13 @@ public class Server implements ServerInterface,Callable<Integer> {
     public Server() throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchPaddingException, UnsupportedEncodingException, AlreadyBoundException, RemoteException, UnknownHostException {
 
         //TODO             creare un nome per il server utilizzato per il registro
+        String tmp_name;
         try{
-            serverName   = "Server_" + this.getMyIp();
+            tmp_name   = "Server_" + this.getMyIp();
         }catch(IOException exc){//se non riesce a reperire  l'ip
-            serverName   = "Server_" + (int)(Math.random()*1000000);
+            tmp_name   = "Server_" + (int)(Math.random()*1000000);
         }
+        serverName = tmp_name;
 
 
         topicList    = new ConcurrentLinkedQueue<>();
@@ -124,6 +119,11 @@ public class Server implements ServerInterface,Callable<Integer> {
 
         //Creazione PKI del server
         setupPKI();
+        RSA_privateKey  = RSA_kayPair.getPrivate();
+        RSA_pubKey      = RSA_kayPair.getPublic();
+        ECDH_privateKey = ECDH_kayPair.getPrivate();
+        ECDH_pubKey     = ECDH_kayPair.getPublic();
+
         infoStamp("Public key infrastructure created.");
 
         setupAes();
@@ -254,7 +254,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     public ResponseCode connect() {
         try {
             pedanticInfo("A new client has connected.");
-            return  new ResponseCode( ResponseCode.Codici.R210, ResponseCode.TipoClasse.SERVER,this.serverPublicKey);
+            return  new ResponseCode( ResponseCode.Codici.R210, ResponseCode.TipoClasse.SERVER,"da aggiustare");//todo aggiustare
         } catch (Exception e){
             errorStamp(e);
         }
@@ -435,7 +435,14 @@ public class Server implements ServerInterface,Callable<Integer> {
 
     @Override
     public String[] getTopicList()  {
-        return topicList.toArray(new String[0]);    //guarda esempio in https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ConcurrentLinkedQueue.html#toArray(T[])
+        return topicList.toArray(new String[0]);    //per spiegazioni a cosa server 'new String[0]' guarda esempio in https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ConcurrentLinkedQueue.html#toArray(T[])
+    }
+
+
+
+    public void togglePedantic(){
+        pedantic = !pedantic;
+        infoStamp("Pedantic status: " + pedantic + ".");
     }
 
 
@@ -468,11 +475,20 @@ public class Server implements ServerInterface,Callable<Integer> {
         }
     }
 
-    //Creazione della chiava pubblica, chiave privata con cui verranno criptati i messaggi scambiaticon i client
+    //Creazione della chiava pubblica, chiave privata con cui verranno criptati le informazioni sensibili scambiate col client
     private void setupPKI(){
-        /*TODO creare le chiavi pubbliche eccetera e settarle nei fields*/
-        serverPrivateKey="privatekeyservertobeimplmented";
-        serverPublicKey="publickeyservertobeimplmented";
+        try {
+            RSA_kayPair = RSA.generateKeyPair();
+        } catch (NoSuchAlgorithmException e) {
+            errorStamp(e, "Error during generation of the keys for the RSA algorithm.");
+            System.exit(1);
+        }
+        try {
+            ECDH_kayPair = ECDH.generateKeyPair(curveName);
+        } catch (NoSuchProviderException | NoSuchAlgorithmException | InvalidAlgorithmParameterException e) {
+            errorStamp(e, "Error during generation of the keys for the ECDH algorithm.");
+            System.exit(1);
+        }
     }
 
     private void setupAes() throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchPaddingException, UnsupportedEncodingException {
@@ -596,8 +612,9 @@ public class Server implements ServerInterface,Callable<Integer> {
 
 
 
-
-    //METODI UTILIZZATI PER LA GESTIONE DELL'OUTPUT DEL SERVER
+    /*************************************************************************************************************
+     ****METODI UTILIZZATI PER LA GESTIONE DELL'OUTPUT DEL SERVER*************************************************
+     *************************************************************************************************************/
 
     private void errorStamp(Exception e){
         System.out.flush();
