@@ -99,7 +99,10 @@ public  class ResponseCode implements Serializable {
     {
         return classeGeneratrice;
     }
-    public boolean IsOK(){ return Codici.R200==codice; }
+    public boolean IsOK(){
+        if(codice==null){return false;}
+        return Codici.R200==codice;
+    }
     public boolean IsSetCookie(){ return Codici.R100==codice;}
 
     public String getStandardMessage(){
