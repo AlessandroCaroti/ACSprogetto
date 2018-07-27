@@ -136,8 +136,9 @@ public class Client extends AnonymousClient {
                 errorStamp(e);
                 return false;
             }
+        }else {
+            errorStamp("Not connected to any server.");
         }
-        errorStamp("Not connected to any server.");
         return false;
     }
 

@@ -17,9 +17,10 @@
 */
 package utility;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class Message
+public class Message implements Serializable
 {
     final private String title;
     final private String author;

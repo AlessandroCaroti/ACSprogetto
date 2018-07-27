@@ -111,6 +111,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
 
         topicList    = new ConcurrentLinkedQueue<>();
+        topicClientList=new ConcurrentSkipListMap<>();
 
         System.out.println(System.getProperty("user.dir"));
 
@@ -367,7 +368,7 @@ public class Server implements ServerInterface,Callable<Integer> {
             if(account!=null){
                 if(account.cmpPassword(plainPassword)){
                     accountList.setStub(clientStub, account.getAccountId());
-                    pedanticInfo("anonymous"+account.getUsername() + " connected.");
+                    pedanticInfo(account.getUsername() + " connected.(cookie):"+cookie);
                     return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER, "login andato a buon fine");
                 }
             }else{
