@@ -191,9 +191,7 @@ public class AnonymousClient implements ClientInterface {
                     infoStamp("Already subscribe to the \'"+topic+"\' topic.");
                     return true;
                 }
-                ResponseCode response=null;
-                //todo aggiungere un codice di risposta alla subscribe
-                /*response = */server_stub.subscribe(this.cookie, topic);
+                ResponseCode response = server_stub.subscribe(this.cookie, topic);
                 if(response.IsOK())
                 {
                     topicsSubscribed.add(topic);
@@ -226,9 +224,7 @@ public class AnonymousClient implements ClientInterface {
                     infoStamp("Topic \'"+topic+"\' not included in the list of subscriptions");
                     return true;
                 }
-                ResponseCode response=null;
-                //todo aggiungere un codice di risposta alla unsubscribe
-                /*response = */server_stub.unsubscribe(this.cookie, topic);
+                ResponseCode response = server_stub.unsubscribe(this.cookie, topic);
                 if(response.IsOK())
                 {
                     topicsSubscribed.remove(topic);
@@ -290,6 +286,7 @@ public class AnonymousClient implements ClientInterface {
      * @return false
      */
     public boolean publish( String topic, String title, String text) {
+
         throw new UnsupportedOperationException();
     }
 

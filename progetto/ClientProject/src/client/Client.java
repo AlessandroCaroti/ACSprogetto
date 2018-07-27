@@ -124,7 +124,7 @@ public class Client extends AnonymousClient {
                 Message msg = createMessage(topic, title, text);
                 ResponseCode response;
                 response=server_stub.publish(this.cookie, msg);
-                if(response.is())
+                if(response.IsOK())
                 {
                     infoStamp("Message published.");
                     return true;
