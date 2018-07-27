@@ -41,15 +41,13 @@ public interface ServerInterface extends Remote,Serializable
 
     ResponseCode disconnect(String cookie) throws RemoteException;
 
-    void subscribe(String cookie, String topicName) throws RemoteException;
+    ResponseCode subscribe(String cookie, String topicName) throws RemoteException;
 
-    void unsubscribe(String cookie,String topicName) throws RemoteException ;
+    ResponseCode unsubscribe(String cookie,String topicName) throws RemoteException ;
 
-    void publish(String cookie, Message msg) throws RemoteException;
+    ResponseCode publish(String cookie, Message msg) throws RemoteException;
 
     void ping() throws RemoteException;
 
     String[] getTopicList() throws RemoteException;
 }
-
-//todo aggiungere responseCode a subscibe(...), unsubscribe(...), e publish(...)

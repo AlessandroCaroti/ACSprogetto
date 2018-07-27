@@ -382,53 +382,59 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     @Override
-    public void subscribe(String cookie, String topicName)  {
+    public ResponseCode subscribe(String cookie, String topicName)  {
         try {
-            Integer accountId = getAccountId(cookie);
-            //todo controllare che non sia già inscritto al topic
-            topicClientList.get(topicName).add(accountId);
-        }catch (BadPaddingException| IllegalBlockSizeException e){
-            warningStamp(e,"subscribe() - error cookies not recognize");
-        }catch (NullPointerException e){
-            warningStamp(e,"subscribe() - topic"+topicName+"not found");
-        }catch (Exception e){
-            errorStamp(e);
+            if(!topicList.contains(topicName)){//topic inesistente
+                return new ResponseCode(ResponseCode.Codici.R640,ResponseCode.TipoClasse.SERVER,"topic inesistente");
+            }
+            Integer accountId=getAccountId(cookie);
+            ConcurrentLinkedQueue<Integer>subscribers=topicClientList.get(topicName);
+            if(!subscribers.contains(accountId)){
+                subscribers.add(accountId);
+            }
+            return new ResponseCode(ResponseCode.Codici.R200,ResponseCode.TipoClasse.SERVER,"iscrizione avvenuta con successo");
         }
+        catch (BadPaddingException| IllegalBlockSizeException e){
+            warningStamp(e,"subscribe() - error cookies not recognize");
+        }catch (Exception e){
+           errorStamp(e);
+        }
+        return ResponseCodeList.InternalError;
     }
 
     @Override
-    public void unsubscribe(String cookie,String topicName)  {
+    public ResponseCode unsubscribe(String cookie,String topicName)  {
         try {
             Integer accountId = getAccountId(cookie);
-            //todo fose bisogna controllare che sia già inscritto al topic
             topicClientList.get(topicName).remove(accountId);
+            return new ResponseCode(ResponseCode.Codici.R200,ResponseCode.TipoClasse.SERVER,"disiscrizione avvenuta con successo");
         }catch (BadPaddingException| IllegalBlockSizeException e){
             warningStamp(e,"subscribe() - error cookies not recognize");
-        }catch (NullPointerException e){
-            warningStamp(e,"subscibe() - topic \'"+topicName+"\' not found");
-        }catch (Exception e){
+        } catch (Exception e){
             errorStamp(e);
         }
-
+        return ResponseCodeList.InternalError;
     }
 
     @Override
     //Il client che invia il messaggio riceverà una copia del suo stesso messaggio, questo lo gestiremo nel client e si può usare anche come conferma dell'invio tipo la spunta blu di whatsappp
-    public void publish(String cookie, Message msg) {
+    public ResponseCode publish(String cookie, Message msg) {
         try {
             Integer accountId = getAccountId(cookie);
             String topicName  = msg.getTopic();
-            ConcurrentLinkedQueue<Integer> subscibers = topicClientList.putIfAbsent(topicName, new ConcurrentLinkedQueue<Integer>());
-            if(subscibers == null){  //creazione di un nuovo topc
+            ConcurrentLinkedQueue<Integer> subscribers = topicClientList.putIfAbsent(topicName, new ConcurrentLinkedQueue<Integer>());
+            if(subscribers == null){  //creazione di un nuovo topic
                 topicList.add(topicName);
-                (subscibers = topicClientList.get(topicName)).add(accountId);
+                (subscribers = topicClientList.get(topicName)).add(accountId);
             }
-            notifyAll(subscibers.iterator(), msg);      //todo magari si potrebbe eseguire su un altro thread in modo da non bloccare questa funzione
+            notifyAll(subscribers.iterator(), msg);      //todo magari si potrebbe eseguire su un altro thread in modo da non bloccare questa funzione
+            return new ResponseCode(ResponseCode.Codici.R200,ResponseCode.TipoClasse.SERVER,"topic pubblicato");
         }catch (BadPaddingException| IllegalBlockSizeException e){
-            warningStamp(e,"subscribe() - error cookies not recognize");
+            warningStamp(e,"subscribe() - error cookie not recognized");
         }catch (Exception e){
             errorStamp(e);
         }
+        return ResponseCodeList.InternalError;
     }
 
     @Override
