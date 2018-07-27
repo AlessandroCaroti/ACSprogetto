@@ -385,12 +385,14 @@ public class Server implements ServerInterface,Callable<Integer> {
     @Override
     public ResponseCode subscribe(String cookie, String topicName)  {
         try {
+            Integer accountId=getAccountId(cookie);
             if(!topicList.contains(topicName)){//topic inesistente
+                pedanticInfo("user:"+accountId + " searched for "+topicName+".");
                 return new ResponseCode(ResponseCode.Codici.R640,ResponseCode.TipoClasse.SERVER,"topic inesistente");
             }
-            Integer accountId=getAccountId(cookie);
             ConcurrentLinkedQueue<Integer>subscribers=topicClientList.get(topicName);
             if(!subscribers.contains(accountId)){
+                pedanticInfo("user:"+accountId + "  subscribed to "+topicName+".");
                 subscribers.add(accountId);
             }
             return new ResponseCode(ResponseCode.Codici.R200,ResponseCode.TipoClasse.SERVER,"iscrizione avvenuta con successo");
@@ -408,6 +410,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         try {
             Integer accountId = getAccountId(cookie);
             topicClientList.get(topicName).remove(accountId);
+            pedanticInfo("user:"+accountId + " unsubscribed from "+topicName+".");
             return new ResponseCode(ResponseCode.Codici.R200,ResponseCode.TipoClasse.SERVER,"disiscrizione avvenuta con successo");
         }catch (BadPaddingException| IllegalBlockSizeException e){
             warningStamp(e,"subscribe() - error cookies not recognize");
@@ -425,6 +428,7 @@ public class Server implements ServerInterface,Callable<Integer> {
             String topicName  = msg.getTopic();
             ConcurrentLinkedQueue<Integer> subscribers = topicClientList.putIfAbsent(topicName, new ConcurrentLinkedQueue<Integer>());
             if(subscribers == null){  //creazione di un nuovo topic
+                pedanticInfo("user:"+accountId + " has created new topic:"+topicName+".");
                 topicList.add(topicName);
                 (subscribers = topicClientList.get(topicName)).add(accountId);
             }
