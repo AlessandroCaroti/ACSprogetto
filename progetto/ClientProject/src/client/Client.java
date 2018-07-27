@@ -126,6 +126,7 @@ public class Client extends AnonymousClient {
                 response=server_stub.publish(this.cookie, msg);
                 if(response.IsOK())
                 {
+                    topicsSubscribed.add(topic);
                     infoStamp("Message published.");
                     return true;
                 }
