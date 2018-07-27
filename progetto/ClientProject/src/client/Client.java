@@ -17,14 +17,8 @@
 */
 package client;
 
-import interfaces.ClientInterface;
-import interfaces.ServerInterface;
-import utility.ECDH;
-import utility.Message;
-import utility.RSA;
-import utility.ResponseCode;
+import utility.*;
 
-import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.rmi.RemoteException;
 import java.security.*;
@@ -45,8 +39,8 @@ public class Client extends AnonymousClient {
     /* security fields */
     final private String curveName = "prime192v1";
     private KeyPair ECDH_kayPair;       //todo cercare di renderla final
-    private PublicKey serverPubblicKey_RSA;
-    private SecretKey secretAesKey;
+    private PublicKey serverPublicKey_RSA;
+    private SecretKeySpec secretAesKey;
 
 
     // ************************************************************************************************************
@@ -70,7 +64,6 @@ public class Client extends AnonymousClient {
         try {
             ECDH_kayPair = ECDH.generateKeyPair(curveName);
         } catch (NoSuchProviderException | NoSuchAlgorithmException | InvalidAlgorithmParameterException e) {
-            //ECDH_kayPair = null;
             errorStamp(e, "Error during generation of the keys for the ECDH algorithm.");
             System.exit(1);
         }
@@ -183,27 +176,28 @@ public class Client extends AnonymousClient {
 
     /** Metodo che produce una chiave segreta utilizzando il protocollo Diffie–Hellman con la variante che utilizza le curve ellittiche (Elliptic-curve Diffie–Hellman)
      *
-     * @param serverPubKey_encripted la chiave pubblica ECDH del server criptata con la chiave privata RSA del server
+     * @param serverPubKey_encrypted la chiave pubblica ECDH del server criptata con la chiave privata RSA del server
      * @return la chiave pubblica ECDH del client
      */
-    public PublicKey publicKeyExchange(byte[] serverPubKey_encripted){
+    public PublicKey publicKeyExchange(byte[] serverPubKey_encrypted){
         try {
-            byte[] bytes = RSA.decrypt(serverPubblicKey_RSA, serverPubKey_encripted);
-            PublicKey serverPubKey = KeyFactory.getInstance("ECDH", "BC").generatePublic(new X509EncodedKeySpec(bytes));
-            byte[] sheredSecret = ECDH.sheredSecretKey(ECDH_kayPair.getPrivate(), serverPubKey);
+            byte[] serverPubKey_decripted = RSA.decrypt(serverPublicKey_RSA, serverPubKey_encrypted);
+            PublicKey serverPubKey = KeyFactory.getInstance("ECDH", "BC").generatePublic(new X509EncodedKeySpec(serverPubKey_decripted));
+            byte[] sharedSecret = ECDH.sheredSecretKey(ECDH_kayPair.getPrivate(), serverPubKey);
             infoStamp("Created secret key.\n");
-            pedanticInfo("Secret key: " + Arrays.toString(sheredSecret));
-            secretAesKey = new SecretKeySpec(sheredSecret, "AES");
+            pedanticInfo("Secret key: " + Arrays.toString(sharedSecret));
+            secretAesKey = new SecretKeySpec(sharedSecret, "AES");
             return ECDH_kayPair.getPublic();
         } catch (Exception e) {
-            errorStamp(e, "Error during creation of shard secret key whit server.");
+            errorStamp(e, "Error during creation of shared secret key whit server.");
         }
         return null;
     }
 
-    public byte[] testSecretKey(byte[] messageEncripted){
-        return null;
-        //todo da implemntare una volta deciso l'algoritmo da usare per criptare i messaggi
+    public byte[] testSecretKey(byte[] messageEncrypted) {
+        try {
+            return AES.decrypt(messageEncrypted, secretAesKey);
+        } catch (Exception e) { return null;}
     }
 
     // *************************************************************************************************************
@@ -218,11 +212,4 @@ public class Client extends AnonymousClient {
         }
         return msg;
     }
-
-
-
-
-
-
-
 }
