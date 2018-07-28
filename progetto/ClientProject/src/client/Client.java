@@ -44,8 +44,7 @@ public class Client extends AnonymousClient {
     /* client fields */
     private String plainPassword;
     private String email;
-    protected String username;
-
+    private String username;
     /* security fields */
     final private String curveName = "prime192v1";
     private KeyPair ECDH_kayPair;       //todo cercare di renderla final
@@ -63,7 +62,6 @@ public class Client extends AnonymousClient {
      * @param email             la mail associata all'account
      */
     public Client(String username, String plainPassword, String email ) throws RemoteException
-    public Client(String username, String plainPassword, String my_public_key, String my_private_key,String email ) throws RemoteException,NullPointerException
     {
         super(username);
         if(plainPassword==null||email==null)
