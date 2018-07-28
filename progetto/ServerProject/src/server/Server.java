@@ -102,7 +102,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
     public Server() throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchPaddingException, UnsupportedEncodingException, AlreadyBoundException, RemoteException, UnknownHostException {
 
-        
+
         try{
             serverName   = "Server_" + this.getMyIp();
         }catch(IOException exc){//se non riesce a reperire  l'ip
