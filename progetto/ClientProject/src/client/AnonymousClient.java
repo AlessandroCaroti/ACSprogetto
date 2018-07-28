@@ -414,11 +414,11 @@ public class AnonymousClient implements ClientInterface {
 
     //METODI UTILIZZATI PER LA GESTIONE DELL'OUTPUT DEL CLIENT
 
-    protected void errorStamp(Exception e){
+    void errorStamp(Exception e){
        this.errorStamp(e,"");
     }
 
-    protected void errorStamp(Exception e, String msg){
+    void errorStamp(Exception e, String msg){
         System.out.flush();
         System.err.println("["+className+"-ERROR]: " + msg);
         System.err.println("\tException type: "      + e.getClass().getSimpleName());
@@ -426,14 +426,14 @@ public class AnonymousClient implements ClientInterface {
         e.printStackTrace();    //todo da eliminare appena la fase di debigging è finita(solo questa linea non tutto il metodo)
     }
 
-    protected void errorStamp(ResponseCode r, String msg){
+    void errorStamp(ResponseCode r, String msg){
         System.out.flush();
         System.err.println("["+className+"-ERROR]: "  + msg);
         System.err.println("\tError code: "           + r.getCodice());
         System.err.println("\tError message: "        + r.getMessaggioInfo());
     }
 
-    protected void errorStamp(String msg){
+    void errorStamp(String msg){
         System.out.flush();
         System.err.println("["+className+"-ERROR]: "      + msg);
     }
@@ -445,11 +445,11 @@ public class AnonymousClient implements ClientInterface {
         System.err.println("\tException message: "     + e.getMessage());
     }
 
-    protected void infoStamp(String msg){
+    void infoStamp(String msg){
         System.out.println("["+className+"-INFO]: " + msg);
     }
 
-    protected void pedanticInfo(String msg){
+    void pedanticInfo(String msg){
         if(pedantic){
             infoStamp(msg);
         }
