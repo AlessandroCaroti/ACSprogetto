@@ -29,6 +29,7 @@ public class Client extends AnonymousClient {
     /* client fields */
     private String plainPassword;
     private String email;
+    protected String username;
     // ************************************************************************************************************
     //CONSTRUCTORS
 
@@ -46,6 +47,7 @@ public class Client extends AnonymousClient {
         if(plainPassword==null||email==null)
             throw new NullPointerException();
         this.plainPassword=plainPassword;
+        this.username     = username;
         this.email=email;
         this.className="CLIENT";
     }
@@ -161,6 +163,14 @@ public class Client extends AnonymousClient {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
     // *************************************************************************************************************
     //PRIVATE METHOD
