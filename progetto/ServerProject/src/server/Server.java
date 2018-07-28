@@ -410,7 +410,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         try {
             Integer accountId = getAccountId(cookie);
             topicClientList.get(topicName).remove(accountId);
-            pedanticInfo("user:"+accountId + " unsubscribed from "+topicName+".");
+            pedanticInfo("user:"+accountId + " unsubscribe from "+topicName+".");
             return new ResponseCode(ResponseCode.Codici.R200,ResponseCode.TipoClasse.SERVER,"disiscrizione avvenuta con successo");
         }catch (BadPaddingException| IllegalBlockSizeException e){
             warningStamp(e,"subscribe() - error cookies not recognize");
@@ -566,11 +566,10 @@ public class Server implements ServerInterface,Callable<Integer> {
                     ClientInterface stub = accountList.getStub(accountId);
                     stub.notify(msg);
                 }catch (java.rmi.RemoteException e){
-                    warningStamp(e, "client not reachable.");
-                    //todo il client corrente va eliminato perchè non più raggiungibile
+                    warningStamp(e, "Client unreachable.");
+                    this.accountList.setStub(null, accountId);
                 }catch (NullPointerException e){
-                    warningStamp(e, "Client stub not saved.");
-                    //todo il client corrente va eliminato perchè si è disconneddo  -   si potrebbe pensare di farlo durante la chiamata della disconnect(...)
+                    warningStamp(e, "The client has just disconnected.");
                 }
             });
     }
