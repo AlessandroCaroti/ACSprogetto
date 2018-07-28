@@ -30,7 +30,6 @@ public class AnonymousClient implements ClientInterface {
     /**************************************************************************/
     /* client fields */
     protected String className = "ANONYMOUS_CLIENT";
-    protected String username;
     protected ClientInterface skeleton;               //my stub
     protected String cookie;
     protected boolean pedantic  = true;
@@ -386,14 +385,6 @@ public class AnonymousClient implements ClientInterface {
 
 
     /*GETTER and SETTER*/
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
 
     public String getCookie() {
         return cookie;
