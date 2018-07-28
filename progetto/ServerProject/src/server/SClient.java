@@ -32,11 +32,10 @@ public class SClient implements Callable<Integer> {
 
     private String myUsername;
     private String plainPassword;
-    private ClientInterface skeleton;
     private String myPublicKey;
     private String myPrivateKey;
 
-    public SClient(String username, String plainPassword, ClientInterface skeleton, String bp_key, String my_private_key)
+    public SClient(String username, String plainPassword, String bp_key, String my_private_key)
             throws RemoteException
     {
 
@@ -51,13 +50,12 @@ public class SClient implements Callable<Integer> {
             this.clients=new Client[DEFAULTCONNECTIONNUMBER];
         }
 
-        if(username==null||plainPassword==null||skeleton==null||bp_key==null||my_private_key==null)
+        if(username==null||plainPassword==null||bp_key==null||my_private_key==null)
         {
             throw new NullPointerException("passing null argument to SClient constructor");
         }
         this.myUsername=username;
         this.plainPassword=plainPassword;
-        this.skeleton=skeleton;
         this.myPublicKey=bp_key;
         this.myPrivateKey=my_private_key;
     }

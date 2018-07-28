@@ -26,6 +26,7 @@ import java.rmi.RemoteException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Random;
 import java.util.concurrent.*;
 
 public class Host {
@@ -36,14 +37,14 @@ public class Host {
 
         private GuiInterface userInterface;
         private Server server;
-        //TODO private sClient sclient;
-
+        private SClient sclient;
+        private String sclientPassword=new RandomString(16,new Random(),RandomString.alphanum).nextString();
 
 
     private Host(boolean usingUserInterface) throws UnsupportedEncodingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, AlreadyBoundException, RemoteException, UnknownHostException {
          userInterface=new GuiInterface(usingUserInterface);
          server=new Server();
-         //TODO sclient=new SClient();
+         sclient=new SClient(server.getServerName(),sclientPassword,"publickeytobeimplemented","privatekeytobeimplemented");
 
         userInterfaceThread=Executors.newSingleThreadExecutor();
         serverThread=Executors.newSingleThreadExecutor();
