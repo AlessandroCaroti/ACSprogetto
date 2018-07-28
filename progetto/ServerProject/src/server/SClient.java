@@ -18,6 +18,8 @@
 package server;
 
 import client.AnonymousClient;
+import utility.Message;
+import utility.ResponseCode;
 import utility.ServerInfo;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -38,18 +40,23 @@ public class SClient implements Callable<Integer> {
 
     public SClient(String myPublicKey, String myPrivateKey,List serverList)
     {
-
+        int length;
         try {
             Properties sClientSettings = new Properties();//setting del server
             FileInputStream in = new FileInputStream("config.serverSettings");
             sClientSettings.load(in);
             in.close();
-            this.clients = new AnonymousClient[Integer.parseInt(sClientSettings.getProperty("maxbrokerconnection"))];
+            length=Integer.parseInt(sClientSettings.getProperty("maxbrokerconnection"));
         }catch(IOException exc){
             System.err.println("ERROR:unable to open or read config.serverSettings");
-            this.clients=new AnonymousClient[DEFAULTCONNECTIONNUMBER];
+            length=DEFAULTCONNECTIONNUMBER;
         }
+        this.clients[]=new AnonymousClient[length]{
+            public ResponseCode notify(Message m){//TODO come faccio a redifenire il metodo notify senza estendere la classe?
+                //todo https://stackoverflow.com/questions/11929198/override-a-function-without-extending-the-class è una soluzione ma non funziona con gli array!
 
+            }
+        }
         if(myPublicKey==null||myPrivateKey==null||serverList==null)
         {
             throw new NullPointerException("passing null argument to SClient constructor");
@@ -91,7 +98,7 @@ public class SClient implements Callable<Integer> {
 
                 i++;
             }catch(Exception e){
-                errorStamp(e,"Unable to create client:"+i);
+                errorStamp(e,"Unable to create anonymousClient:"+i);
                 iterator.remove();//dato che non mi sono connesso lo rimuovo dalla lista.
             }
         }
