@@ -299,17 +299,15 @@ public class AnonymousClient implements ClientInterface {
     //REMOTE METHOD
 
     @Override
-    //TODO al server non importa del messaggio di risposta quindi si potrebbe mettere che ritorni void
     public ResponseCode notify(Message m) {
         ResponseCode rc;
         if(m==null) {
-            rc=new ResponseCode(ResponseCode.Codici.R500, ResponseCode.TipoClasse.CLIENT,
-                    "(-) NOT OK Il server ha ricevuto un messaggio vuoto");
-            pedanticInfo("Receved new message\n"+m.toString());
-            return rc;
+            rc=new ResponseCode(ResponseCode.Codici.R500, ResponseCode.TipoClasse.CLIENT, "(-) WARNING Il client ha ricevuto un messaggio vuoto");
+        }else {
+            pedanticInfo("Received new message\n" + m.toString());
+            rc = new ResponseCode(R200, ResponseCode.TipoClasse.CLIENT,
+                    "(+) OK il client ha ricevuto il messaggio");
         }
-        rc=new ResponseCode(R200, ResponseCode.TipoClasse.CLIENT,
-                "(+) OK il server ha ricevuto il messaggio");
         return rc;
     }
 

@@ -41,7 +41,7 @@ public  class ResponseCode implements Serializable {
          R220,  //account successfully retrieved(login a buon fine)
 
          //I messaggi che iniziano per 500 sono di errore del server
-         R500,  //null message
+         R500,  //received null message
          R505,  //Internal Server Error
 
 
