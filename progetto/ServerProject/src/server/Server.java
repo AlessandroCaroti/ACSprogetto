@@ -451,7 +451,6 @@ public class Server implements ServerInterface,Callable<Integer> {
         return topicList.toArray(new String[0]);    //guarda esempio in https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ConcurrentLinkedQueue.html#toArray(T[])
     }
 
-    //TODO
     @Override
     public ResponseCode retrieveCookie(String username,String plainPassword){
             try {
@@ -594,7 +593,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         String temp;
         StringTokenizer tokenizer=new StringTokenizer(email);
         temp=tokenizer.nextToken();
-        if(temp.equalsIgnoreCase("test"))return true;//TODO REMOVE 4 LINES up
+        if(temp.equalsIgnoreCase("test"))return true;//TODO REMOVE 4 LINES up (sono per il testing)
 
         final int MAXATTEMPTS = 3;
         ResponseCode resp;
@@ -630,7 +629,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         String temp;
         StringTokenizer tokenizer=new StringTokenizer(email);
         temp=tokenizer.nextToken();
-        if(temp.equalsIgnoreCase("test"))return;//TODO REMOVE 4 LINES up
+        if(temp.equalsIgnoreCase("test"))return;//TODO REMOVE 4 LINES up (sono per il testing)
 
         javax.mail.Message message=emailController.createEmailMessage(email,"REGISTRATION ATTEMPT",
                 "Someone tried to register a new account by associating it with this email.\n" +
