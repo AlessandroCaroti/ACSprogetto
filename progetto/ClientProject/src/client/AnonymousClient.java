@@ -90,7 +90,7 @@ public class AnonymousClient implements ClientInterface {
     // *************************************************************************************************************
     //API
 
-    public void setServerInfo(String regHost, String serverName){
+    private void setServerInfo(String regHost, String serverName){
         if(regHost==null || regHost.isEmpty() || serverName==null || serverName.isEmpty()){
             throw new IllegalArgumentException("Invalid argument format of regHost or serverName");
         }
@@ -165,7 +165,7 @@ public class AnonymousClient implements ClientInterface {
     public boolean disconnect(){
         if(connected()) {
             try {
-                ResponseCode response = server_stub.disconnect(cookie);
+                server_stub.disconnect(cookie);
                 return true;
             } catch (RemoteException exc) {
                 System.err.println(exc.getClass().getSimpleName());
@@ -321,13 +321,10 @@ public class AnonymousClient implements ClientInterface {
     public ResponseCode getCode(int nAttempts){
        System.out.println("Remaining attempts:"+Integer.toString(nAttempts));
        System.out.println("Enter code:");
-       //TODO modificare qui l'inserimento
-
         try {
             BufferedReader bufferRead = new BufferedReader(new InputStreamReader(System.in));
             String s = bufferRead.readLine();
-            return  new ResponseCode(R200,ResponseCode.TipoClasse.CLIENT,
-                    s);
+            return  new ResponseCode(R200,ResponseCode.TipoClasse.CLIENT,s);
         } catch (IOException e) {
             errorStamp(e, "Unable to read user input");
         }
