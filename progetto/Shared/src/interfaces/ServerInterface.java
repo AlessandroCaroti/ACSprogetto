@@ -33,21 +33,21 @@ public interface ServerInterface extends Remote,Serializable
 
     ResponseCode retrieveAccount(String username, String plainPassword, ClientInterface clientStub)throws RemoteException;
 
-    ResponseCode retrieveAccount( int cookie, String plainPassword, ClientInterface clientStub) throws RemoteException;
+    ResponseCode retrieveAccountByCookie( String cookie, String plainPassword, ClientInterface clientStub) throws RemoteException;
+
+    ResponseCode retrieveCookie(String username,String plainPassword) throws  RemoteException;
 
     ResponseCode connect() throws RemoteException;
 
     ResponseCode disconnect(String cookie) throws RemoteException;
 
-    void subscribe(String cookie, String topicName) throws RemoteException;
+    ResponseCode subscribe(String cookie, String topicName) throws RemoteException;
 
-    void unsubscribe(String cookie,String topicName) throws RemoteException ;
+    ResponseCode unsubscribe(String cookie,String topicName) throws RemoteException ;
 
-    void publish(String cookie, Message msg) throws RemoteException;
+    ResponseCode publish(String cookie, Message msg) throws RemoteException;
 
     void ping() throws RemoteException;
 
     String[] getTopicList() throws RemoteException;
 }
-
-//todo aggiungere responseCode a subscibe(...), unsubscribe(...), e publish(...)

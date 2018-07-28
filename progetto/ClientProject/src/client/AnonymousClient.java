@@ -4,7 +4,6 @@ import interfaces.ClientInterface;
 import interfaces.ServerInterface;
 import utility.Message;
 import utility.ResponseCode;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -21,13 +20,14 @@ import static utility.ResponseCode.Codici.R670;
 
 public class AnonymousClient implements ClientInterface {
 
-    static  protected String className = "ANONYMOUS_CLIENT";
+
 
     static final protected int DEFAULT_REGISTRY_PORT = 1099;
 
 
     /**************************************************************************/
     /* client fields */
+    protected String className = "ANONYMOUS_CLIENT";
     protected String username;
     protected ClientInterface skeleton;               //my stub
     protected String cookie;
@@ -191,9 +191,7 @@ public class AnonymousClient implements ClientInterface {
                     infoStamp("Already subscribe to the \'"+topic+"\' topic.");
                     return true;
                 }
-                ResponseCode response=null;
-                //todo aggiungere un codice di risposta alla subscribe
-                /*response = */server_stub.subscribe(this.cookie, topic);
+                ResponseCode response = server_stub.subscribe(this.cookie, topic);
                 if(response.IsOK())
                 {
                     topicsSubscribed.add(topic);
@@ -226,9 +224,7 @@ public class AnonymousClient implements ClientInterface {
                     infoStamp("Topic \'"+topic+"\' not included in the list of subscriptions");
                     return true;
                 }
-                ResponseCode response=null;
-                //todo aggiungere un codice di risposta alla unsubscribe
-                /*response = */server_stub.unsubscribe(this.cookie, topic);
+                ResponseCode response = server_stub.unsubscribe(this.cookie, topic);
                 if(response.IsOK())
                 {
                     topicsSubscribed.remove(topic);
@@ -290,6 +286,7 @@ public class AnonymousClient implements ClientInterface {
      * @return false
      */
     public boolean publish( String topic, String title, String text) {
+
         throw new UnsupportedOperationException();
     }
 
@@ -412,8 +409,8 @@ public class AnonymousClient implements ClientInterface {
         this.myPublicKey = myPublicKey;
     }
 
-    public static String getClassName() {
-        return className;
+    public  String getClassName() {
+        return this.className;
     }
 
 
@@ -421,11 +418,7 @@ public class AnonymousClient implements ClientInterface {
     //METODI UTILIZZATI PER LA GESTIONE DELL'OUTPUT DEL CLIENT
 
     protected void errorStamp(Exception e){
-        System.out.flush();
-        System.err.println("["+className+"-ERROR]");
-        System.err.println("\tException type: "    + e.getClass().getSimpleName());
-        System.err.println("\tException message: " + e.getMessage());
-        e.printStackTrace();    //todo da eliminare appena la fase di debigging è finita(solo questa linea non tutto il metodo)
+       this.errorStamp(e,"");
     }
 
     protected void errorStamp(Exception e, String msg){

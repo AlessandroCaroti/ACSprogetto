@@ -12,6 +12,7 @@ public class ManualClientTester {
 
         System.out.println("STARTING TESTER");
         String username;String password;String email;String pubKey="tobeimplememted";String privKey="tobeimplememted";
+        String topicName,text,title;
         List<AnonymousClient> clients = new LinkedList<>();
         AnonymousClient currentClient=null;
         AnonymousClient it;
@@ -30,7 +31,10 @@ public class ManualClientTester {
                     "6:connect current to server automatic\n"+
                     "7:register current\n"+
                     "8:disconnect current\n"+
-                    "9:retrieve current account1"
+                    "9:retrieve current account1\n"+
+                    "10:publish new/already existent topic\n"+
+                    "11:subscribe topic\n"+
+                    "12:unsubscribe topic"
 
             );
             scelta = Integer.parseInt(bufferRead.readLine());
@@ -107,6 +111,42 @@ public class ManualClientTester {
                         System.out.println("Account recuperato");
                     }else{System.out.println("NON recuperato");}
                     break;
+                case 10:
+                    if(currentClient==null){System.out.println("currentclient==null");break;}
+                    System.out.println("Inserisci nome topic");
+                    topicName=bufferRead.readLine();
+                    System.out.println("Inserisci titolo");
+                    title=bufferRead.readLine();
+                    System.out.println("Inserisci testo");
+                    text=bufferRead.readLine();
+                    if(currentClient.publish(topicName,title,text)){
+                        System.out.println("topic pubblicato con successo!");
+                    }else{
+                        System.out.println("topic non pubblicato D:");
+                    }
+                    break;
+                case 11:
+                    if(currentClient==null){System.out.println("currentclient==null");break;}
+                    System.out.println("Inserisci nome topic");
+                    topicName=bufferRead.readLine();
+                    if(currentClient.subscribe(topicName)){
+                        System.out.println("subscribe avvenuta cn successo!");
+                    }else{
+                        System.out.println("subscribe fallita D:");
+                    }
+                    break;
+                case 12:
+                    if(currentClient==null){System.out.println("currentclient==null");break;}
+                    System.out.println("Inserisci nome topic");
+                    topicName=bufferRead.readLine();
+                    if(currentClient.unsubscribe(topicName)){
+                        System.out.println("unsubscribe avvenuta cn successo!");
+                    }else{
+                        System.out.println("unsubscribe fallita D:");
+                    }
+                    break;
+
+
                 default:
                     System.out.println("Comando inesistente");
                     break;
