@@ -58,13 +58,12 @@ public class AnonymousClient implements ClientInterface {
 
     /**
      * Anonymous user's constructor
-     * @param username          il mio username
      * @param my_private_key    la mia chiave privata
      * @param my_public_key     la mia chiave pubblica
      */
-    public AnonymousClient(String username, String my_public_key, String my_private_key)throws NullPointerException,RemoteException
+    public AnonymousClient(String my_public_key, String my_private_key)throws NullPointerException,RemoteException
     {
-        if(username==null || my_public_key==null || my_private_key==null)
+        if(my_public_key==null || my_private_key==null)
             throw new NullPointerException();
         this.myPublicKey  = my_public_key;
         this.myPrivateKey = my_private_key;

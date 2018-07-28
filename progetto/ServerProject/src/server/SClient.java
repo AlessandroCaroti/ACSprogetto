@@ -32,13 +32,11 @@ public class SClient implements Callable<Integer> {
     private List<ServerInfo> serverList;
 
 
-    private String myUsername;
-    private String plainPassword;
     private String myPublicKey;
     private String myPrivateKey;
     private boolean pedantic=true;
 
-    public SClient(String username, String plainPassword, String myPublicKey, String myPrivateKey,List serverList)
+    public SClient(String myPublicKey, String myPrivateKey,List serverList)
     {
 
         try {
@@ -52,12 +50,10 @@ public class SClient implements Callable<Integer> {
             this.clients=new AnonymousClient[DEFAULTCONNECTIONNUMBER];
         }
 
-        if(username==null||plainPassword==null||myPublicKey==null||myPrivateKey==null||serverList==null)
+        if(myPublicKey==null||myPrivateKey==null||serverList==null)
         {
             throw new NullPointerException("passing null argument to SClient constructor");
         }
-        this.myUsername=username;
-        this.plainPassword=plainPassword;
         this.myPublicKey=myPublicKey;
         this.myPrivateKey=myPrivateKey;
         this.serverList=serverList;
@@ -90,7 +86,7 @@ public class SClient implements Callable<Integer> {
         int i=0;
         while(iterator.hasNext()&&i<clients.length){
             try {
-                clients[i] = new AnonymousClient(this.myUsername, this.myPublicKey, this.myPrivateKey);
+                clients[i] = new AnonymousClient(this.myPublicKey, this.myPrivateKey);
                 clients[i].setServerInfo(((ServerInfo)iterator.next()).regHost,((ServerInfo)iterator).regPort,"Server-"+((ServerInfo)iterator).regHost+":"+((ServerInfo)iterator).regPort);
 
                 i++;

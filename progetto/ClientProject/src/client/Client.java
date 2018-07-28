@@ -29,7 +29,7 @@ public class Client extends AnonymousClient {
     /* client fields */
     private String plainPassword;
     private String email;
-    protected String username;
+    private String username;
     // ************************************************************************************************************
     //CONSTRUCTORS
 
@@ -43,7 +43,7 @@ public class Client extends AnonymousClient {
      */
     public Client(String username, String plainPassword, String my_public_key, String my_private_key,String email ) throws RemoteException,NullPointerException
     {
-        super(username,my_public_key,my_private_key);
+        super(my_public_key,my_private_key);
         if(plainPassword==null||email==null)
             throw new NullPointerException();
         this.plainPassword=plainPassword;
