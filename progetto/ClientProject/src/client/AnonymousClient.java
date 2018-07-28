@@ -63,7 +63,7 @@ public class AnonymousClient implements ClientInterface {
      * @param my_private_key    la mia chiave privata
      * @param my_public_key     la mia chiave pubblica
      */
-    public AnonymousClient(String username, String my_public_key, String my_private_key)throws RemoteException
+    public AnonymousClient(String username, String my_public_key, String my_private_key)throws NullPointerException,RemoteException
     {
         if(username==null || my_public_key==null || my_private_key==null)
             throw new NullPointerException();
@@ -101,7 +101,7 @@ public class AnonymousClient implements ClientInterface {
 
 
     /**
-     *
+     * Imposta i dati del server su cui fare la connect ed esegue quest'ultima.
      * @param regHost       indirizzo dell'host del registry
      * @param regPort       porta in cui il registry accetta richieste
      * @param serverName    il nome con cui il server ha fatto la bind sul registry del suo stub
@@ -112,9 +112,9 @@ public class AnonymousClient implements ClientInterface {
         if(regPort>1024 && regPort<=65535)  //Se la porta passata è valida impostala come porta del server altrimenti prova ad usare quella di default
             this.registryPort = regPort;
         this.server_stub = connect(regHost, serverName, regPort);
-        if(server_stub!=null){      //Connesione al server avvenuta con successo
+        if(server_stub!=null){      //Connessione al server avvenuta con successo
             infoStamp("Successful connection to the server.");
-        }else {                     //Connesione fallita perchè non si è trovato il server o perchè durante la connessione c'è stato un errore
+        }else {                     //Connessione fallita perchè non si è stato trovato il server o perchè durante la connessione c'è stato un errore
             infoStamp("Unable to reach the server.");
         }
     }

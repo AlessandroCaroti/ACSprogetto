@@ -40,7 +40,7 @@ public class Client extends AnonymousClient {
      * @param my_public_key     la mia chiave pubblica
      * @param email             la mail associata all'account
      */
-    public Client(String username, String plainPassword, String my_public_key, String my_private_key,String email ) throws RemoteException
+    public Client(String username, String plainPassword, String my_public_key, String my_private_key,String email ) throws RemoteException,NullPointerException
     {
         super(username,my_public_key,my_private_key);
         if(plainPassword==null||email==null)
