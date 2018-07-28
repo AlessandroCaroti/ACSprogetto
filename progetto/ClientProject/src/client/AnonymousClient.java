@@ -88,8 +88,9 @@ public class AnonymousClient implements ClientInterface {
 
 
 
-    // *************************************************************************************************************
-    //API
+    /*****************************************************************************************************************
+     * API ***********************************************************************************************************
+     ****************************************************************************************************************/
 
     public void setServerInfo(String regHost, String serverName){
         if(regHost==null || regHost.isEmpty() || serverName==null || serverName.isEmpty()){
@@ -297,10 +298,10 @@ public class AnonymousClient implements ClientInterface {
 
 
 
+    /****************************************************************************************************************
+     * REMOTE METHOD ************************************************************************************************
+     ****************************************************************************************************************/
 
-
-    // *************************************************************************************************************
-    //REMOTE METHOD
 
     @Override
     //TODO al server non importa del messaggio di risposta quindi si potrebbe mettere che ritorni void
@@ -339,14 +340,27 @@ public class AnonymousClient implements ClientInterface {
                 "(-) Internal client error");
     }
 
-    public PublicKey publicKeyExchange(PublicKey serverPubKey_encripted){
+    @Override
+    public PublicKey publicKeyExchange(byte[] serverPubKey_encrypted){
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public byte[] testSecretKey(byte[] messageEncrypted){
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public byte[][] getAccountInfo(){
         throw new UnsupportedOperationException();
     }
 
 
 
-    // *************************************************************************************************************
-    //PROTECTED METHOD
+
+    /*****************************************************************************************************************
+     * PRIVATE METHOD ************************************************************************************************
+     ****************************************************************************************************************/
 
     protected ServerInterface connect(String regHost, String server, Integer regPort)
     {

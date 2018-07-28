@@ -3,6 +3,7 @@ import utility.ECDH;
 import utility.RSA;
 
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.PublicKey;
@@ -17,6 +18,9 @@ public class ECDH_RSA__test2 {
         KeyPair serverECDH = ECDH.generateKeyPair("prime192v1");
 
         //CAMPI SOLO DEL CLIENT
+        String userName = "username";
+        String password = "password";
+        String email    = "email";
         KeyPair clientECDH = ECDH.generateKeyPair("prime192v1");
 
         //CAMPI CONDIVISI tra CLIENT e SERVER
@@ -42,8 +46,30 @@ public class ECDH_RSA__test2 {
         String plainText = "Hello world!";
         byte[] encriptedText = AES.encrypt(plainText.getBytes(), secretAesKey_server);
         byte[] decriptedText = AES.decrypt(encriptedText, secretAesKey_client);
-        String decriptedString = new String(decriptedText,"UTF-8");
+        String decriptedString = new String(decriptedText, StandardCharsets.UTF_8);
         System.out.println("\n\nTesto originale:\t\t\t\t\t" + plainText);
         System.out.println("Testo criptato e decriptato:\t\t" + decriptedString);
+
+        //SIMULAZIONE PASSAGGIO DELLE INFORMAZIONI DELL'ACCOUNT DEL CLIENT AL SERVER
+
+        //Lato client
+        byte[][] encryptedAccountInfo = new byte[3][];
+        encryptedAccountInfo[0] = AES.encrypt(email.getBytes(),    secretAesKey_client);
+        encryptedAccountInfo[1] = AES.encrypt(userName.getBytes(), secretAesKey_client);
+        encryptedAccountInfo[2] = AES.encrypt(password.getBytes(), secretAesKey_client);
+            //parte non necessaria messa per assicurarsi che le informazioni siano veramente criptate
+            String[] encriptedInfo = new String[3];
+            encriptedInfo[0] = new String(encryptedAccountInfo[0], StandardCharsets.UTF_8);
+            encriptedInfo[1] = new String(encryptedAccountInfo[1], StandardCharsets.UTF_8);
+            encriptedInfo[2] = new String(encryptedAccountInfo[2], StandardCharsets.UTF_8);
+            System.out.println("\n\n\n"+Arrays.toString(encriptedInfo));
+        //invio di 'encryptedAccountInfo' al server
+
+
+        //Lato server
+        String emailClient    = new String(AES.decrypt(encryptedAccountInfo[0], secretAesKey_server), StandardCharsets.UTF_8);
+        String usernameClient = new String(AES.decrypt(encryptedAccountInfo[1], secretAesKey_server), StandardCharsets.UTF_8);
+        String passwordClient = new String(AES.decrypt(encryptedAccountInfo[2], secretAesKey_server), StandardCharsets.UTF_8);
+        System.out.println("\n"+emailClient+" - "+usernameClient+" - "+passwordClient);
     }
 }

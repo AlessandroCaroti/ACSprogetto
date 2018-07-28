@@ -19,6 +19,9 @@ package client;
 
 import utility.*;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 import java.rmi.RemoteException;
 import java.security.*;
@@ -70,8 +73,10 @@ public class Client extends AnonymousClient {
     }
 
 
-    // *************************************************************************************************************
-    //API
+
+    /*****************************************************************************************************************
+     * API ***********************************************************************************************************
+     ****************************************************************************************************************/
 
 
     /**
@@ -170,19 +175,24 @@ public class Client extends AnonymousClient {
         this.email = email;
     }
 
-    /**************************************************
-     * REMOTE METHOD **********************************
-     **************************************************/
 
-    /** Metodo che produce una chiave segreta utilizzando il protocollo Diffie–Hellman con la variante che utilizza le curve ellittiche (Elliptic-curve Diffie–Hellman)
+
+
+    /*****************************************************************************************************************
+     * REMOTE METHOD *************************************************************************************************
+     ****************************************************************************************************************/
+
+    /** Metodo che produce una chiave segreta utilizzando il protocollo Diffie–Hellman
+     *  con la variante che utilizza le curve ellittiche (Elliptic-curve Diffie–Hellman)
      *
      * @param serverPubKey_encrypted la chiave pubblica ECDH del server criptata con la chiave privata RSA del server
      * @return la chiave pubblica ECDH del client
      */
+    @Override
     public PublicKey publicKeyExchange(byte[] serverPubKey_encrypted){
         try {
-            byte[] serverPubKey_decripted = RSA.decrypt(serverPublicKey_RSA, serverPubKey_encrypted);
-            PublicKey serverPubKey = KeyFactory.getInstance("ECDH", "BC").generatePublic(new X509EncodedKeySpec(serverPubKey_decripted));
+            byte[] serverPubKey_decrypted = RSA.decrypt(serverPublicKey_RSA, serverPubKey_encrypted);
+            PublicKey serverPubKey = KeyFactory.getInstance("ECDH", "BC").generatePublic(new X509EncodedKeySpec(serverPubKey_decrypted));
             byte[] sharedSecret = ECDH.sheredSecretKey(ECDH_kayPair.getPrivate(), serverPubKey);
             infoStamp("Created secret key.\n");
             pedanticInfo("Secret key: " + Arrays.toString(sharedSecret));
@@ -190,18 +200,38 @@ public class Client extends AnonymousClient {
             return ECDH_kayPair.getPublic();
         } catch (Exception e) {
             errorStamp(e, "Error during creation of shared secret key whit server.");
+            return null;
         }
-        return null;
     }
 
+    @Override
     public byte[] testSecretKey(byte[] messageEncrypted) {
         try {
             return AES.decrypt(messageEncrypted, secretAesKey);
         } catch (Exception e) { return null;}
     }
 
-    // *************************************************************************************************************
-    //PRIVATE METHOD
+    @Override
+    public byte[][] getAccountInfo(){
+        try {
+            byte[][] encryptedAccountInfo = new byte[3][];
+            encryptedAccountInfo[0] = AES.encrypt(email.getBytes(),         secretAesKey);
+            encryptedAccountInfo[1] = AES.encrypt(username.getBytes(),      secretAesKey);
+            encryptedAccountInfo[2] = AES.encrypt(plainPassword.getBytes(), secretAesKey);
+            return encryptedAccountInfo;
+        } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException | NoSuchAlgorithmException e) {
+            errorStamp(e, "Errore durante la cifratura delle informazioni dell'account.");
+            //todo forse aggiungere una migliore della gestione degli errori
+        }
+        return null;
+    }
+
+
+
+
+    /*****************************************************************************************************************
+     * PRIVATE METHOD ************************************************************************************************
+     ****************************************************************************************************************/
 
     private Message createMessage(String topic, String title, String text){
         Message msg = null;

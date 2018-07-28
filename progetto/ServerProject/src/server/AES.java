@@ -19,6 +19,7 @@ package server;
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -38,8 +39,8 @@ public  class AES{
         KeyGenerator keyGen=KeyGenerator.getInstance("AES");
         keyGen.init(256);
         secretKey=keyGen.generateKey();
-        cipherDec.init(Cipher.DECRYPT_MODE,secretKey, new IvParameterSpec(initVector16bytes.getBytes("UTF-8")));
-        cipherEnc.init(Cipher.ENCRYPT_MODE,secretKey, new IvParameterSpec(initVector16bytes.getBytes("UTF-8")));
+        cipherDec.init(Cipher.DECRYPT_MODE,secretKey, new IvParameterSpec(initVector16bytes.getBytes(StandardCharsets.UTF_8)));
+        cipherEnc.init(Cipher.ENCRYPT_MODE,secretKey, new IvParameterSpec(initVector16bytes.getBytes(StandardCharsets.UTF_8)));
 
         base64Decoder= Base64.getDecoder();
         base64Encoder=Base64.getEncoder();
