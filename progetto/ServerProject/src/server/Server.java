@@ -32,8 +32,6 @@ import javax.crypto.NoSuchPaddingException;
 import javax.mail.MessagingException;
 import java.io.*;
 import java.net.URL;
-import java.net.UnknownHostException;
-import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -69,9 +67,9 @@ public class Server implements ServerInterface,Callable<Integer> {
     private KeyPair RSA_kayPair;
     private KeyPair ECDH_kayPair;
     final private PrivateKey RSA_privateKey;
-    final private PublicKey  RSA_pubKey;
     final private PrivateKey ECDH_privateKey;
-    final private PublicKey  ECDH_pubKey;
+    final private String     RSA_pubKey;
+    final private byte[]     ECDH_pubbKey_encrypted;
 
     /* rmi fields */
     private Registry registry;
@@ -93,7 +91,7 @@ public class Server implements ServerInterface,Callable<Integer> {
      */
 
 
-    public Server() throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchPaddingException, UnsupportedEncodingException {
+    public Server() throws Exception {
 
         //TODO             creare un nome per il server utilizzato per il registro
         String tmp_name;
@@ -123,9 +121,10 @@ public class Server implements ServerInterface,Callable<Integer> {
         //Creazione PKI del server
         setupPKI();
         RSA_privateKey  = RSA_kayPair.getPrivate();
-        RSA_pubKey      = RSA_kayPair.getPublic();
         ECDH_privateKey = ECDH_kayPair.getPrivate();
-        ECDH_pubKey     = ECDH_kayPair.getPublic();
+
+        RSA_pubKey      = new String(RSA_kayPair.getPublic().getEncoded());
+        ECDH_pubbKey_encrypted = RSA.encrypt(RSA_privateKey, ECDH_kayPair.getPublic().getEncoded());
 
         infoStamp("Public key infrastructure created.");
 
@@ -155,7 +154,6 @@ public class Server implements ServerInterface,Callable<Integer> {
         try{
             BufferedReader bufferRead = new BufferedReader(new InputStreamReader(System.in));
             String s = bufferRead.readLine();
-
         }
         catch(IOException e)
         {
@@ -258,7 +256,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     public ResponseCode connect() {
         try {
             pedanticInfo("A new client has connected.");
-            return  new ResponseCode( ResponseCode.Codici.R210, ResponseCode.TipoClasse.SERVER,"da aggiustare");//todo aggiustare, passare la RSA_pubKey
+            return  new ResponseCode( ResponseCode.Codici.R210, ResponseCode.TipoClasse.SERVER, RSA_pubKey);    //todo invece di castare la chiave pubblica a stringa sarebbe meglio cambiare il tipo da String a byte[] p PublicKey
         } catch (Exception e){
             errorStamp(e);
         }
@@ -301,7 +299,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
 
     @Override
-    public ResponseCode anonymousRegister(ClientInterface stub, String publicKey)  {
+    public ResponseCode anonymousRegister(ClientInterface stub)  {
         int accountId;
         String username;
         String plainPassword;
@@ -311,7 +309,7 @@ public class Server implements ServerInterface,Callable<Integer> {
             do {
                 username = "anonymous" + Integer.toString(anonymousCounter.incrementAndGet());
                 plainPassword = randomStringSession.nextString();
-                account = new Account(username, plainPassword, stub, publicKey, 0, email);
+                account = new Account(username, plainPassword, stub, null, 0, email);   //todo la chiave pubblica per l'account anonimo non serve
                 if ((accountId = accountList.putIfAbsentUsername(account)) >= 0) {
                     pedanticInfo("Registered new client \'"+username+"\'  \'"+email+"\'");
                     return new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER, getCookie(accountId));
