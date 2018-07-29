@@ -44,7 +44,7 @@ public class Host {
     private Host(boolean usingUserInterface) throws Exception {
          userInterface=new GuiInterface(usingUserInterface);
          server=new Server();
-         sclient=new SClient(server.getServerName(),sclientPassword,"publickeytobeimplemented","privatekeytobeimplemented");
+         sclient=new SClient("publickeytobeimplemented","privatekeytobeimplemented",/*todo pass server list*/null,server);
 
         userInterfaceThread=Executors.newSingleThreadExecutor();
         serverThread=Executors.newSingleThreadExecutor();

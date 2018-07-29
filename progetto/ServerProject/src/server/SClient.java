@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 
+import static utility.ResponseCode.Codici.*;
+
 public class SClient implements Callable<Integer> {
     private AnonymousClient[] clients;
     private static final int DEFAULTCONNECTIONNUMBER=10;
@@ -37,8 +39,9 @@ public class SClient implements Callable<Integer> {
     private String myPublicKey;
     private String myPrivateKey;
     private boolean pedantic=true;
+    private Server myServer;
 
-    public SClient(String myPublicKey, String myPrivateKey,List serverList)
+    public SClient(String myPublicKey, String myPrivateKey,List serverList,Server myServer)
     {
         int length;
         try {
@@ -51,19 +54,18 @@ public class SClient implements Callable<Integer> {
             System.err.println("ERROR:unable to open or read config.serverSettings");
             length=DEFAULTCONNECTIONNUMBER;
         }
-        this.clients[]=new AnonymousClient[length]{
-            public ResponseCode notify(Message m){//TODO come faccio a redifenire il metodo notify senza estendere la classe?
-                //todo https://stackoverflow.com/questions/11929198/override-a-function-without-extending-the-class è una soluzione ma non funziona con gli array!
-
-            }
-        }
-        if(myPublicKey==null||myPrivateKey==null||serverList==null)
+        if(myPublicKey==null||myPrivateKey==null||serverList==null|| myServer==null)
         {
             throw new NullPointerException("passing null argument to SClient constructor");
         }
         this.myPublicKey=myPublicKey;
         this.myPrivateKey=myPrivateKey;
         this.serverList=serverList;
+        this.myServer=myServer;
+        this.clients=new AnonymousClient[length];
+        for(int i=0;i<length;i++){
+            this.clients[i]=new AnonymousClient particolare da estendere la classe e fare l@Override del metodo notify per aggiornare il server
+        }
     }
 
 
