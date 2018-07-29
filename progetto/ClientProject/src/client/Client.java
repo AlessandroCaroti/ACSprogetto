@@ -23,6 +23,8 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
+import utility.Message;
+import utility.ResponseCode;
 import java.rmi.RemoteException;
 import java.security.*;
 import java.security.spec.X509EncodedKeySpec;
@@ -32,7 +34,6 @@ import static utility.ResponseCode.Codici.R220;
 
 
 public class Client extends AnonymousClient {
-    static private String className = "CLIENT";
 
     /******************/
     /* client fields */
@@ -64,6 +65,7 @@ public class Client extends AnonymousClient {
             throw new NullPointerException();
         this.plainPassword=plainPassword;
         this.email=email;
+        this.className="CLIENT";
         try {
             ECDH_kayPair = ECDH.generateKeyPair(curveName);
         } catch (NoSuchProviderException | NoSuchAlgorithmException | InvalidAlgorithmParameterException e) {
@@ -98,15 +100,28 @@ public class Client extends AnonymousClient {
 
     /**
      * Si chiede al server di recuperare le informazioni legate al nostro account
+     * Viene prima tentato l'accesso tramite (cookie,password) se fallisce tenta con (username,password)
      * @return TRUE se andata a buon fine,FALSE altrimenti
      */
     @Override
     public boolean retrieveAccount(){
+        ResponseCode response;
         if(connected()) {
             try {
-                ResponseCode response = server_stub.retrieveAccount(username, plainPassword, skeleton);
-                if (response.getCodice() == R220) {
-                    infoStamp("Account successfully recovered.");
+
+                if(this.getCookie()!=null) {
+                    response = server_stub.retrieveAccountByCookie(this.getCookie(),this.plainPassword,this.skeleton);
+                    if (response.getCodice() == R220) {
+                        infoStamp("Account successfully recovered.");
+                        return true;
+                    }else{
+                        this.cookie=null;
+                        infoStamp("Invalid cookie trying with username and password");
+                    }
+                }
+                response = server_stub.retrieveAccount(username, plainPassword, skeleton);
+                if (response.getCodice() == R220 && this.retrieveCookie()) {
+                    infoStamp("Account and cookie successfully recovered.");
                     return true;
                 }
                 errorStamp(response, "Impossible to retrieve information.");
@@ -131,27 +146,26 @@ public class Client extends AnonymousClient {
     @Override
     public boolean publish( String topic, String title, String text){
         if(connected()) {
-            Message msg = createMessage(topic, title, text);
-            if(msg == null)     //errore durante la creazione di un messaggio
-                return false;
-
             try {
-                ResponseCode response = null;
-                //todo aggiungere un codice di risposta alla publish
-                /*code = */server_stub.publish(this.cookie, msg);
+                Message msg = createMessage(topic, title, text);
+                ResponseCode response;
+                response=server_stub.publish(this.cookie, msg);
                 if(response.IsOK())
                 {
+                    topicsSubscribed.add(topic);
                     infoStamp("Message published.");
                     return true;
                 }
-                else
+                else {
                     errorStamp(response, "Error while publishing the message.");
-            }catch (RemoteException e){
-                errorStamp(e, "Unable to reach the server.");
+                }
+            }catch (Exception e) {
+                errorStamp(e);
                 return false;
             }
+        }else {
+            errorStamp("Not connected to any server.");
         }
-        errorStamp("Not connected to any server.");
         return false;
     }
 
@@ -163,8 +177,8 @@ public class Client extends AnonymousClient {
         this.plainPassword = plainPassword;
     }
 
-    public static String getClassName() {
-        return className;
+    public String getClassName() {
+        return this.className;
     }
 
     public String getEmail() {
@@ -242,4 +256,31 @@ public class Client extends AnonymousClient {
         }
         return msg;
     }
+
+
+    private boolean retrieveCookie(){
+
+        try {
+            if(connected()) {
+                ResponseCode response = server_stub.retrieveCookie(this.username, this.plainPassword);
+                if (response == null || !response.getCodice().equals(ResponseCode.Codici.R100)) {
+                    errorStamp(response, "cookie retrieve failed");
+                    return false;
+                }
+                this.cookie = response.getMessaggioInfo();
+                infoStamp("Cookie successfully retrieved.");
+                return true;
+            }else{
+                errorStamp("Not connected to any server.");
+                return false;
+            }
+        }catch (RemoteException e){
+            errorStamp(e, "Unable to reach the server.");
+            return false;
+        }
+    }
+
+
+
+
 }

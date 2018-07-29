@@ -165,6 +165,30 @@ public class AccountListMonitor implements AccountCollectionInterface {
         }
     }
 
+    public int putIfAbsentUsername(Account account) throws NullPointerException, MaxNumberAccountReached, IllegalArgumentException, AccountMonitorRuntimeException {
+
+        if(account==null)throw new IllegalArgumentException("account==null");
+        if (this.getNumberOfAccount() >= MAXACCOUNTNUMBER) {
+            throw new MaxNumberAccountReached();
+        }
+        String username=account.getUsername();
+        if(username==null)throw new NullPointerException("username==null");
+
+        this.listLock.writeLock().lock();
+        try {
+            for (int i = 0; i < this.MAXACCOUNTNUMBER; i++) {
+                if (accountList[i] != null) {
+                    if(username.equals(accountList[i].getUsername())){
+                        return -2;
+                    }
+                }
+            }
+            return this.addAccount(account);
+        }finally{
+            listLock.writeLock().unlock();
+        }
+    }
+
     public Account removeAccountCheckEmail(int accountId,String email){
         testRange(accountId);
 

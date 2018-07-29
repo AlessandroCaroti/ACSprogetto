@@ -22,13 +22,14 @@ import static utility.ResponseCode.Codici.R670;
 
 public class AnonymousClient implements ClientInterface {
 
-    static protected String className = "ANONYMOUS_CLIENT";
+
 
     static final protected int DEFAULT_REGISTRY_PORT = 1099;
 
 
     /**************************************************************************/
     /* client fields */
+    protected String className = "ANONYMOUS_CLIENT";
     protected String username;
     protected ClientInterface skeleton;               //my stub
     protected String cookie;
@@ -92,7 +93,7 @@ public class AnonymousClient implements ClientInterface {
      * API ***********************************************************************************************************
      ****************************************************************************************************************/
 
-    public void setServerInfo(String regHost, String serverName){
+    private void setServerInfo(String regHost, String serverName){
         if(regHost==null || regHost.isEmpty() || serverName==null || serverName.isEmpty()){
             throw new IllegalArgumentException("Invalid argument format of regHost or serverName");
         }
@@ -167,7 +168,7 @@ public class AnonymousClient implements ClientInterface {
     public boolean disconnect(){
         if(connected()) {
             try {
-                ResponseCode response = server_stub.disconnect(cookie);
+                server_stub.disconnect(cookie);
                 return true;
             } catch (RemoteException exc) {
                 System.err.println(exc.getClass().getSimpleName());
@@ -193,9 +194,7 @@ public class AnonymousClient implements ClientInterface {
                     infoStamp("Already subscribe to the \'"+topic+"\' topic.");
                     return true;
                 }
-                ResponseCode response=null;
-                //todo aggiungere un codice di risposta alla subscribe
-                /*response = */server_stub.subscribe(this.cookie, topic);
+                ResponseCode response = server_stub.subscribe(this.cookie, topic);
                 if(response.IsOK())
                 {
                     topicsSubscribed.add(topic);
@@ -228,9 +227,7 @@ public class AnonymousClient implements ClientInterface {
                     infoStamp("Topic \'"+topic+"\' not included in the list of subscriptions");
                     return true;
                 }
-                ResponseCode response=null;
-                //todo aggiungere un codice di risposta alla unsubscribe
-                /*response = */server_stub.unsubscribe(this.cookie, topic);
+                ResponseCode response = server_stub.unsubscribe(this.cookie, topic);
                 if(response.IsOK())
                 {
                     topicsSubscribed.remove(topic);
@@ -308,13 +305,12 @@ public class AnonymousClient implements ClientInterface {
     public ResponseCode notify(Message m) {
         ResponseCode rc;
         if(m==null) {
-            rc=new ResponseCode(ResponseCode.Codici.R500, ResponseCode.TipoClasse.CLIENT,
-                    "(-) NOT OK Il server ha ricevuto un messaggio vuoto");
-            pedanticInfo("Receved new message\n"+m.toString());
-            return rc;
+            rc=new ResponseCode(ResponseCode.Codici.R500, ResponseCode.TipoClasse.CLIENT, "(-) WARNING Il client ha ricevuto un messaggio vuoto");
+        }else {
+            pedanticInfo("Received new message\n" + m.toString());
+            rc = new ResponseCode(R200, ResponseCode.TipoClasse.CLIENT,
+                    "(+) OK il client ha ricevuto il messaggio");
         }
-        rc=new ResponseCode(R200, ResponseCode.TipoClasse.CLIENT,
-                "(+) OK il server ha ricevuto il messaggio");
         return rc;
     }
 
@@ -326,13 +322,10 @@ public class AnonymousClient implements ClientInterface {
     public ResponseCode getCode(int nAttempts){
        System.out.println("Remaining attempts:"+Integer.toString(nAttempts));
        System.out.println("Enter code:");
-       //TODO modificare qui l'inserimento
-
         try {
             BufferedReader bufferRead = new BufferedReader(new InputStreamReader(System.in));
             String s = bufferRead.readLine();
-            return  new ResponseCode(R200,ResponseCode.TipoClasse.CLIENT,
-                    s);
+            return  new ResponseCode(R200,ResponseCode.TipoClasse.CLIENT,s);
         } catch (IOException e) {
             errorStamp(e, "Unable to read user input");
         }
@@ -431,23 +424,19 @@ public class AnonymousClient implements ClientInterface {
         this.myPublicKey = myPublicKey;
     }
 
-    public static String getClassName() {
-        return className;
+    public  String getClassName() {
+        return this.className;
     }
 
 
 
     //METODI UTILIZZATI PER LA GESTIONE DELL'OUTPUT DEL CLIENT
 
-    protected void errorStamp(Exception e){
-        System.out.flush();
-        System.err.println("["+className+"-ERROR]");
-        System.err.println("\tException type: "    + e.getClass().getSimpleName());
-        System.err.println("\tException message: " + e.getMessage());
-        e.printStackTrace();    //todo da eliminare appena la fase di debigging è finita(solo questa linea non tutto il metodo)
+    void errorStamp(Exception e){
+       this.errorStamp(e,"");
     }
 
-    protected void errorStamp(Exception e, String msg){
+    void errorStamp(Exception e, String msg){
         System.out.flush();
         System.err.println("["+className+"-ERROR]: " + msg);
         System.err.println("\tException type: "      + e.getClass().getSimpleName());
@@ -455,14 +444,14 @@ public class AnonymousClient implements ClientInterface {
         e.printStackTrace();    //todo da eliminare appena la fase di debigging è finita(solo questa linea non tutto il metodo)
     }
 
-    protected void errorStamp(ResponseCode r, String msg){
+    void errorStamp(ResponseCode r, String msg){
         System.out.flush();
         System.err.println("["+className+"-ERROR]: "  + msg);
         System.err.println("\tError code: "           + r.getCodice());
         System.err.println("\tError message: "        + r.getMessaggioInfo());
     }
 
-    protected void errorStamp(String msg){
+    void errorStamp(String msg){
         System.out.flush();
         System.err.println("["+className+"-ERROR]: "      + msg);
     }
@@ -474,11 +463,11 @@ public class AnonymousClient implements ClientInterface {
         System.err.println("\tException message: "     + e.getMessage());
     }
 
-    protected void infoStamp(String msg){
+    void infoStamp(String msg){
         System.out.println("["+className+"-INFO]: " + msg);
     }
 
-    protected void pedanticInfo(String msg){
+    void pedanticInfo(String msg){
         if(pedantic){
             infoStamp(msg);
         }

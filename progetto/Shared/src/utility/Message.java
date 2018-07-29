@@ -1,4 +1,4 @@
-/**
+/*
     This file is part of ACSprogetto.
 
     ACSprogetto is free software: you can redistribute it and/or modify
@@ -14,12 +14,13 @@
     You should have received a copy of the GNU General Public License
     along with ACSprogetto.  If not, see <http://www.gnu.org/licenses/>.
 
-**/
+*/
 package utility;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class Message
+public class Message implements Serializable
 {
     final private String title;
     final private String author;
@@ -27,10 +28,9 @@ public class Message
     final private String topic;
     final private Date date;
 
-    public Message(String title, String author, String text, String topicName)
-    {
+    public Message(String title, String author, String text, String topicName) throws IllegalArgumentException, NullPointerException {
         if(title==null||author==null||text==null||topicName==null)
-            throw new NullPointerException();
+            throw new NullPointerException("Null reference during the  message creation");
         if(author.isEmpty())
             throw new IllegalArgumentException("The author parameter can not be empty");
         if(topicName.isEmpty())

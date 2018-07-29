@@ -45,6 +45,7 @@ import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Server implements ServerInterface,Callable<Integer> {
 
@@ -56,7 +57,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     /* clients management fields */
     private AccountCollectionInterface accountList;                     //monitor della lista contente tutti gli account salvati
     private RandomString randomStringSession;
-    private int anonymousCounter=0;
+    private AtomicInteger anonymousCounter=new AtomicInteger(0);
 
     /* server settings fields */
     private Properties serverSettings = new Properties();                 //setting del server
@@ -92,7 +93,7 @@ public class Server implements ServerInterface,Callable<Integer> {
      */
 
 
-    public Server() throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchPaddingException, UnsupportedEncodingException, AlreadyBoundException, RemoteException, UnknownHostException {
+    public Server() throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchPaddingException, UnsupportedEncodingException {
 
         //TODO             creare un nome per il server utilizzato per il registro
         String tmp_name;
@@ -105,6 +106,8 @@ public class Server implements ServerInterface,Callable<Integer> {
 
 
         topicList = new ConcurrentLinkedQueue<>();
+        topicList    = new ConcurrentLinkedQueue<>();
+        topicClientList=new ConcurrentSkipListMap<>();
 
         System.out.println(System.getProperty("user.dir"));
 
@@ -130,7 +133,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         infoStamp("Aes created.");
 
         //Creazione dell'email handler e avvio di quest'ultimo
-        emailController=new EmailHandlerTLS("acsgroup.unige@gmail.com","@CIAOZIOCOMESTAI1",100,587,"smtp.gmail.com");
+        emailController=new EmailHandlerTLS("acsgroup.unige@gmail.com","password",100,587,"smtp.gmail.com");
         //emailController=new EmailHandler(serverSettings,accountList.getMAXACCOUNTNUMBER());
         emailController.startEmailHandlerManager();
         infoStamp("Email Handler created and started.");
@@ -281,11 +284,12 @@ public class Server implements ServerInterface,Callable<Integer> {
                 if(accountId==-1){
                     pedanticInfo("Client registration refused, email \'"+email+"\' already used.");
                     sendEmailAccountInfo(email,accountList.getAccountCopyEmail(email).getUsername());
-                    //TODO bisogna fare una finta emailValidation per evitare un accountEnumeration!
+                    this.antiAccountEnum(stub);
+                    return  ResponseCodeList.WrongCodeValidation;
                 }
                 if(accountId==-2){
                     pedanticInfo("Client registration refused, username \'"+userName+"\' already used.");
-                    return ResponseCodeList.InvalidUsernameOrEmail;
+                    return ResponseCodeList.InvalidUsername;
                 }
             }
 
@@ -305,10 +309,10 @@ public class Server implements ServerInterface,Callable<Integer> {
         Account account;
         try {
             do {
-                username = "anonymous" + Integer.toString(anonymousCounter++);
+                username = "anonymous" + Integer.toString(anonymousCounter.incrementAndGet());
                 plainPassword = randomStringSession.nextString();
                 account = new Account(username, plainPassword, stub, publicKey, 0, email);
-                if ((accountId = accountList.putIfAbsentEmailUsername(account)) >= 0) {
+                if ((accountId = accountList.putIfAbsentUsername(account)) >= 0) {
                     pedanticInfo("Registered new client \'"+username+"\'  \'"+email+"\'");
                     return new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER, getCookie(accountId));
 
@@ -317,7 +321,7 @@ public class Server implements ServerInterface,Callable<Integer> {
                         pedanticInfo("Client registration refused, username \'" + username + "\' already used. Trying to generate another one.");
                     }
                 }
-            }while(accountId==-2);
+            }while(accountId==-2);//questo while non dovrebbe essere necessario in quanto anonymouscounter è atomic
         }catch(Exception e) {
             errorStamp(e);
         }
@@ -342,17 +346,16 @@ public class Server implements ServerInterface,Callable<Integer> {
     public ResponseCode retrieveAccount(String username,String plainPassword,ClientInterface clientStub){
         try{
             Account account=accountList.getAccountCopyUsername(username);
-            if(account!=null){
-                if(account.cmpPassword(plainPassword)){
+            if(account!=null) {
+                if (account.cmpPassword(plainPassword)) {
                     accountList.setStub(clientStub, account.getAccountId());
                     pedanticInfo(username + " connected.");
                     return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER, "login andato a buon fine");
+                } else {
+                    pedanticInfo(username + " invalid retrieve account.");
+                    return ResponseCodeList.LoginFailed;
                 }
-            }else{
-                pedanticInfo(username + " invalid retrieve account.");
-                return ResponseCodeList.LoginFailed;
             }
-
         }catch(Exception e){
             errorStamp(e);
         }
@@ -360,13 +363,14 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     @Override
-    public ResponseCode retrieveAccount(int cookie,String plainPassword,ClientInterface clientStub){
+    public ResponseCode retrieveAccountByCookie(String cookie,String plainPassword,ClientInterface clientStub){
         try{
-            Account account=accountList.getAccountCopy(cookie);
+            int accountId=this.getAccountId(cookie);
+            Account account=accountList.getAccountCopy(accountId);
             if(account!=null){
                 if(account.cmpPassword(plainPassword)){
                     accountList.setStub(clientStub, account.getAccountId());
-                    pedanticInfo("anonymous"+account.getUsername() + " connected.");
+                    pedanticInfo(account.getUsername() + " connected.(cookie):"+cookie);
                     return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER, "login andato a buon fine");
                 }
             }else{
@@ -381,53 +385,63 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     @Override
-    public void subscribe(String cookie, String topicName)  {
+    public ResponseCode subscribe(String cookie, String topicName)  {
         try {
-            Integer accountId = getAccountId(cookie);
-            //todo controllare che non sia già inscritto al topic
-            topicClientList.get(topicName).add(accountId);
-        }catch (BadPaddingException| IllegalBlockSizeException e){
-            warningStamp(e,"subscribe() - error cookies not recognize");
-        }catch (NullPointerException e){
-            warningStamp(e,"subscribe() - topic"+topicName+"not found");
-        }catch (Exception e){
-            errorStamp(e);
+            Integer accountId=getAccountId(cookie);
+            if(!topicList.contains(topicName)){//topic inesistente
+                pedanticInfo("user:"+accountId + " searched for "+topicName+".");
+                return new ResponseCode(ResponseCode.Codici.R640,ResponseCode.TipoClasse.SERVER,"topic inesistente");
+            }
+            ConcurrentLinkedQueue<Integer>subscribers=topicClientList.get(topicName);
+            if(!subscribers.contains(accountId)){
+                pedanticInfo("user:"+accountId + "  subscribed to "+topicName+".");
+                subscribers.add(accountId);
+            }
+            return new ResponseCode(ResponseCode.Codici.R200,ResponseCode.TipoClasse.SERVER,"iscrizione avvenuta con successo");
         }
+        catch (BadPaddingException| IllegalBlockSizeException e){
+            warningStamp(e,"subscribe() - error cookies not recognize");
+        }catch (Exception e){
+           errorStamp(e);
+        }
+        return ResponseCodeList.InternalError;
     }
 
     @Override
-    public void unsubscribe(String cookie,String topicName)  {
+    public ResponseCode unsubscribe(String cookie,String topicName)  {
         try {
             Integer accountId = getAccountId(cookie);
-            //todo fose bisogna controllare che sia già inscritto al topic
             topicClientList.get(topicName).remove(accountId);
+            pedanticInfo("user:"+accountId + " unsubscribe from "+topicName+".");
+            return new ResponseCode(ResponseCode.Codici.R200,ResponseCode.TipoClasse.SERVER,"disiscrizione avvenuta con successo");
         }catch (BadPaddingException| IllegalBlockSizeException e){
             warningStamp(e,"subscribe() - error cookies not recognize");
-        }catch (NullPointerException e){
-            warningStamp(e,"subscibe() - topic \'"+topicName+"\' not found");
-        }catch (Exception e){
+        } catch (Exception e){
             errorStamp(e);
         }
-
+        return ResponseCodeList.InternalError;
     }
 
     @Override
     //Il client che invia il messaggio riceverà una copia del suo stesso messaggio, questo lo gestiremo nel client e si può usare anche come conferma dell'invio tipo la spunta blu di whatsappp
-    public void publish(String cookie, Message msg) {
+    public ResponseCode publish(String cookie, Message msg) {
         try {
             Integer accountId = getAccountId(cookie);
             String topicName  = msg.getTopic();
-            ConcurrentLinkedQueue<Integer> subscibers = topicClientList.putIfAbsent(topicName, new ConcurrentLinkedQueue<Integer>());
-            if(subscibers == null){  //creazione di un nuovo topc
+            ConcurrentLinkedQueue<Integer> subscribers = topicClientList.putIfAbsent(topicName, new ConcurrentLinkedQueue<Integer>());
+            if(subscribers == null){  //creazione di un nuovo topic
+                pedanticInfo("user:"+accountId + " has created new topic:"+topicName+".");
                 topicList.add(topicName);
-                (subscibers = topicClientList.get(topicName)).add(accountId);
+                (subscribers = topicClientList.get(topicName)).add(accountId);
             }
-            notifyAll(subscibers.iterator(), msg);      //todo magari si potrebbe eseguire su un altro thread in modo da non bloccare questa funzione
+            notifyAll(subscribers.iterator(), msg);      //todo magari si potrebbe eseguire su un altro thread in modo da non bloccare questa funzione
+            return new ResponseCode(ResponseCode.Codici.R200,ResponseCode.TipoClasse.SERVER,"topic pubblicato");
         }catch (BadPaddingException| IllegalBlockSizeException e){
-            warningStamp(e,"subscribe() - error cookies not recognize");
+            warningStamp(e,"subscribe() - error cookie not recognized");
         }catch (Exception e){
             errorStamp(e);
         }
+        return ResponseCodeList.InternalError;
     }
 
     @Override
@@ -439,6 +453,29 @@ public class Server implements ServerInterface,Callable<Integer> {
         return topicList.toArray(new String[0]);    //per spiegazioni a cosa server 'new String[0]' guarda esempio in https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ConcurrentLinkedQueue.html#toArray(T[])
     }
 
+    @Override
+    public ResponseCode retrieveCookie(String username,String plainPassword){
+            try {
+                Account account = this.accountList.getAccountCopyUsername(username);
+                if (account.cmpPassword(plainPassword)) {
+                    pedanticInfo("Sending " + username + " cookie.");
+                    return new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER, getCookie(account.getAccountId()));
+                } else {
+                    pedanticInfo("Invalid password.");
+                    return ResponseCodeList.LoginFailed;
+                }
+                //nosuch
+            }catch(Exception exc){
+                if(exc instanceof IllegalArgumentException){
+                    pedanticInfo("Invalid username (null).");
+                    return ResponseCodeList.LoginFailed;
+                }
+                else{
+                    errorStamp(exc);
+                }
+            }
+        return ResponseCodeList.InternalError;
+    }
 
 
     /*************************************************************************************************************
@@ -540,11 +577,10 @@ public class Server implements ServerInterface,Callable<Integer> {
                     ClientInterface stub = accountList.getStub(accountId);
                     stub.notify(msg);
                 }catch (java.rmi.RemoteException e){
-                    warningStamp(e, "client not reachable.");
-                    //todo il client corrente va eliminato perchè non più raggiungibile
+                    warningStamp(e, "Client unreachable.");
+                    this.accountList.setStub(null, accountId);
                 }catch (NullPointerException e){
-                    warningStamp(e, "Client stub not saved.");
-                    //todo il client corrente va eliminato perchè si è disconneddo  -   si potrebbe pensare di farlo durante la chiamata della disconnect(...)
+                    warningStamp(e, "The client has just disconnected.");
                 }
             });
     }
@@ -567,7 +603,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         String temp;
         StringTokenizer tokenizer=new StringTokenizer(email);
         temp=tokenizer.nextToken();
-        if(temp.equalsIgnoreCase("test"))return true;//TODO REMOVE 4 LINES up
+        if(temp.equalsIgnoreCase("test"))return true;//TODO REMOVE 4 LINES up (sono per il testing)
 
         final int MAXATTEMPTS = 3;
         ResponseCode resp;
@@ -588,12 +624,22 @@ public class Server implements ServerInterface,Callable<Integer> {
         return false;
     }
 
+    /*fa finta di fare una emailValidation per non permettere di listare le email registrate al server*/
+    private void antiAccountEnum(ClientInterface stub) throws RemoteException {
+        final int MAXATTEMPTS = 3;
+        ResponseCode resp;
+        for (int i = MAXATTEMPTS; i >0 ; i--) {
+            resp=stub.getCode(i);
+            infoStamp("(antiAccountEnum)the user has entered the code:"+resp.getMessaggioInfo()+";");
+        }
+    }
+
     private void sendEmailAccountInfo(String email,String username) throws MessagingException {
 
         String temp;
         StringTokenizer tokenizer=new StringTokenizer(email);
         temp=tokenizer.nextToken();
-        if(temp.equalsIgnoreCase("test"))return;//TODO REMOVE 4 LINES up
+        if(temp.equalsIgnoreCase("test"))return;//TODO REMOVE 4 LINES up (sono per il testing)
 
         javax.mail.Message message=emailController.createEmailMessage(email,"REGISTRATION ATTEMPT",
                 "Someone tried to register a new account by associating it with this email.\n" +
