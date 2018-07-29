@@ -88,7 +88,7 @@ public class Client extends AnonymousClient {
     @Override
     public boolean register() {
         try {
-            ResponseCode responseCode = server_stub.register(this.username, this.plainPassword, this.skeleton, null, this.email); //todo modificare il metodo, deve passare solo lo stub
+            ResponseCode responseCode = server_stub.register(this.skeleton); //todo modificare il metodo, deve passare solo lo stub
             return registered(responseCode);
         }catch (RemoteException e){
             errorStamp(e, "Unable to reach the server.");
@@ -232,7 +232,13 @@ public class Client extends AnonymousClient {
             encryptedAccountInfo[0] = AES.encrypt(email.getBytes(),         secretAesKey);
             encryptedAccountInfo[1] = AES.encrypt(username.getBytes(),      secretAesKey);
             encryptedAccountInfo[2] = AES.encrypt(plainPassword.getBytes(), secretAesKey);
-            return encryptedAccountInfo;
+
+            //TODO se si decide di criptare il passaggio di info bisogna cambiare la variabile di ritorno ed elimiare le prossime 4 linee
+            byte[][] accountInfo = new byte[3][];
+            accountInfo[0] = email.getBytes();
+            accountInfo[1] = username.getBytes();
+            accountInfo[2] = plainPassword.getBytes();
+            return accountInfo;
         } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException | NoSuchAlgorithmException e) {
             errorStamp(e, "Errore durante la cifratura delle informazioni dell'account.");
             //todo forse aggiungere una migliore della gestione degli errori
