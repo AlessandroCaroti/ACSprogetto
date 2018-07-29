@@ -17,6 +17,7 @@
 */
 package client;
 
+import interfaces.ServerInterface;
 import utility.*;
 
 import javax.crypto.BadPaddingException;
@@ -26,6 +27,8 @@ import javax.crypto.spec.SecretKeySpec;
 import utility.Message;
 import utility.ResponseCode;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.security.*;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
@@ -54,13 +57,11 @@ public class Client extends AnonymousClient {
      * Client's constructor
      * @param username          identificativo client
      * @param plainPassword     password in chiaro
-     * @param my_private_key    la mia chiave privata
-     * @param my_public_key     la mia chiave pubblica
      * @param email             la mail associata all'account
      */
-    public Client(String username, String plainPassword, String my_public_key, String my_private_key,String email ) throws RemoteException
+    public Client(String username, String plainPassword, String email ) throws RemoteException
     {
-        super(username,my_public_key,my_private_key);
+        super(username);
         if(plainPassword==null||email==null)
             throw new NullPointerException();
         this.plainPassword=plainPassword;
@@ -80,7 +81,6 @@ public class Client extends AnonymousClient {
      * API ***********************************************************************************************************
      ****************************************************************************************************************/
 
-
     /**
      *Il client si registra sul server su cui si era connesso con il metodo connect() e viene settato il cookie
      * @return true se registrazione andata a buon fine, false altrimenti
@@ -88,7 +88,7 @@ public class Client extends AnonymousClient {
     @Override
     public boolean register() {
         try {
-            ResponseCode responseCode = server_stub.register(this.username, this.plainPassword, this.skeleton, this.myPublicKey,this.email);
+            ResponseCode responseCode = server_stub.register(this.username, this.plainPassword, this.skeleton, null, this.email); //todo modificare il metodo, deve passare solo lo stub
             return registered(responseCode);
         }catch (RemoteException e){
             errorStamp(e, "Unable to reach the server.");
@@ -247,6 +247,22 @@ public class Client extends AnonymousClient {
      * PRIVATE METHOD ************************************************************************************************
      ****************************************************************************************************************/
 
+    @Override
+    protected ServerInterface connect(String regHost, String server, Integer regPort)
+    {
+        try {
+            Registry r = LocateRegistry.getRegistry(regHost, regPort);
+            ServerInterface server_stub = (ServerInterface) r.lookup(server);
+            ResponseCode rc = server_stub.connect();
+            if(rc.IsOK()) {
+                String pubKey_str = rc.getMessaggioInfo();
+                serverPublicKey_RSA = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(pubKey_str.getBytes()));
+            }
+            return server_stub;
+        }catch (Exception e){
+            return null;
+        }
+    }
     private Message createMessage(String topic, String title, String text){
         Message msg = null;
         try {
