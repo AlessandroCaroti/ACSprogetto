@@ -27,7 +27,7 @@ import java.rmi.RemoteException;
 public interface ServerInterface extends Remote,Serializable
 {
 
-    ResponseCode register(String userName, String plainPassword, ClientInterface stub, String publicKey,String email) throws RemoteException;
+    ResponseCode register(ClientInterface stub) throws RemoteException;
 
     ResponseCode anonymousRegister(ClientInterface stub)throws RemoteException;
 

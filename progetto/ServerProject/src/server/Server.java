@@ -29,6 +29,7 @@ import utility.*;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.SecretKeySpec;
 import javax.mail.MessagingException;
 import java.io.*;
 import java.net.URL;
@@ -37,6 +38,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.*;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -70,6 +72,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     final private PrivateKey ECDH_privateKey;
     final private String     RSA_pubKey;
     final private byte[]     ECDH_pubbKey_encrypted;
+    final private byte[]     messageTest = "Stringa per assicurarsi che la chiave condivisa sia uguale".getBytes(); //todo forse sarebbe meglio passargli qualcosa di più corto
 
     /* rmi fields */
     private Registry registry;
@@ -264,8 +267,32 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     @Override
-    public ResponseCode register(String userName,String plainPassword,ClientInterface stub,String publicKey,String email)  {
+    public ResponseCode register(ClientInterface stub)  {
         int accountId;
+        String userName=null, plainPassword=null, email=null, publicKey=null;
+        //CREAZIONE DI UNA CHIAVE CONDIVSA SOLO TRA IL SERVER E IL CLIENT CHE HA INVOCATO QUESTO METODO REMOTO
+        try {
+            PublicKey clientPubKey = stub.publicKeyExchange(ECDH_pubbKey_encrypted);
+            byte[] shearedSecretKey = ECDH.sharedSecretKey(ECDH_privateKey, clientPubKey);
+            SecretKeySpec secretAesKey = new SecretKeySpec(shearedSecretKey, "AES");
+            
+            //test the key
+            byte[] res_encrypted = stub.testSecretKey(messageTest);
+            byte[] res = utility.AES.decrypt(res_encrypted, secretAesKey);
+            if(!Arrays.equals(res, messageTest))
+                throw new InvalidKeyException("La chiave condivisa non coincide");  //todo migliorare il messaggio di errore
+            publicKey     = new String(shearedSecretKey);
+        } catch (RemoteException | NoSuchAlgorithmException | NoSuchProviderException | InvalidKeyException | NoSuchPaddingException | BadPaddingException | IllegalBlockSizeException e) {
+            //todo aggiunere migliore gestione degli errori
+            errorStamp(e);
+            return ResponseCodeList.InternalError;
+        }
+        //RECUPERO DELLE INFORMAZIONI DEL CLIENT
+        byte[][] accountInfo = stub.getAccountInfo();
+        email         = new String(accountInfo[0]);
+        userName      = new String(accountInfo[1]);
+        plainPassword = new String(accountInfo[2]);
+        //CREAZIONE DI UN ACCOUNT PER IL CLIENT
         try {
             Account account=new Account(userName,plainPassword,stub,publicKey,0,email);
             if((accountId=accountList.putIfAbsentEmailUsername(account))>=0){
