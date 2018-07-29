@@ -47,17 +47,13 @@ public class concurrencyTest {
                             clients.add(currentClient=new Client(
                                     username + Integer.toString(j=rand.nextInt(300)),
                                     "password",
-                                    "tobeimplementedpublickey",
-                                    "tobeimplementedprivatekey",
                                     "test "+"@"+Integer.toString(j)));//TODO add special email
 
                             currentClient.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
                             break;
                         case 2:
                             clients.add(currentClient=new AnonymousClient(
-                                    username + Integer.toString(rand.nextInt(300)),
-                                    "tobeimplementedpublickey",
-                                    "tobeimplementedprivatekey"
+                                    username + Integer.toString(rand.nextInt(300))
                             ));
                             currentClient.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
                             break;

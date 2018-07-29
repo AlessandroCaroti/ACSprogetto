@@ -8,7 +8,7 @@ import java.io.InputStreamReader;
 public class clientTest {
     public static void main(String[] args) {
         try {
-            Client client = new Client("andrea", "ciaozio", "magariunaltravolta", "stessacosa","email@ahah");
+            Client client = new Client("andrea", "ciaozio","email@ahah");
             System.out.println("CLIENT PRONTO");
             System.out.println("Servername:");
             String servername;
