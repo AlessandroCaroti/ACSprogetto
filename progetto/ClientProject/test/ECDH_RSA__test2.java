@@ -29,7 +29,7 @@ public class ECDH_RSA__test2 {
         PublicKey clientECDHpubKey = clientECDH.getPublic();
 
         //Server side operation
-        byte[] sheredSecret_server = ECDH.sheredSecretKey(serverECDH.getPrivate(), clientECDHpubKey);
+        byte[] sheredSecret_server = ECDH.sharedSecretKey(serverECDH.getPrivate(), clientECDHpubKey);
         System.out.println("Server secret key: " + Arrays.toString(sheredSecret_server));
         SecretKeySpec secretAesKey_server = new SecretKeySpec(sheredSecret_server, "AES");
 
@@ -37,7 +37,7 @@ public class ECDH_RSA__test2 {
         //Client side operation
         byte[] serverECDHpubKey_decrypted = RSA.decrypt(serverRSApubKey, serverECDHpubKey_encrypted);
         PublicKey serverECDHpubKey = KeyFactory.getInstance("ECDH", "BC").generatePublic(new X509EncodedKeySpec(serverECDHpubKey_decrypted));
-        byte[] sheredSecret_client = ECDH.sheredSecretKey(clientECDH.getPrivate(), serverECDHpubKey);
+        byte[] sheredSecret_client = ECDH.sharedSecretKey(clientECDH.getPrivate(), serverECDHpubKey);
         System.out.println("Client secret key: " + Arrays.toString(sheredSecret_client));
         SecretKeySpec secretAesKey_client = new SecretKeySpec(sheredSecret_client, "AES");
 

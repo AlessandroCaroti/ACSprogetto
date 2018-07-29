@@ -18,7 +18,7 @@ final public class ECDH {
         return keyGen.generateKeyPair();
     }
 
-    public static byte[] sheredSecretKey(PrivateKey myPrivateKey, PublicKey otherPublicKey) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidKeyException {
+    public static byte[] sharedSecretKey(PrivateKey myPrivateKey, PublicKey otherPublicKey) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidKeyException {
         KeyAgreement keyAgree = KeyAgreement.getInstance("ECDH", "BC");
         keyAgree.init(myPrivateKey);
         keyAgree.doPhase(otherPublicKey, true);
