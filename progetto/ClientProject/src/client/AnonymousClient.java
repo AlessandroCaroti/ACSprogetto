@@ -120,6 +120,7 @@ public class AnonymousClient implements ClientInterface {
      * sul registry dell'host, utilizato per vedere se il server esiste e se è attivo
      * @return lo STUB del server se andata a buon fine, altrimenti NULL
      */
+    @Deprecated
     public ServerInterface connect(){
         try {
             Registry r = LocateRegistry.getRegistry(this.registryHost, this.registryPort);
