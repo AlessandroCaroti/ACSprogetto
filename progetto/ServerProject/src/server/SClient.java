@@ -23,12 +23,15 @@ import utility.ResponseCode;
 import utility.ServerInfo;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 
+import static java.util.Objects.requireNonNull;
 import static utility.ResponseCode.Codici.*;
+
 
 public class SClient implements Callable<Integer> {
     private AnonymousClient[] clients;
@@ -41,9 +44,24 @@ public class SClient implements Callable<Integer> {
     private boolean pedantic=true;
     private Server myServer;
 
-    public SClient(String myPublicKey, String myPrivateKey,List serverList,Server myServer)
-    {
+    public SClient(String myPublicKey, String myPrivateKey,List serverList) throws RemoteException {
+        if(myPublicKey==null||myPrivateKey==null||serverList==null )
+        {
+            throw new NullPointerException("passing null argument to SClient constructor");
+        }
+        this.myPublicKey=myPublicKey;
+        this.myPrivateKey=myPrivateKey;
+        this.serverList=serverList;
+    }
+
+    public void setServer(Server myServer)throws NullPointerException{
+        this.myServer=requireNonNull(myServer);
+    }
+
+    public void initAnonymousClients() throws RemoteException {
         int length;
+
+        //trovo il numero di anonymousclient da inizializzare
         try {
             Properties sClientSettings = new Properties();//setting del server
             FileInputStream in = new FileInputStream("config.serverSettings");
@@ -54,17 +72,12 @@ public class SClient implements Callable<Integer> {
             System.err.println("ERROR:unable to open or read config.serverSettings");
             length=DEFAULTCONNECTIONNUMBER;
         }
-        if(myPublicKey==null||myPrivateKey==null||serverList==null|| myServer==null)
-        {
-            throw new NullPointerException("passing null argument to SClient constructor");
-        }
-        this.myPublicKey=myPublicKey;
-        this.myPrivateKey=myPrivateKey;
-        this.serverList=serverList;
-        this.myServer=myServer;
-        this.clients=new AnonymousClient[length];
+
+
+        this.clients=new AnonymousClientExtended[length];
+
         for(int i=0;i<length;i++){
-            this.clients[i]=new AnonymousClient particolare da estendere la classe e fare l@Override del metodo notify per aggiornare il server
+            this.clients[i]=new AnonymousClientExtended(this.myPublicKey,this.myPrivateKey,this.myServer);
         }
     }
 
