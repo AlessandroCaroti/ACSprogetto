@@ -450,6 +450,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         return ResponseCodeList.InternalError;
     }
 
+    //todo bisognerebbe controllare che il field msg.autore sia uguale a quello ricavato dal cookie---> altrimenti "spoofing" sugli autori dei messaggi!
     @Override
     //Il client che invia il messaggio riceverà una copia del suo stesso messaggio, questo lo gestiremo nel client e si può usare anche come conferma dell'invio tipo la spunta blu di whatsappp
     public ResponseCode publish(String cookie, Message msg) {
@@ -503,6 +504,20 @@ public class Server implements ServerInterface,Callable<Integer> {
                 }
             }
         return ResponseCodeList.InternalError;
+    }
+
+    /*************************************************************************************************************
+     ****    METODI PROTECTED       ******************************************************************************
+     *************************************************************************************************************/
+
+    protected void forwardMessage(Message msg){
+
+            String topicName  = msg.getTopic();
+            ConcurrentLinkedQueue<Integer> subscribers = topicClientList.putIfAbsent(topicName, new ConcurrentLinkedQueue<Integer>());
+            if(subscribers == null){  //creazione di un nuovo topic
+                topicList.add(topicName);
+            }
+            notifyAll(subscribers.iterator(), msg);      //todo magari si potrebbe eseguire su un altro thread in modo da non bloccare questa funzione
     }
 
 
