@@ -18,24 +18,17 @@
 package server;
 
 import client.AnonymousClient;
-import utility.Message;
-import utility.ResponseCode;
 import utility.ServerInfo;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.Callable;
-
 import static java.util.Objects.requireNonNull;
-import static utility.ResponseCode.Codici.*;
 
 
 public class SClient implements Callable<Integer> {
-    private AnonymousClient[] clients;
-    private static final int DEFAULTCONNECTIONNUMBER=10;
+    private List<AnonymousClientExtended> clients;
     private List<ServerInfo> serverList;
 
 
@@ -44,7 +37,7 @@ public class SClient implements Callable<Integer> {
     private boolean pedantic=true;
     private Server myServer;
 
-    public SClient(String myPublicKey, String myPrivateKey,List serverList) throws RemoteException {
+    public SClient(String myPublicKey, String myPrivateKey,List serverList,Server myServer) throws RemoteException {
         if(myPublicKey==null||myPrivateKey==null||serverList==null )
         {
             throw new NullPointerException("passing null argument to SClient constructor");
@@ -52,32 +45,15 @@ public class SClient implements Callable<Integer> {
         this.myPublicKey=myPublicKey;
         this.myPrivateKey=myPrivateKey;
         this.serverList=serverList;
-    }
-
-    public void setServer(Server myServer)throws NullPointerException{
         this.myServer=requireNonNull(myServer);
     }
 
-    public void initAnonymousClients() throws RemoteException {
-        int length;
 
-        //trovo il numero di anonymousclient da inizializzare
-        try {
-            Properties sClientSettings = new Properties();//setting del server
-            FileInputStream in = new FileInputStream("config.serverSettings");
-            sClientSettings.load(in);
-            in.close();
-            length=Integer.parseInt(sClientSettings.getProperty("maxbrokerconnection"));
-        }catch(IOException exc){
-            System.err.println("ERROR:unable to open or read config.serverSettings");
-            length=DEFAULTCONNECTIONNUMBER;
-        }
+    public void initAnonymousClientsExtended(int size) throws RemoteException {
+        this.clients=new ArrayList<>(size);
 
-
-        this.clients=new AnonymousClientExtended[length];
-
-        for(int i=0;i<length;i++){
-            this.clients[i]=new AnonymousClientExtended(this.myPublicKey,this.myPrivateKey,this.myServer);
+        for(int i=0;i<size;i++){
+            this.clients.add(new AnonymousClientExtended(this.myPublicKey,this.myPrivateKey,this.myServer));
         }
     }
 
@@ -85,16 +61,19 @@ public class SClient implements Callable<Integer> {
     public Integer call()
     {
         //INIT
-        pedanticInfo("init connections to brokers");
-        this.connectToServerList();
+
+        try {
+            pedanticInfo("initializing anonymous clients");
+            this.initAnonymousClientsExtended(serverList.size());
+            pedanticInfo("initializing connections to brokers");
+            this.connectToServerList();
 
 
 
-
-
-
-
-
+        } catch (RemoteException e) {
+            errorStamp(e,"unable to create anonymous clients.");
+            return 1;
+        }
 
 
         return 0;
@@ -103,24 +82,46 @@ public class SClient implements Callable<Integer> {
 
     //PRIVATE METHODS
 
-    private void connectToServerList(){
+    private void connectToServerList(){//todo handle in a better way creation of anontmous client and connection
         Iterator iterator=serverList.iterator();
+        int oldSize=serverList.size();
         int i=0;
-        while(iterator.hasNext()&&i<clients.length){
+        while(iterator.hasNext()){
             try {
-                clients[i] = new AnonymousClient(this.myPublicKey, this.myPrivateKey);
-                clients[i].setServerInfo(((ServerInfo)iterator.next()).regHost,((ServerInfo)iterator).regPort,"Server-"+((ServerInfo)iterator).regHost+":"+((ServerInfo)iterator).regPort);
-
+                iterator.next();
+                clients.get(i).setServerInfo(((ServerInfo)iterator).regHost,((ServerInfo)iterator).regPort,"Server-"+((ServerInfo)iterator).regHost+":"+((ServerInfo)iterator).regPort);
                 i++;
             }catch(Exception e){
-                errorStamp(e,"Unable to create anonymousClient:"+i);
+                errorStamp(e,"Unable to connect with server:   "+((ServerInfo)iterator).regHost+":"+((ServerInfo)iterator).regPort);
                 iterator.remove();//dato che non mi sono connesso lo rimuovo dalla lista.
             }
         }
-        infoStamp("connected to "+i+"/"+serverList.size()+" servers.");
+        infoStamp("connected to "+i+"/"+oldSize+" servers.");
 
     }
 
+    private void registerOnServer(){
+        String[]topics;
+        boolean result;
+        for (AnonymousClientExtended it:clients) {
+            result=it.register();
+            if(result) {
+                topics = it.getTocpics();
+                for (String topic : topics) {
+                    result = it.subscribe(topic);
+                    if(!result){
+                        pedanticInfo("unable to subscrive to "+topic+"");
+                    }
+                }
+            }else{
+                pedanticInfo("unable to register on  the server");
+            }
+        }
+
+
+
+
+    }
 
     //METODI UTILIZZATI PER LA GESTIONE DELL'OUTPUT DEL SCLIENT
 
