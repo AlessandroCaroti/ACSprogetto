@@ -57,18 +57,9 @@ public class AnonymousClient implements ClientInterface {
 
     /**
      * Anonymous user's constructor
-     * @param username          il mio username
-     * @param my_private_key    la mia chiave privata
-     * @param my_public_key     la mia chiave pubblica
      */
-    public AnonymousClient(String username)throws RemoteException
-    public AnonymousClient(String username, String my_public_key, String my_private_key)throws NullPointerException,RemoteException
-    public AnonymousClient(String my_public_key, String my_private_key)throws NullPointerException,RemoteException
+    public AnonymousClient()throws RemoteException
     {
-        if(username==null)
-        if(my_public_key==null || my_private_key==null)
-            throw new NullPointerException();
-        this.username     = username;
         this.skeleton     = (ClientInterface) UnicastRemoteObject.exportObject(this,0);
         topicsSubscribed  = new TreeSet<>();
     }
@@ -401,6 +392,7 @@ public class AnonymousClient implements ClientInterface {
     public  String getClassName() {
         return this.className;
     }
+
 
 
 

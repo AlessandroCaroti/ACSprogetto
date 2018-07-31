@@ -110,11 +110,11 @@ public class SClient implements Callable<Integer> {
                 for (String topic : topics) {
                     result = it.subscribe(topic);
                     if(!result){
-                        pedanticInfo("unable to subscrive to "+topic+"");
+                        pedanticInfo("unable to subscrive to "+topic+"on the server.");
                     }
                 }
             }else{
-                pedanticInfo("unable to register on  the server");
+                pedanticInfo("unable to register on the server");
             }
         }
 
