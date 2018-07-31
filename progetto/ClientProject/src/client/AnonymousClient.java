@@ -38,7 +38,7 @@ public class AnonymousClient implements ClientInterface {
 
     /**************************************************************************/
     /* server fields */
-    protected String serverName;                      //the name for the remote reference to look up
+    protected String serverName;              //the name for the remote reference to look up
     protected String brokerPublicKey;                 //broker's public key
     protected ServerInterface server_stub;            //broker's stub, se è null allora non si è connessi ad alcun server
     protected String[] topicOnServer;                 //topic che gestisce il server
@@ -396,6 +396,7 @@ public class AnonymousClient implements ClientInterface {
     public  String getClassName() {
         return this.className;
     }
+
 
 
 
