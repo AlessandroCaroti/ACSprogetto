@@ -32,8 +32,12 @@ public class AnonymousClientExtended extends AnonymousClient {
 
     @Override
     public ResponseCode newTopicNotification(String topicName){
-        server.addTopic(topicName);
-        return super.newTopicNotification(topicName);
+
+        ResponseCode resp=super.newTopicNotification(topicName);
+        if(resp.IsOK()){
+            server.addTopic(topicName);
+        }
+        return resp;
     }
 
 
