@@ -246,7 +246,7 @@ public class AnonymousClient implements ClientInterface {
      * @return un array con tutti i topic che il server, a cui si è connessi, gestisce. Ritorna null in caso di errore
      */
     //TODO magari invece di richiedre sempre la lista dei topic si può implementare un metodo get condizionale( get-if-modified-since) tipo http
-    public String[] getTocpics(){
+    public String[] getTopics(){
         String[] allTopics = null;
         if(connected()){
             try {
