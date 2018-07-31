@@ -362,6 +362,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         try {
             int accountId = getAccountId(cookie);
             this.accountList.setStub(null, accountId);
+            //todo creare una funzione invalidateTemporantInfo() che imposta a null lo stub e la chiaveSegretaCondivisa
             pedanticInfo("user:"+accountId + "  disconnected.");
             return new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER,"disconnessione avvenuta con successo");
         }catch (BadPaddingException | IllegalBlockSizeException exc){

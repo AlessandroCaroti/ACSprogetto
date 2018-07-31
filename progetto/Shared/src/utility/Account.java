@@ -31,7 +31,7 @@ public class Account {
     private String username;
     private byte[] password;//hash password
     private ClientInterface stub;
-    private String publicKey;
+    private String publicKey;       //todo cambiare il nome in secretKey e anche tutte le funzioni getter
     private int accountId;//l'indice dove si trova nella lista degli account
     private String email;//can be null for anonymous users
     /**
