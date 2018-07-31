@@ -16,8 +16,6 @@
 
 **/
 package server;
-
-import client.AnonymousClient;
 import utility.ServerInfo;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -49,13 +47,7 @@ public class SClient implements Callable<Integer> {
     }
 
 
-    public void initAnonymousClientsExtended(int size) throws RemoteException {
-        this.clients=new ArrayList<>(size);
 
-        for(int i=0;i<size;i++){
-            this.clients.add(new AnonymousClientExtended(this.myPublicKey,this.myPrivateKey,this.myServer));
-        }
-    }
 
 
     public Integer call()
@@ -63,12 +55,14 @@ public class SClient implements Callable<Integer> {
         //INIT
 
         try {
-            pedanticInfo("initializing anonymous clients");
-            this.initAnonymousClientsExtended(serverList.size());
-            pedanticInfo("initializing connections to brokers");
-            this.connectToServerList();
-
-
+            pedanticInfo("initializing connection with brokers");
+            this.initAndConnectAnonymousClients(serverList.size());
+            pedanticInfo("initializing accounts.");
+            this.registerOnServer();
+            pedanticInfo("subscribing to all topics.");
+            for (AnonymousClientExtended it:clients) {
+                this.subscribeToAllTopics(it);
+            }
 
         } catch (RemoteException e) {
             errorStamp(e,"unable to create anonymous clients.");
@@ -81,6 +75,24 @@ public class SClient implements Callable<Integer> {
 
 
     //PRIVATE METHODS
+    private void initAndConnectAnonymousClients(int initialSize){
+        this.clients=new ArrayList<>(initialSize);
+        Iterator it=serverList.iterator();
+        int oldSize=serverList.size();
+        int i=0;
+
+        while(it.hasNext()){
+
+                it.next();
+                clients.add(new AnonymousClientExtended(this.myPublicKey,this.myPrivateKey,this.myServer));
+                clients.get(i).setServerInfo(((ServerInfo)it).regHost,((ServerInfo)it).regPort,);
+                i++;
+
+        }
+
+
+        infoStamp("connected to "+i+"/"+oldSize+" servers.");
+    }
 
     private void connectToServerList(){//todo handle in a better way creation of anontmous client and connection
         Iterator iterator=serverList.iterator();
@@ -101,18 +113,12 @@ public class SClient implements Callable<Integer> {
     }
 
     private void registerOnServer(){
-        String[]topics;
+
         boolean result;
         for (AnonymousClientExtended it:clients) {
             result=it.register();
             if(result) {
-                topics = it.getTocpics();
-                for (String topic : topics) {
-                    result = it.subscribe(topic);
-                    if(!result){
-                        pedanticInfo("unable to subscrive to "+topic+"on the server.");
-                    }
-                }
+
             }else{
                 pedanticInfo("unable to register on the server");
             }
@@ -122,7 +128,18 @@ public class SClient implements Callable<Integer> {
 
 
     }
-
+    private void subscribeToAllTopics(AnonymousClientExtended client){
+        if(client==null)throw new NullPointerException("anonymousclientextended==null");
+        boolean result;
+        String[]topics;
+        topics = client.getTopics();
+        for (String topic : topics) {
+            result = client.subscribe(topic);
+            if(!result){
+                pedanticInfo("unable to subscribe to "+topic+"on the server.");
+            }
+        }
+    }
     //METODI UTILIZZATI PER LA GESTIONE DELL'OUTPUT DEL SCLIENT
 
     private void errorStamp(Exception e){

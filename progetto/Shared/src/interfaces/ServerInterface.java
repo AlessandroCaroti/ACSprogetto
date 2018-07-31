@@ -47,6 +47,8 @@ public interface ServerInterface extends Remote,Serializable
 
     ResponseCode publish(String cookie, Message msg) throws RemoteException;
 
+    ResponseCode getNewTopicNotification(String cookie) throws  RemoteException;
+
     void ping() throws RemoteException;
 
     String[] getTopicList() throws RemoteException;
