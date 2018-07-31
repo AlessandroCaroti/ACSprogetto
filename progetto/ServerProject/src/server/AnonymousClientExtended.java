@@ -30,6 +30,11 @@ public class AnonymousClientExtended extends AnonymousClient {
         return rc;
     }
 
+    @Override
+    ResponseCode newTopicNotification(String topicName){
+
+    }
+
 
     void infoStamp(String msg){
         System.out.println("["+className+"-INFO]: " + msg);
