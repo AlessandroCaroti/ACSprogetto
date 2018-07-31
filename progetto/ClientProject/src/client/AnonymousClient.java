@@ -328,8 +328,16 @@ public class AnonymousClient implements ClientInterface {
     }
 
     @Override
-    ResponseCode newTopicNotification(String topicName){
-
+    public ResponseCode newTopicNotification(String topicName){
+        ResponseCode rc;
+        if(topicName==null||topicName.isEmpty()) {
+            rc=new ResponseCode(ResponseCode.Codici.R500, ResponseCode.TipoClasse.CLIENT, "(-) WARNING Il client ha ricevuto un topic vuoto");
+        }else {
+            pedanticInfo("New topic on the server:" + topicName);
+            rc = new ResponseCode(R200, ResponseCode.TipoClasse.CLIENT,
+                    "(+) OK il client ha ricevuto il messaggio");
+        }
+        return rc;
     }
 
     // *************************************************************************************************************
