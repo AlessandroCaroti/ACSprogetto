@@ -55,6 +55,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     //todo se qualcuno trova un nome migliore cambitelo quello che ci ho messo fa schifo
     private ConcurrentSkipListMap<String,ConcurrentLinkedQueue<Integer>> topicClientList;                 // topic -> lista idAccount    -   PUNTI 1 e 2
     private ConcurrentLinkedQueue<String> topicList;        //utilizzata per tenere traccia di tutti i topic e da utilizzare in getTopicList()
+    private ConcurrentLinkedQueue<Integer> notificationList;
 
     /* clients management fields */
     private AccountCollectionInterface accountList;                     //monitor della lista contente tutti gli account salvati
@@ -110,6 +111,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
         topicList = new ConcurrentLinkedQueue<>();
         topicList    = new ConcurrentLinkedQueue<>();
+        notificationList=new ConcurrentLinkedQueue<>();
         topicClientList=new ConcurrentSkipListMap<>();
 
         //Caricamento delle impostazioni del server memorizate su file
@@ -506,11 +508,31 @@ public class Server implements ServerInterface,Callable<Integer> {
         return ResponseCodeList.InternalError;
     }
 
+
+     @Override
+     public ResponseCode getNewTopicNotification(String cookie) throws  RemoteException{
+
+        try {
+            Integer accountId = getAccountId(cookie);
+            synchronized (notificationList) {
+                if (!notificationList.contains(accountId)) {
+                    notificationList.add(accountId);
+                }
+            }
+            return new ResponseCode(ResponseCode.Codici.R200,ResponseCode.TipoClasse.SERVER,"iscrizione avvenuta con successo");
+        }catch (Exception e){
+            errorStamp(e);
+        }
+        return ResponseCodeList.InternalError;
+     }
+
+
+
     /*************************************************************************************************************
-     ****    METODI PROTECTED       ******************************************************************************
+     ****    METODI PKG             ******************************************************************************
      *************************************************************************************************************/
 
-    protected void forwardMessage(Message msg){
+     void forwardMessage(Message msg){
 
             String topicName  = msg.getTopic();
             ConcurrentLinkedQueue<Integer> subscribers = topicClientList.putIfAbsent(topicName, new ConcurrentLinkedQueue<Integer>());
