@@ -466,6 +466,7 @@ public class Server implements ServerInterface,Callable<Integer> {
                 (subscribers = topicClientList.get(topicName)).add(accountId);
             }
             notifyAll(subscribers.iterator(), msg);      //todo magari si potrebbe eseguire su un altro thread in modo da non bloccare questa funzione
+
             return new ResponseCode(ResponseCode.Codici.R200,ResponseCode.TipoClasse.SERVER,"topic pubblicato");
         }catch (BadPaddingException| IllegalBlockSizeException e){
             warningStamp(e,"subscribe() - error cookie not recognized");
@@ -542,7 +543,15 @@ public class Server implements ServerInterface,Callable<Integer> {
             notifyAll(subscribers.iterator(), msg);      //todo magari si potrebbe eseguire su un altro thread in modo da non bloccare questa funzione
     }
 
-
+    void addTopic(String topic){
+         if(topic==null) throw new NullPointerException("topic==null");
+         if(topic.isEmpty()) throw new IllegalArgumentException("topic is empty");
+         synchronized (topicList){
+             if(!topicList.contains(topic)){
+                 topicList.add(topic);
+             }
+         }
+    }
     /*************************************************************************************************************
     ****    METODI PRIVATI          ******************************************************************************
     *************************************************************************************************************/

@@ -346,7 +346,10 @@ public class AnonymousClient implements ClientInterface {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    ResponseCode newTopicNotification(String topicName){
 
+    }
 
 
     /*****************************************************************************************************************
@@ -380,6 +383,10 @@ public class AnonymousClient implements ClientInterface {
 
 
     /*GETTER and SETTER*/
+
+    public ServerInterface getServer_stub() {
+        return server_stub;
+    }
 
     public String getCookie() {
         return cookie;
