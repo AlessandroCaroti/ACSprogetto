@@ -17,7 +17,7 @@ public class clientTest {
             client.setServerInfo("localhost",1099,servername);
 
 
-            if(client.connect()!=null){
+            if(client.connected()){
                 System.out.println("CONNESSO");
             }else {System.out.println("NON CONNESSO");return ;}
 

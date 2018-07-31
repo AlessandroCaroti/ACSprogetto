@@ -101,7 +101,8 @@ public  class ResponseCode implements Serializable {
     }
     public boolean IsOK(){
         if(codice==null){return false;}
-        return Codici.R200==codice;
+        return Codici.R200==codice ||
+                Codici.R210==codice;
     }
     public boolean IsSetCookie(){ return Codici.R100==codice;}
 

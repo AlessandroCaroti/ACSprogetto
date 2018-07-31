@@ -120,20 +120,21 @@ public class AnonymousClient implements ClientInterface {
      * sul registry dell'host, utilizato per vedere se il server esiste e se è attivo
      * @return lo STUB del server se andata a buon fine, altrimenti NULL
      */
+    /*
     @Deprecated
     public ServerInterface connect(){
         try {
             Registry r = LocateRegistry.getRegistry(this.registryHost, this.registryPort);
             ServerInterface server_stub = (ServerInterface) r.lookup(this.serverName);
             ResponseCode rc = server_stub.connect();
-            /*if(rc.IsOK())
-                this.brokerPublicKey = rc.getMessaggioInfo();*/
+            //if(rc.IsOK())
+                //this.brokerPublicKey = rc.getMessaggioInfo();
             return server_stub;
         }catch (Exception e){
             return null;
         }
     }
-
+*/
 
     /**
      *Il client si registra sul server su cui si era connesso con il metodo connect() e viene settato il cookie
@@ -286,6 +287,14 @@ public class AnonymousClient implements ClientInterface {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * @return TRUE se si è connessi ad un server, FALSE altrimenti
+     */
+    public boolean connected(){
+        return (server_stub != null);
+    }
+
+
 
 
 
@@ -371,13 +380,6 @@ public class AnonymousClient implements ClientInterface {
         this.cookie = response.getMessaggioInfo();
         infoStamp("Successfully registered on server "+serverName+".");
         return true;
-    }
-
-    /**
-     * @return TRUE se si è connessi ad un server, FALSE altrimenti
-     */
-    protected boolean connected(){
-        return (server_stub != null);
     }
 
 

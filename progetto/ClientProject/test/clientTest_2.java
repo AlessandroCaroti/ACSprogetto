@@ -15,9 +15,17 @@ public class clientTest_2 {
                 e.printStackTrace();
                 return;
             }
+            if(client.connected()){
+                System.out.println("CONNESSO");
+            }
+            else {
+                System.out.println("NON CONNESSO");
+            }
             if(client.register()){
                 System.out.println("REGISTRATO");
-            }else{System.out.println("NON REGISTRATO");return;}
+            }else{
+                System.out.println("NON REGISTRATO");
+            }
 
         }catch (Exception e){
 

@@ -38,7 +38,7 @@ public interface ClientInterface extends Remote,Serializable
 
     byte[] testSecretKey(byte[] messageEncrypted) throws RemoteException;
 
-    byte[][] getAccountInfo();
+    byte[][] getAccountInfo() throws RemoteException;
 
 
 

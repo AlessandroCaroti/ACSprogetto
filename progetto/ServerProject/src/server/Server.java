@@ -20,6 +20,7 @@ package server;
 
 import account.AccountCollectionInterface;
 import account.AccountListMonitor;
+import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 import email.EmailController;
 import email.EmailHandlerTLS;
 import interfaces.ServerInterface;
@@ -33,6 +34,7 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.mail.MessagingException;
 import java.io.*;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -72,7 +74,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     final private PrivateKey ECDH_privateKey;
     final private String     RSA_pubKey;
     final private byte[]     ECDH_pubbKey_encrypted;
-    final private byte[]     messageTest = "Stringa per assicurarsi che la chiave condivisa sia uguale".getBytes(); //todo forse sarebbe meglio passargli qualcosa di più corto
+    final private byte[]     messageTest = "Stringa per assicurarsi che la chiave condivisa sia uguale".getBytes(StandardCharsets.UTF_8); //todo forse sarebbe meglio passargli qualcosa di più corto
 
     /* rmi fields */
     private Registry registry;
@@ -110,10 +112,9 @@ public class Server implements ServerInterface,Callable<Integer> {
         topicList    = new ConcurrentLinkedQueue<>();
         topicClientList=new ConcurrentSkipListMap<>();
 
-        System.out.println(System.getProperty("user.dir"));
-
         //Caricamento delle impostazioni del server memorizate su file
-        System.out.println("Working Directory = " + System.getProperty("user.dir"));
+        pedanticInfo("Working Directory = " + System.getProperty("user.dir"));
+
         loadSetting("./src/server/config.serverSettings");
         infoStamp("Server settings imported.");
 
@@ -126,13 +127,13 @@ public class Server implements ServerInterface,Callable<Integer> {
         RSA_privateKey  = RSA_kayPair.getPrivate();
         ECDH_privateKey = ECDH_kayPair.getPrivate();
 
-        RSA_pubKey      = new String(RSA_kayPair.getPublic().getEncoded());
+        RSA_pubKey      = new String(Base64.encode(RSA_kayPair.getPublic().getEncoded()).getBytes());
         ECDH_pubbKey_encrypted = RSA.encrypt(RSA_privateKey, ECDH_kayPair.getPublic().getEncoded());
 
         infoStamp("Public key infrastructure created.");
 
         setupAes();
-        infoStamp("Aes created.");
+        infoStamp("AES encryption system created.");
 
         //Creazione dell'email handler e avvio di quest'ultimo
         emailController=new EmailHandlerTLS("acsgroup.unige@gmail.com","password",100,587,"smtp.gmail.com");
@@ -142,8 +143,6 @@ public class Server implements ServerInterface,Callable<Integer> {
 
         randomStringSession=new RandomString();
         infoStamp("Random String session created");
-
-        System.out.println("SERVER PRONTO (lookup)registryName:\"ServerInterface\" on port:");
     }
 
     /**
@@ -216,7 +215,6 @@ public class Server implements ServerInterface,Callable<Integer> {
             infoStamp("Created server remote object.");
 
             //Load the server stub on the Registry
-            //r.rebind(serverName, stub);
             r.rebind(serverName, stub);
             infoStamp("Server stub loaded on registry associate with the  the name \'"+serverName+"\' .");
 
@@ -227,6 +225,8 @@ public class Server implements ServerInterface,Callable<Integer> {
 
         this.registry = r;
         this.skeleton = stub;
+
+        infoStamp("*** SERVER READY! ***");
 
     }
 
@@ -269,12 +269,14 @@ public class Server implements ServerInterface,Callable<Integer> {
     @Override
     public ResponseCode register(ClientInterface stub)  {
         int accountId;
+        SecretKeySpec secretAesKey;
         String userName=null, plainPassword=null, email=null, publicKey=null;
         //CREAZIONE DI UNA CHIAVE CONDIVSA SOLO TRA IL SERVER E IL CLIENT CHE HA INVOCATO QUESTO METODO REMOTO
         try {
+            //compute the key
             PublicKey clientPubKey = stub.publicKeyExchange(ECDH_pubbKey_encrypted);
             byte[] shearedSecretKey = ECDH.sharedSecretKey(ECDH_privateKey, clientPubKey);
-            SecretKeySpec secretAesKey = new SecretKeySpec(shearedSecretKey, "AES");
+            secretAesKey = new SecretKeySpec(shearedSecretKey, "AES");
             
             //test the key
             byte[] res_encrypted = stub.testSecretKey(messageTest);
@@ -287,18 +289,18 @@ public class Server implements ServerInterface,Callable<Integer> {
             errorStamp(e);
             return ResponseCodeList.InternalError;
         }
-        //RECUPERO DELLE INFORMAZIONI DEL CLIENT
-        byte[][] accountInfo = stub.getAccountInfo();
-        email         = new String(accountInfo[0]);
-        userName      = new String(accountInfo[1]);
-        plainPassword = new String(accountInfo[2]);
-        //CREAZIONE DI UN ACCOUNT PER IL CLIENT
         try {
+            //RECUPERO DELLE INFORMAZIONI DEL CLIENT
+            byte[][] accountInfo = stub.getAccountInfo();
+            email         = new String(utility.AES.decrypt(accountInfo[0], secretAesKey), StandardCharsets.UTF_8);
+            userName      = new String(utility.AES.decrypt(accountInfo[1], secretAesKey), StandardCharsets.UTF_8);
+            plainPassword = new String(utility.AES.decrypt(accountInfo[2], secretAesKey), StandardCharsets.UTF_8);
+            //CREAZIONE DI UN ACCOUNT PER IL CLIENT
             Account account=new Account(userName,plainPassword,stub,publicKey,0,email);
             if((accountId=accountList.putIfAbsentEmailUsername(account))>=0){
 
                 if(this.emailValidation(email,stub)){
-                    pedanticInfo("Registered new client \'"+userName+"\'  \'"+email+"\'");
+                    pedanticInfo("Registered new client, UserName: \'"+userName+"\' - Password: \'"+email+"\'");
                     return new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER, getCookie(accountId));
                 }else{
                     pedanticInfo("Client registration refused ,\'"+email+"\' has not been validated.");

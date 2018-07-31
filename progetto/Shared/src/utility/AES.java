@@ -19,6 +19,7 @@ public class AES {
     public static byte[] decrypt(byte[] encryptedData, SecretKeySpec secretKey) throws InvalidKeyException, BadPaddingException, IllegalBlockSizeException, NoSuchPaddingException, NoSuchAlgorithmException {
         Cipher cipher = Cipher.getInstance("AES");
         cipher.init(Cipher.DECRYPT_MODE, secretKey);
+        byte[] r = cipher.doFinal(encryptedData);
         return cipher.doFinal(encryptedData);
     }
 }

@@ -17,6 +17,7 @@
 */
 package client;
 
+import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 import interfaces.ServerInterface;
 import utility.*;
 
@@ -30,6 +31,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.security.*;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 
@@ -87,8 +89,12 @@ public class Client extends AnonymousClient {
      */
     @Override
     public boolean register() {
+        if(serverPublicKey_RSA==null) {
+            errorStamp("Unable to register without the public key of the server.");
+            return false;
+        }
         try {
-            ResponseCode responseCode = server_stub.register(this.skeleton); //todo modificare il metodo, deve passare solo lo stub
+            ResponseCode responseCode = server_stub.register(this.skeleton);
             return registered(responseCode);
         }catch (RemoteException e){
             errorStamp(e, "Unable to reach the server.");
@@ -208,7 +214,7 @@ public class Client extends AnonymousClient {
             byte[] serverPubKey_decrypted = RSA.decrypt(serverPublicKey_RSA, serverPubKey_encrypted);
             PublicKey serverPubKey = KeyFactory.getInstance("ECDH", "BC").generatePublic(new X509EncodedKeySpec(serverPubKey_decrypted));
             byte[] sharedSecret = ECDH.sharedSecretKey(ECDH_kayPair.getPrivate(), serverPubKey);
-            infoStamp("Created secret key.\n");
+            infoStamp("Created secret key sheared whit the server.\n");
             pedanticInfo("Secret key: " + Arrays.toString(sharedSecret));
             secretAesKey = new SecretKeySpec(sharedSecret, "AES");
             return ECDH_kayPair.getPublic();
@@ -221,7 +227,7 @@ public class Client extends AnonymousClient {
     @Override
     public byte[] testSecretKey(byte[] messageEncrypted) {
         try {
-            return AES.decrypt(messageEncrypted, secretAesKey);
+            return AES.encrypt(messageEncrypted, secretAesKey);
         } catch (Exception e) { return null;}
     }
 
@@ -233,12 +239,13 @@ public class Client extends AnonymousClient {
             encryptedAccountInfo[1] = AES.encrypt(username.getBytes(),      secretAesKey);
             encryptedAccountInfo[2] = AES.encrypt(plainPassword.getBytes(), secretAesKey);
 
-            //TODO se si decide di criptare il passaggio di info bisogna cambiare la variabile di ritorno ed elimiare le prossime 4 linee
+            /*
             byte[][] accountInfo = new byte[3][];
             accountInfo[0] = email.getBytes();
             accountInfo[1] = username.getBytes();
             accountInfo[2] = plainPassword.getBytes();
-            return accountInfo;
+            */
+            return encryptedAccountInfo;
         } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException | NoSuchAlgorithmException e) {
             errorStamp(e, "Errore durante la cifratura delle informazioni dell'account.");
             //todo forse aggiungere una migliore della gestione degli errori
@@ -262,9 +269,10 @@ public class Client extends AnonymousClient {
             ResponseCode rc = server_stub.connect();
             if(rc.IsOK()) {
                 String pubKey_str = rc.getMessaggioInfo();
-                serverPublicKey_RSA = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(pubKey_str.getBytes()));
+                serverPublicKey_RSA = stringToPublicKey(pubKey_str);
+                return server_stub;
             }
-            return server_stub;
+            return null;
         }catch (Exception e){
             return null;
         }
@@ -300,6 +308,15 @@ public class Client extends AnonymousClient {
             errorStamp(e, "Unable to reach the server.");
             return false;
         }
+    }
+
+    private static PublicKey stringToPublicKey(String publickey) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        byte[] pubBytes64Decode = Base64.decode(publickey);
+        java.security.interfaces.RSAPublicKey chiavePubblicaRicostruitra=null;
+        java.security.KeyFactory keyFactory = java.security.KeyFactory.getInstance("RSA");
+        java.security.PublicKey pubKey = keyFactory.generatePublic(new java.security.spec.X509EncodedKeySpec(pubBytes64Decode));
+        chiavePubblicaRicostruitra = (java.security.interfaces.RSAPublicKey) pubKey;
+        return chiavePubblicaRicostruitra;
     }
 
 
