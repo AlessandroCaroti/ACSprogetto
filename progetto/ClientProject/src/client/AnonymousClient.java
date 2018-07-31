@@ -327,7 +327,10 @@ public class AnonymousClient implements ClientInterface {
                 "(-) Internal client error");
     }
 
+    @Override
+    ResponseCode newTopicNotification(String topicName){
 
+    }
 
     // *************************************************************************************************************
     //PROTECTED METHOD
@@ -368,6 +371,10 @@ public class AnonymousClient implements ClientInterface {
 
 
     /*GETTER and SETTER*/
+
+    public ServerInterface getServer_stub() {
+        return server_stub;
+    }
 
     public String getCookie() {
         return cookie;

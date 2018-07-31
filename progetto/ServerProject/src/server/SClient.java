@@ -16,6 +16,7 @@
 
 **/
 package server;
+import utility.ResponseCode;
 import utility.ServerInfo;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -58,11 +59,19 @@ public class SClient implements Callable<Integer> {
             pedanticInfo("initializing connection with brokers");
             this.initAndConnectAnonymousClients(serverList.size());
             pedanticInfo("initializing accounts.");
-            this.registerOnServer();
+            for (AnonymousClientExtended it:clients) {
+                this.registerOnServer(it);
+            }
+            pedanticInfo("subscribing for notifications.");
+            for (AnonymousClientExtended it:clients) {
+                this.subscribeForNotifications(it);
+            }
             pedanticInfo("subscribing to all topics.");
             for (AnonymousClientExtended it:clients) {
                 this.subscribeToAllTopics(it);
             }
+
+
 
         } catch (RemoteException e) {
             errorStamp(e,"unable to create anonymous clients.");
@@ -94,6 +103,7 @@ public class SClient implements Callable<Integer> {
         infoStamp("connected to "+i+"/"+oldSize+" servers.");
     }
 
+    /*
     private void connectToServerList(){//todo handle in a better way creation of anontmous client and connection
         Iterator iterator=serverList.iterator();
         int oldSize=serverList.size();
@@ -110,24 +120,33 @@ public class SClient implements Callable<Integer> {
         }
         infoStamp("connected to "+i+"/"+oldSize+" servers.");
 
-    }
+    }*/
 
-    private void registerOnServer(){
-
-        boolean result;
-        for (AnonymousClientExtended it:clients) {
-            result=it.register();
+    private void registerOnServer(AnonymousClientExtended client){
+        if(client==null)throw new NullPointerException("anonymousclientextended==null");
+        boolean result=client.register();
             if(result) {
-
+                pedanticInfo("registration successfully completed.");
             }else{
-                pedanticInfo("unable to register on the server");
+                pedanticInfo("unable to register on the server.");
             }
         }
 
 
-
-
+    private void subscribeForNotifications(AnonymousClientExtended client){
+        if(client==null)throw new NullPointerException("anonymousclientextended==null");
+        try {
+            ResponseCode resp=client.getServer_stub().getNewTopicNotification(client.getCookie());
+            if(resp.IsOK()){
+                pedanticInfo("successfully subscribed to notification list.");
+            }else{
+                pedanticInfo("unable to register for notification list.");
+            }
+        }catch(Exception exc){
+            errorStamp(exc);
+        }
     }
+
     private void subscribeToAllTopics(AnonymousClientExtended client){
         if(client==null)throw new NullPointerException("anonymousclientextended==null");
         boolean result;
@@ -137,6 +156,8 @@ public class SClient implements Callable<Integer> {
             result = client.subscribe(topic);
             if(!result){
                 pedanticInfo("unable to subscribe to "+topic+"on the server.");
+            }else {
+                myServer.addTopic(topic);
             }
         }
     }
