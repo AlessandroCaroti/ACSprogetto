@@ -323,9 +323,9 @@ public class AnonymousClient implements ClientInterface {
 
     @Override
     public ResponseCode getCode(int nAttempts){
+       System.out.println("Remaining attempts:"+Integer.toString(nAttempts));
+       System.out.println("Enter code:");
         try {
-            System.out.println("Remaining attempts:"+Integer.toString(nAttempts));
-            System.out.println("Enter code:");
             BufferedReader bufferRead = new BufferedReader(new InputStreamReader(System.in));
             String s = bufferRead.readLine();
             return  new ResponseCode(R200,ResponseCode.TipoClasse.CLIENT,s);
