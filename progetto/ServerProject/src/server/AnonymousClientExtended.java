@@ -25,7 +25,9 @@ public class AnonymousClientExtended extends AnonymousClient {
         }else {
             pedanticInfo("Received new message\n" + m.toString());
             rc = new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.CLIENT, "(+) OK il client ha ricevuto il messaggio");
-            server.forwardMessage(m);
+
+            server.forwardMessage(m);//inoltra il messaggio sul proprio server
+
         }
         return rc;
     }
