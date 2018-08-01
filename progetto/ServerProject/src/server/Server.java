@@ -511,7 +511,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
 
      @Override
-     public ResponseCode getNewTopicNotification(String cookie) throws  RemoteException{
+     public ResponseCode subscribeNewTopicNotification(String cookie) throws  RemoteException{
 
         try {
             Integer accountId = getAccountId(cookie);

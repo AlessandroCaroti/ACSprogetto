@@ -136,7 +136,7 @@ public class SClient implements Callable<Integer> {
     private void subscribeForNotifications(AnonymousClientExtended client){
         if(client==null)throw new NullPointerException("anonymousclientextended==null");
         try {
-            ResponseCode resp=client.getServer_stub().getNewTopicNotification(client.getCookie());
+            ResponseCode resp=client.getServer_stub().subscribeNewTopicNotification(client.getCookie());
             if(resp.IsOK()){
                 pedanticInfo("successfully subscribed to notification list.");
             }else{
