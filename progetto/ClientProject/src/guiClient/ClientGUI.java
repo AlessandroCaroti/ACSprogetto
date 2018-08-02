@@ -43,7 +43,7 @@ import javax.swing.JTextArea;
 import java.awt.CardLayout;
 
 
-public class ClientGUI extends JFrame {
+public class ClientGUI extends JFrame  {
 	
 	// Variables declaration
     private javax.swing.JLabel btn_login;
