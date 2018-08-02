@@ -24,7 +24,7 @@ public interface AnonymousClientInterface {//implementare da strafo
 
 
 
-
+//todo arma deve cambiare il jtetxfield del login da port a email in quanto non ci interessa che l'utente sappia la porta di destinazione
 
 
 
