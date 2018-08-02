@@ -43,7 +43,7 @@ public class ClientEngine implements Callable<Integer> {
                         break;
                     case LOGIN:
                         try {
-                            client = new Client(((AccountLoginWindow)current).getUsername(), ((AccountLoginWindow)current).getPassword(),"tobeimpl","tobeimpl",((AccountLoginWindow)current).getEmail());
+                            client = new Client(((AccountLoginWindow)current).getUsername(), ((AccountLoginWindow)current).getPassword(),((AccountLoginWindow)current).getEmail());
                             ServerInfoRecover infoServer = new ServerInfoRecover();
                             String[] a = infoServer.getServerInfo(
                                     InetAddress.getByName(((AnonymousLoginWindow)current).getServerAddress())
@@ -62,7 +62,7 @@ public class ClientEngine implements Callable<Integer> {
                         break;
                     case NEWACCOUNT:
                         try {
-                            client = new Client(((AccountLoginWindow)current).getUsername(), ((AccountLoginWindow)current).getPassword(),"tobeimpl","tobeimpl",((AccountLoginWindow)current).getEmail());
+                            client = new Client(((AccountLoginWindow)current).getUsername(), ((AccountLoginWindow)current).getPassword(),((AccountLoginWindow)current).getEmail());
                             ServerInfoRecover infoServer = new ServerInfoRecover();
                             String[] a = infoServer.getServerInfo(
                                     InetAddress.getByName(((AnonymousLoginWindow)current).getServerAddress())
@@ -82,7 +82,7 @@ public class ClientEngine implements Callable<Integer> {
                         break;
                     case ANONYMOUSLOGIN:
                         try {
-                            client = new AnonymousClient("tobeimpl", "tobeimpl");
+                            client = new AnonymousClient();
                             ServerInfoRecover infoServer = new ServerInfoRecover();
                             String[] a = infoServer.getServerInfo(
                                     InetAddress.getByName(((AnonymousLoginWindow)current).getServerAddress())

@@ -63,7 +63,7 @@ public class Client extends AnonymousClient {
      */
     public Client(String username, String plainPassword, String email ) throws RemoteException
     {
-        super(username);
+        super();
         if(plainPassword==null||email==null)
             throw new NullPointerException();
         this.plainPassword=plainPassword;
