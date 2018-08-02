@@ -347,7 +347,7 @@ public class AnonymousClient implements ClientInterface {
     }
 
     @Override
-    ResponseCode newTopicNotification(String topicName){
+    public void newTopicNotification(String topicName){
 
     }
 

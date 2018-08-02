@@ -28,7 +28,7 @@ public interface ClientInterface extends Remote,Serializable
 {
     ResponseCode notify(Message m) throws RemoteException;
 
-    ResponseCode newTopicNotification(String topicName) throws RemoteException;
+    void newTopicNotification(String topicName) throws RemoteException;
 
     void isAlive()  throws RemoteException;
 
