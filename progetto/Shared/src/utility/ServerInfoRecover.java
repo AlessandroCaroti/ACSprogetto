@@ -37,7 +37,7 @@ public class ServerInfoRecover extends InfoProviderProtocol {
     }
 
     public String[] getServerInfo(InetAddress serverAddres) throws IOException {
-        ArrayList<String> serverInfo = new ArrayList<>();       
+        ArrayList<String> serverInfo = new ArrayList<>();
         String fromServer;
         Socket s = new Socket(serverAddres, port);
         BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
