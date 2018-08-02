@@ -5,7 +5,7 @@ public class clientTest_2 {
     static Client client;
     public static void main(String[] args) {
         try {
-            client = new Client("user_1", "password","pki_pubblica", "pki_privata","email");
+            client = new Client("user_1", "password","email");
             try {
                 ServerInfoRecover infoServer = new ServerInfoRecover();
                 String[] a = infoServer.getServerInfo();
@@ -15,9 +15,17 @@ public class clientTest_2 {
                 e.printStackTrace();
                 return;
             }
+            if(client.connected()){
+                System.out.println("CONNESSO");
+            }
+            else {
+                System.out.println("NON CONNESSO");
+            }
             if(client.register()){
                 System.out.println("REGISTRATO");
-            }else{System.out.println("NON REGISTRATO");return;}
+            }else{
+                System.out.println("NON REGISTRATO");
+            }
 
         }catch (Exception e){
 

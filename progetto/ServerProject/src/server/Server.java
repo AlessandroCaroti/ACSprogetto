@@ -1,4 +1,4 @@
-/*
+/**
     This file is part of ACSprogetto.
 
     ACSprogetto is free software: you can redistribute it and/or modify
@@ -14,35 +14,33 @@
     You should have received a copy of the GNU General Public License
     along with ACSprogetto.  If not, see <http://www.gnu.org/licenses/>.
 
-*/
+**/
 
 package server;
 
 import account.AccountCollectionInterface;
 import account.AccountListMonitor;
+import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 import email.EmailController;
 import email.EmailHandlerTLS;
 import interfaces.ServerInterface;
 import interfaces.ClientInterface;
-import utility.Account;
-import utility.AddressIp;
-import utility.Message;
-import utility.ResponseCode;
+import utility.*;
+
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.SecretKeySpec;
 import javax.mail.MessagingException;
 import java.io.*;
 import java.net.URL;
-import java.net.UnknownHostException;
-import java.rmi.AlreadyBoundException;
+import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
+import java.security.*;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -58,33 +56,31 @@ public class Server implements ServerInterface,Callable<Integer> {
     private ConcurrentSkipListMap<String,ConcurrentLinkedQueue<Integer>> topicClientList;                 // topic -> lista idAccount    -   PUNTI 1 e 2
     private ConcurrentLinkedQueue<String> topicList;        //utilizzata per tenere traccia di tutti i topic e da utilizzare in getTopicList()
 
-    /*
-        1)lista dei topic
-        2)associazioni topic -> lista client che si sono registrati al topic
-                possibili implementazioni ConcurrentSkipListMap
-        3)lista client
-                possibili implementazioni concurrentLikedQueue
-    */
-
     /* clients management fields */
     private AccountCollectionInterface accountList;                     //monitor della lista contente tutti gli account salvati
     private RandomString randomStringSession;
     private AtomicInteger anonymousCounter=new AtomicInteger(0);
 
     /* server settings fields */
-    private Properties serverSettings=new Properties();                 //setting del server
+    private Properties serverSettings = new Properties();                 //setting del server
     private boolean pedantic = true;                                    //utile per il debugging per stampare ogni avvenimento      todo magari anche questo si può importare dal file di config
 
     /* security fields */
     private AES aesCipher;
-    private String serverPublicKey;
-    private String serverPrivateKey;
+    final private String curveName = "prime192v1";
+    private KeyPair RSA_kayPair;
+    private KeyPair ECDH_kayPair;
+    final private PrivateKey RSA_privateKey;
+    final private PrivateKey ECDH_privateKey;
+    final private String     RSA_pubKey;
+    final private byte[]     ECDH_pubbKey_encrypted;
+    final private byte[]     messageTest = "Stringa per assicurarsi che la chiave condivisa sia uguale".getBytes(StandardCharsets.UTF_8); //todo forse sarebbe meglio passargli qualcosa di più corto
 
     /* rmi fields */
     private Registry registry;
     private int regPort = 1099;                 //Default registry port TODO magari si può importare dal file di config
     private String host;
-    private String serverName;
+    final private String serverName;                  //TODO: da creare nel costruttore, il nome con cui si fa la bind dello serverStub sul registro
     private ServerInterface skeleton;
 
     /*email handler*/
@@ -100,23 +96,25 @@ public class Server implements ServerInterface,Callable<Integer> {
      */
 
 
-    public Server() throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchPaddingException, UnsupportedEncodingException {
+    public Server() throws Exception {
 
-
+        //TODO             creare un nome per il server utilizzato per il registro
+        String tmp_name;
         try{
-            serverName   = "Server_" + this.getMyIp();
+            tmp_name   = "Server_" + this.getMyIp();
         }catch(IOException exc){//se non riesce a reperire  l'ip
-            serverName   = "Server_" + (int)(Math.random()*1000000);
+            tmp_name   = "Server_" + (int)(Math.random()*1000000);
         }
+        serverName = tmp_name;
 
 
+        topicList = new ConcurrentLinkedQueue<>();
         topicList    = new ConcurrentLinkedQueue<>();
         topicClientList=new ConcurrentSkipListMap<>();
 
-        System.out.println(System.getProperty("user.dir"));
-
         //Caricamento delle impostazioni del server memorizate su file
-        System.out.println("Working Directory = " + System.getProperty("user.dir"));
+        pedanticInfo("Working Directory = " + System.getProperty("user.dir"));
+
         loadSetting("./src/server/config.serverSettings");
         infoStamp("Server settings imported.");
 
@@ -126,10 +124,16 @@ public class Server implements ServerInterface,Callable<Integer> {
 
         //Creazione PKI del server
         setupPKI();
+        RSA_privateKey  = RSA_kayPair.getPrivate();
+        ECDH_privateKey = ECDH_kayPair.getPrivate();
+
+        RSA_pubKey      = new String(Base64.encode(RSA_kayPair.getPublic().getEncoded()).getBytes());
+        ECDH_pubbKey_encrypted = RSA.encrypt(RSA_privateKey, ECDH_kayPair.getPublic().getEncoded());
+
         infoStamp("Public key infrastructure created.");
 
         setupAes();
-        infoStamp("Aes created.");
+        infoStamp("AES encryption system created.");
 
         //Creazione dell'email handler e avvio di quest'ultimo
         emailController=new EmailHandlerTLS("acsgroup.unige@gmail.com","password",100,587,"smtp.gmail.com");
@@ -139,10 +143,6 @@ public class Server implements ServerInterface,Callable<Integer> {
 
         randomStringSession=new RandomString();
         infoStamp("Random String session created");
-
-        //Ho spostato la roba del regestry nel metodo start
-
-        System.out.println("SERVER PRONTO (lookup)registryName:\"ServerInterface\" on port:");
     }
 
     /**
@@ -156,7 +156,6 @@ public class Server implements ServerInterface,Callable<Integer> {
         try{
             BufferedReader bufferRead = new BufferedReader(new InputStreamReader(System.in));
             String s = bufferRead.readLine();
-
         }
         catch(IOException e)
         {
@@ -216,7 +215,6 @@ public class Server implements ServerInterface,Callable<Integer> {
             infoStamp("Created server remote object.");
 
             //Load the server stub on the Registry
-            //r.rebind(serverName, stub);
             r.rebind(serverName, stub);
             infoStamp("Server stub loaded on registry associate with the  the name \'"+serverName+"\' .");
 
@@ -228,10 +226,15 @@ public class Server implements ServerInterface,Callable<Integer> {
         this.registry = r;
         this.skeleton = stub;
 
+        infoStamp("*** SERVER READY! ***");
+
     }
 
-
-
+    //inverte lo stato del campo pedantic
+    public void togglePedantic(){
+        pedantic = !pedantic;
+        infoStamp("Pedantic status: " + pedantic + ".");
+    }
 
     /*METOGI GETTER*/
     public int getRegPort(){
@@ -256,7 +259,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     public ResponseCode connect() {
         try {
             pedanticInfo("A new client has connected.");
-            return  new ResponseCode( ResponseCode.Codici.R210, ResponseCode.TipoClasse.SERVER,this.serverPublicKey);
+            return  new ResponseCode( ResponseCode.Codici.R210, ResponseCode.TipoClasse.SERVER, RSA_pubKey);    //todo invece di castare la chiave pubblica a stringa sarebbe meglio cambiare il tipo da String a byte[] p PublicKey
         } catch (Exception e){
             errorStamp(e);
         }
@@ -264,14 +267,40 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     @Override
-    public ResponseCode register(String userName,String plainPassword,ClientInterface stub,String publicKey,String email)  {
+    public ResponseCode register(ClientInterface stub)  {
         int accountId;
+        SecretKeySpec secretAesKey;
+        String userName=null, plainPassword=null, email=null, publicKey=null;
+        //CREAZIONE DI UNA CHIAVE CONDIVSA SOLO TRA IL SERVER E IL CLIENT CHE HA INVOCATO QUESTO METODO REMOTO
         try {
+            //compute the key
+            PublicKey clientPubKey = stub.publicKeyExchange(ECDH_pubbKey_encrypted);
+            byte[] shearedSecretKey = ECDH.sharedSecretKey(ECDH_privateKey, clientPubKey);
+            secretAesKey = new SecretKeySpec(shearedSecretKey, "AES");
+            
+            //test the key
+            byte[] res_encrypted = stub.testSecretKey(messageTest);
+            byte[] res = utility.AES.decrypt(res_encrypted, secretAesKey);
+            if(!Arrays.equals(res, messageTest))
+                throw new InvalidKeyException("La chiave condivisa non coincide");  //todo migliorare il messaggio di errore
+            publicKey     = new String(shearedSecretKey);
+        } catch (RemoteException | NoSuchAlgorithmException | NoSuchProviderException | InvalidKeyException | NoSuchPaddingException | BadPaddingException | IllegalBlockSizeException e) {
+            //todo aggiunere migliore gestione degli errori
+            errorStamp(e);
+            return ResponseCodeList.InternalError;
+        }
+        try {
+            //RECUPERO DELLE INFORMAZIONI DEL CLIENT
+            byte[][] accountInfo = stub.getAccountInfo();
+            email         = new String(utility.AES.decrypt(accountInfo[0], secretAesKey), StandardCharsets.UTF_8);
+            userName      = new String(utility.AES.decrypt(accountInfo[1], secretAesKey), StandardCharsets.UTF_8);
+            plainPassword = new String(utility.AES.decrypt(accountInfo[2], secretAesKey), StandardCharsets.UTF_8);
+            //CREAZIONE DI UN ACCOUNT PER IL CLIENT
             Account account=new Account(userName,plainPassword,stub,publicKey,0,email);
             if((accountId=accountList.putIfAbsentEmailUsername(account))>=0){
 
                 if(this.emailValidation(email,stub)){
-                    pedanticInfo("Registered new client \'"+userName+"\'  \'"+email+"\'");
+                    pedanticInfo("Registered new client, UserName: \'"+userName+"\' - Password: \'"+email+"\'");
                     return new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER, getCookie(accountId));
                 }else{
                     pedanticInfo("Client registration refused ,\'"+email+"\' has not been validated.");
@@ -299,7 +328,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
 
     @Override
-    public ResponseCode anonymousRegister(ClientInterface stub, String publicKey)  {
+    public ResponseCode anonymousRegister(ClientInterface stub)  {
         int accountId;
         String username;
         String plainPassword;
@@ -309,7 +338,7 @@ public class Server implements ServerInterface,Callable<Integer> {
             do {
                 username = "anonymous" + Integer.toString(anonymousCounter.incrementAndGet());
                 plainPassword = randomStringSession.nextString();
-                account = new Account(username, plainPassword, stub, publicKey, 0, email);
+                account = new Account(username, plainPassword, stub, null, 0, email);   //todo la chiave pubblica per l'account anonimo non serve
                 if ((accountId = accountList.putIfAbsentUsername(account)) >= 0) {
                     pedanticInfo("Registered new client \'"+username+"\'  \'"+email+"\'");
                     return new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER, getCookie(accountId));
@@ -333,6 +362,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         try {
             int accountId = getAccountId(cookie);
             this.accountList.setStub(null, accountId);
+            //todo creare una funzione invalidateTemporantInfo() che imposta a null lo stub e la chiaveSegretaCondivisa
             pedanticInfo("user:"+accountId + "  disconnected.");
             return new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER,"disconnessione avvenuta con successo");
         }catch (BadPaddingException | IllegalBlockSizeException exc){
@@ -448,7 +478,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
     @Override
     public String[] getTopicList()  {
-        return topicList.toArray(new String[0]);    //guarda esempio in https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ConcurrentLinkedQueue.html#toArray(T[])
+        return topicList.toArray(new String[0]);    //per spiegazioni a cosa server 'new String[0]' guarda esempio in https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ConcurrentLinkedQueue.html#toArray(T[])
     }
 
     @Override
@@ -504,11 +534,20 @@ public class Server implements ServerInterface,Callable<Integer> {
         }
     }
 
-    //Creazione della chiava pubblica, chiave privata con cui verranno criptati i messaggi scambiaticon i client
+    //Creazione della chiava pubblica, chiave privata con cui verranno criptati le informazioni sensibili scambiate col client
     private void setupPKI(){
-        /*TODO creare le chiavi pubbliche eccetera e settarle nei fields*/
-        serverPrivateKey="privatekeyservertobeimplmented";
-        serverPublicKey="publickeyservertobeimplmented";
+        try {
+            RSA_kayPair = RSA.generateKeyPair();
+        } catch (NoSuchAlgorithmException e) {
+            errorStamp(e, "Error during generation of the keys for the RSA algorithm.");
+            System.exit(1);
+        }
+        try {
+            ECDH_kayPair = ECDH.generateKeyPair(curveName);
+        } catch (NoSuchProviderException | NoSuchAlgorithmException | InvalidAlgorithmParameterException e) {
+            errorStamp(e, "Error during generation of the keys for the ECDH algorithm.");
+            System.exit(1);
+        }
     }
 
     private void setupAes() throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchPaddingException, UnsupportedEncodingException {
@@ -641,8 +680,9 @@ public class Server implements ServerInterface,Callable<Integer> {
 
 
 
-
-    //METODI UTILIZZATI PER LA GESTIONE DELL'OUTPUT DEL SERVER
+    /*************************************************************************************************************
+     ****METODI UTILIZZATI PER LA GESTIONE DELL'OUTPUT DEL SERVER*************************************************
+     *************************************************************************************************************/
 
     private void errorStamp(Exception e){
         System.out.flush();

@@ -22,6 +22,7 @@ import utility.ResponseCode;
 import java.io.Serializable;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.security.PublicKey;
 
 public interface ClientInterface extends Remote,Serializable
 {
@@ -29,7 +30,17 @@ public interface ClientInterface extends Remote,Serializable
 
     void isAlive()  throws RemoteException;
 
-    ResponseCode getCode(int nAttempts) throws RemoteException;//lo si può usare sia per la register sia per il forgot password!
+    //lo si può usare sia per la register sia per il forgot password!
+    ResponseCode getCode(int nAttempts) throws RemoteException;
+
+    //Metodo utilizzato nella register e nella retriveAccount fatto per stabilire una chiave segreta condivisa per criptare le informazioni senibili
+    PublicKey publicKeyExchange(byte[] serverPubKey_encrypted) throws RemoteException;
+
+    byte[] testSecretKey(byte[] messageEncrypted) throws RemoteException;
+
+    byte[][] getAccountInfo() throws RemoteException;
+
+
 
 }
 

@@ -4,6 +4,7 @@ import interfaces.ClientInterface;
 import interfaces.ServerInterface;
 import utility.Message;
 import utility.ResponseCode;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -11,6 +12,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.security.PublicKey;
 import java.util.Iterator;
 import java.util.TreeSet;
 
@@ -31,8 +33,6 @@ public class AnonymousClient implements ClientInterface {
     protected String username;
     protected ClientInterface skeleton;               //my stub
     protected String cookie;
-    protected String myPrivateKey;
-    protected String myPublicKey;
     protected boolean pedantic  = true;
 
     protected TreeSet<String> topicsSubscribed;       //topic a cui si è iscritti, todo non mi sembra che ci sia concorrenza ma se qualcuno ne trova bisoga sostituire TreeSet<> con ConcurrentSkipListSet
@@ -40,7 +40,6 @@ public class AnonymousClient implements ClientInterface {
     /**************************************************************************/
     /* server fields */
     protected String serverName;                      //the name for the remote reference to look up
-    protected String brokerPublicKey;                 //broker's public key
     protected ServerInterface server_stub;            //broker's stub, se è null allora non si è connessi ad alcun server
     protected String[] topicOnServer;                 //topic che gestisce il server
 
@@ -60,16 +59,12 @@ public class AnonymousClient implements ClientInterface {
     /**
      * Anonymous user's constructor
      * @param username          il mio username
-     * @param my_private_key    la mia chiave privata
-     * @param my_public_key     la mia chiave pubblica
      */
-    public AnonymousClient(String username, String my_public_key, String my_private_key)throws RemoteException
+    public AnonymousClient(String username)throws RemoteException
     {
-        if(username==null || my_public_key==null || my_private_key==null)
+        if(username==null)
             throw new NullPointerException();
         this.username     = username;
-        this.myPublicKey  = my_public_key;
-        this.myPrivateKey = my_private_key;
         this.skeleton     = (ClientInterface) UnicastRemoteObject.exportObject(this,0);
         topicsSubscribed  = new TreeSet<>();
     }
@@ -87,8 +82,9 @@ public class AnonymousClient implements ClientInterface {
 
 
 
-    // *************************************************************************************************************
-    //API
+    /*****************************************************************************************************************
+     * API ***********************************************************************************************************
+     ****************************************************************************************************************/
 
     private void setServerInfo(String regHost, String serverName){
         if(regHost==null || regHost.isEmpty() || serverName==null || serverName.isEmpty()){
@@ -124,19 +120,21 @@ public class AnonymousClient implements ClientInterface {
      * sul registry dell'host, utilizato per vedere se il server esiste e se è attivo
      * @return lo STUB del server se andata a buon fine, altrimenti NULL
      */
+    /*
+    @Deprecated
     public ServerInterface connect(){
         try {
             Registry r = LocateRegistry.getRegistry(this.registryHost, this.registryPort);
             ServerInterface server_stub = (ServerInterface) r.lookup(this.serverName);
             ResponseCode rc = server_stub.connect();
-            if(rc.IsOK())
-                this.brokerPublicKey = rc.getMessaggioInfo();
+            //if(rc.IsOK())
+                //this.brokerPublicKey = rc.getMessaggioInfo();
             return server_stub;
         }catch (Exception e){
             return null;
         }
     }
-
+*/
 
     /**
      *Il client si registra sul server su cui si era connesso con il metodo connect() e viene settato il cookie
@@ -145,7 +143,7 @@ public class AnonymousClient implements ClientInterface {
     public boolean register(){
         if(connected()) {
             try {
-                ResponseCode responseCode = server_stub.anonymousRegister(this.skeleton, this.myPublicKey);
+                ResponseCode responseCode = server_stub.anonymousRegister(this.skeleton);
                 return registered(responseCode);
             } catch (RemoteException e) {
                 errorStamp(e, "Unable to reach the server.");
@@ -184,7 +182,7 @@ public class AnonymousClient implements ClientInterface {
      * @param topic a cui ci si vuole iscrivere
      * @return TRUE se andata a buon fine, FALSE altrimenti
      */
-    public boolean subscribe(String topic)    {
+    public boolean subscribe(String topic) {
         if(connected()){
             try {
                 if(topicsSubscribed.contains(topic)){
@@ -286,19 +284,27 @@ public class AnonymousClient implements ClientInterface {
      * @return false
      */
     public boolean publish( String topic, String title, String text) {
-
         throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @return TRUE se si è connessi ad un server, FALSE altrimenti
+     */
+    public boolean connected(){
+        return (server_stub != null);
     }
 
 
 
 
 
+    /****************************************************************************************************************
+     * REMOTE METHOD ************************************************************************************************
+     ****************************************************************************************************************/
 
-    // *************************************************************************************************************
-    //REMOTE METHOD
 
     @Override
+    //TODO al server non importa del messaggio di risposta quindi si potrebbe mettere che ritorni void
     public ResponseCode notify(Message m) {
         ResponseCode rc;
         if(m==null) {
@@ -330,19 +336,34 @@ public class AnonymousClient implements ClientInterface {
                 "(-) Internal client error");
     }
 
+    @Override
+    public PublicKey publicKeyExchange(byte[] serverPubKey_encrypted){
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public byte[] testSecretKey(byte[] messageEncrypted){
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public byte[][] getAccountInfo(){
+        throw new UnsupportedOperationException();
+    }
 
 
-    // *************************************************************************************************************
-    //PROTECTED METHOD
+
+
+    /*****************************************************************************************************************
+     * PRIVATE METHOD ************************************************************************************************
+     ****************************************************************************************************************/
 
     protected ServerInterface connect(String regHost, String server, Integer regPort)
     {
         try {
             Registry r = LocateRegistry.getRegistry(regHost, regPort);
             ServerInterface server_stub = (ServerInterface) r.lookup(server);
-            ResponseCode rc = server_stub.connect();
-            if(rc.IsOK())
-                this.brokerPublicKey = rc.getMessaggioInfo();
+            server_stub.connect();
             return server_stub;
         }catch (Exception e){
             return null;
@@ -359,13 +380,6 @@ public class AnonymousClient implements ClientInterface {
         this.cookie = response.getMessaggioInfo();
         infoStamp("Successfully registered on server "+serverName+".");
         return true;
-    }
-
-    /**
-     * @return TRUE se si è connessi ad un server, FALSE altrimenti
-     */
-    protected boolean connected(){
-        return (server_stub != null);
     }
 
 
@@ -386,22 +400,6 @@ public class AnonymousClient implements ClientInterface {
 
     public void setCookie(String cookie) {
         this.cookie = cookie;
-    }
-
-    public String getMyPrivateKey() {
-        return myPrivateKey;
-    }
-
-    public void setMyPrivateKey(String myPrivateKey) {
-        this.myPrivateKey = myPrivateKey;
-    }
-
-    public String getMyPublicKey() {
-        return myPublicKey;
-    }
-
-    public void setMyPublicKey(String myPublicKey) {
-        this.myPublicKey = myPublicKey;
     }
 
     public  String getClassName() {
