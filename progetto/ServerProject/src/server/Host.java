@@ -26,7 +26,6 @@ import java.rmi.RemoteException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Random;
 import java.util.concurrent.*;
 
 public class Host {
@@ -38,7 +37,7 @@ public class Host {
         private GuiInterface userInterface;
         private Server server;
         private SClient sclient;
-        private String sclientPassword=new RandomString(16,new Random(),RandomString.alphanum).nextString();
+        //private String sclientPassword=new RandomString(16,new Random(),RandomString.alphanum).nextString(); non penso sia necessario
 
 
     private Host(boolean usingUserInterface) throws UnsupportedEncodingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, AlreadyBoundException, RemoteException, UnknownHostException {
@@ -67,7 +66,7 @@ public class Host {
 
             Host host = new Host(Boolean.parseBoolean(args[0]));
 
-        //TODO exitCodeSClient=host.sClientThread.submit(host.sclient);
+         exitCodeSClient=host.sClientThread.submit(host.sclient);
         exitCodeServer=host.serverThread.submit(host.server);
         exitCodeUserInterface=host.userInterfaceThread.submit(host.userInterface);
 
@@ -123,7 +122,6 @@ public class Host {
              * SCLIENT
              *
              */
-            /*TODO
             try {
                 exitcode = exitCodeSClient.get(100, TimeUnit.MILLISECONDS);
                 switch (exitcode) {
@@ -135,10 +133,9 @@ public class Host {
                         host.userInterfaceThread.awaitTermination(10, TimeUnit.SECONDS);
                         return;
                 }
-            } catch (InterruptedException | InterruptedException e) {
+            } catch (InterruptedException e) {
             e.printStackTrace(System.err);
             } catch (TimeoutException e1) {}
-            */
 
         }
 
