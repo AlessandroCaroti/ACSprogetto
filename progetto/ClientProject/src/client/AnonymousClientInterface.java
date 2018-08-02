@@ -10,7 +10,7 @@ public interface AnonymousClientInterface {//implementare da strafo
 
     //new account
 
-    void newAccountGUI(String username,String password,String repeatPassword,String email);
+    void newAccountGUI(String username,String password,String repeatPassword,String email);//aggiungere String serverIp
 
     //recover password
 
