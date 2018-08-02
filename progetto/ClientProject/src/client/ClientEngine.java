@@ -49,11 +49,35 @@ public class ClientEngine implements Callable<Integer> {
                                     InetAddress.getByName(((AnonymousLoginWindow)current).getServerAddress())
                             );
                             client.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
+                            if(client.retrieveAccount()){
+                                System.out.println("Account recuperato");
+                                clientEngineToGUI.add(new ForumWindow());//todo settare la roba da passare
+                            }else{
+                                System.out.println("NON recuperato");
+                                /*todo come gestisco l'errore nella schermata?*/
+                            }
                         }catch(Exception exc){
                             //todo
                         }
                         break;
                     case NEWACCOUNT:
+                        try {
+                            client = new Client(((AccountLoginWindow)current).getUsername(), ((AccountLoginWindow)current).getPassword(),"tobeimpl","tobeimpl",((AccountLoginWindow)current).getEmail());
+                            ServerInfoRecover infoServer = new ServerInfoRecover();
+                            String[] a = infoServer.getServerInfo(
+                                    InetAddress.getByName(((AnonymousLoginWindow)current).getServerAddress())
+                            );
+                            client.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
+                            if(client.register()){
+                                System.out.println("Account creato");
+                                clientEngineToGUI.add(new ForumWindow());//todo settare la roba da passare
+                            }else{
+                                System.out.println("NON creato");
+                                /*todo come gestisco l'errore nella schermata?*/
+                            }
+                        }catch(Exception exc){
+                            //todo
+                        }
 
                         break;
                     case ANONYMOUSLOGIN:
@@ -64,8 +88,13 @@ public class ClientEngine implements Callable<Integer> {
                                     InetAddress.getByName(((AnonymousLoginWindow)current).getServerAddress())
                                     );
                             client.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
-
-
+                            if (client.register()) {
+                                clientEngineToGUI.add(new ForumWindow());//todo settare la roba da passare
+                                System.out.println("REGISTRATO");
+                            } else {
+                                System.out.println("NON REGISTRATO");
+                                /*todo come gestisco l'errore nella schermata?*/
+                            }
                         }catch(Exception exc){
                             //todo
                         }
