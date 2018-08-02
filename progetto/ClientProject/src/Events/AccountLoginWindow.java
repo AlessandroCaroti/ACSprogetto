@@ -2,21 +2,24 @@ package Events;
 import static guiClient.WindowType.LOGIN;
 
 public class AccountLoginWindow extends AnonymousLoginWindow {
-    private String usernameOrEmail;
+    private String username;
     private String password;
+    private String email;
 
     public AccountLoginWindow(){
         this.setWindowType(LOGIN);
     }
 
+    public String getEmail() { return email; }
 
+    public void setEmail(String email) { this.email = email; }
 
-    public String getUsernameOrEmail() {
-        return usernameOrEmail;
+    public String getUsername() {
+        return username;
     }
 
-    public void setUsernameOrEmail(String usernameOrEmail) {
-        this.usernameOrEmail = usernameOrEmail;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getPassword() {
