@@ -15,9 +15,9 @@ public class ClientEngine implements Callable<Integer> {
     private ConcurrentLinkedQueue<Event> guiToClientEngine;
     private AnonymousClient client;
 
-    public ClientEngine(ConcurrentLinkedQueue<Event>clientEngineToGUI, ConcurrentLinkedQueue<Event> guiToClienEngine){
+    public ClientEngine(ConcurrentLinkedQueue<Event>clientEngineToGUI, ConcurrentLinkedQueue<Event> guiToClientEngine){
         this.clientEngineToGUI=requireNonNull(clientEngineToGUI);
-        this.guiToClientEngine=requireNonNull(guiToClienEngine);
+        this.guiToClientEngine=requireNonNull(guiToClientEngine);
     }
 
 
