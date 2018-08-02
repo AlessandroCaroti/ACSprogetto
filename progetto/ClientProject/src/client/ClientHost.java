@@ -27,13 +27,16 @@ public class ClientHost {
 
 
     private GuiInterface userInterface;
-    private ClientEngine client;
+    private boolean guiActivated;
+    private ClientEngine clientEngine;
 
     private ConcurrentLinkedQueue<Event> clientEngineToGUI=new ConcurrentLinkedQueue<>();
-    private ConcurrentLinkedQueue<Event> guiToClienEngine= new ConcurrentLinkedQueue<>();
+    private ConcurrentLinkedQueue<Event> guiToClientEngine= new ConcurrentLinkedQueue<>();
 
     private ClientHost(boolean usingUserInterface) {
+        this.guiActivated=usingUserInterface;
         userInterface = new GuiInterface(usingUserInterface);
+        clientEngine=new ClientEngine(clientEngineToGUI,guiToClientEngine);
         userInterfaceThread = Executors.newSingleThreadExecutor();
         clientThread = Executors.newSingleThreadExecutor();
     }
@@ -54,7 +57,7 @@ public class ClientHost {
             ClientHost host = new ClientHost(Boolean.parseBoolean(args[0]));
 
 
-            exitCodeClient = host.clientThread.submit(host.client);
+            exitCodeClient = host.clientThread.submit(host.clientEngine);
             exitCodeUserInterface = host.userInterfaceThread.submit(host.userInterface);
 
 
@@ -73,7 +76,7 @@ public class ClientHost {
                             host.clientThread.awaitTermination(10, TimeUnit.SECONDS);
                             return;
                         case 1://errore restarting...
-                            host.userInterfaceThread.submit(host.userInterface);
+                            host.userInterfaceThread.submit((host.userInterface=new GuiInterface(host.guiActivated)));
                             break;
                     }
                 } catch (ExecutionException | InterruptedException e) {
@@ -93,7 +96,7 @@ public class ClientHost {
                             host.userInterfaceThread.awaitTermination(10, TimeUnit.SECONDS);
                             return;
                         case 1://errore restarting...
-                            host.clientThread.submit(host.client);
+                            host.clientThread.submit((host.clientEngine=new ClientEngine(host.clientEngineToGUI,host.guiToClientEngine)));
                             break;
                     }
                 } catch (ExecutionException | InterruptedException e) {
