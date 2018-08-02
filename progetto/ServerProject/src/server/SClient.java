@@ -18,6 +18,9 @@
 package server;
 import utility.ResponseCode;
 import utility.ServerInfo;
+import utility.ServerInfoRecover;
+import java.io.IOException;
+import java.net.InetAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -71,12 +74,11 @@ public class SClient implements Callable<Integer> {
                 this.subscribeToAllTopics(it);
             }
 
-
-
-        } catch (RemoteException e) {
+        } catch (Exception e) {
             errorStamp(e,"unable to create anonymous clients.");
             return 1;
         }
+
 
 
         return 0;
@@ -84,43 +86,39 @@ public class SClient implements Callable<Integer> {
 
 
     //PRIVATE METHODS
-    private void initAndConnectAnonymousClients(int initialSize){
+
+    /**
+     *  Tenta di stabilire una connessione con tutti i server.
+     * @param initialSize la grandezza della lista dei server
+     * @throws IOException se è impossibile creare il ServerInfoRecover
+     */
+    private void initAndConnectAnonymousClients(int initialSize) throws IOException  {
         this.clients=new ArrayList<>(initialSize);
         Iterator it=serverList.iterator();
         int oldSize=serverList.size();
         int i=0;
+        ServerInfoRecover infoServer = new ServerInfoRecover();
+
 
         while(it.hasNext()){
 
                 it.next();
-                clients.add(new AnonymousClientExtended(this.myPublicKey,this.myPrivateKey,this.myServer));
-                clients.get(i).setServerInfo(((ServerInfo)it).regHost,((ServerInfo)it).regPort,);
-                i++;
+                try {
+                    clients.add(new AnonymousClientExtended(this.myPublicKey, this.myPrivateKey, this.myServer));
+                    String[] a = infoServer.getServerInfo(InetAddress.getByName(((ServerInfo) it).regHost));
+                    clients.get(i).setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
+                    i++;
+                }catch(RemoteException e){
+                    warningStamp(e,"unable to connect with server");
+                    it.remove();//lo rimuovo dato che la connessione non è riuscita
+                }
 
         }
-
 
         infoStamp("connected to "+i+"/"+oldSize+" servers.");
     }
 
-    /*
-    private void connectToServerList(){//todo handle in a better way creation of anontmous client and connection
-        Iterator iterator=serverList.iterator();
-        int oldSize=serverList.size();
-        int i=0;
-        while(iterator.hasNext()){
-            try {
-                iterator.next();
-                clients.get(i).setServerInfo(((ServerInfo)iterator).regHost,((ServerInfo)iterator).regPort,"Server-"+((ServerInfo)iterator).regHost+":"+((ServerInfo)iterator).regPort);
-                i++;
-            }catch(Exception e){
-                errorStamp(e,"Unable to connect with server:   "+((ServerInfo)iterator).regHost+":"+((ServerInfo)iterator).regPort);
-                iterator.remove();//dato che non mi sono connesso lo rimuovo dalla lista.
-            }
-        }
-        infoStamp("connected to "+i+"/"+oldSize+" servers.");
 
-    }*/
 
     private void registerOnServer(AnonymousClientExtended client){
         if(client==null)throw new NullPointerException("anonymousclientextended==null");
