@@ -5,7 +5,8 @@ public enum WindowType {
     LOGIN,
     ANONYMOUSLOGIN,
     NEWACCOUNT,
-    FORUMWINDOW
+    FORUM,
+    FORGOTPASSWORD
 
-    
+
 }
