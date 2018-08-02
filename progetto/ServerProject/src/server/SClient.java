@@ -39,7 +39,7 @@ public class SClient implements Callable<Integer> {
     private boolean pedantic=true;
     private Server myServer;
 
-    public SClient(String myPublicKey, String myPrivateKey,List serverList,Server myServer) throws RemoteException {
+    public SClient(String myPublicKey, String myPrivateKey,List serverList,Server myServer)  {
         if(myPublicKey==null||myPrivateKey==null||serverList==null )
         {
             throw new NullPointerException("passing null argument to SClient constructor");
