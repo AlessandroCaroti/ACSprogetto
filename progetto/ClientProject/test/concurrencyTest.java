@@ -55,7 +55,6 @@ public class concurrencyTest {
                             break;
                         case 2:
                             clients.add(currentClient=new AnonymousClient(
-                                    username + Integer.toString(rand.nextInt(300)),
                                     "tobeimplementedpublickey",
                                     "tobeimplementedprivatekey"
                             ));

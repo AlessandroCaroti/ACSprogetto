@@ -15,8 +15,8 @@
  along with ACSprogetto.  If not, see <http://www.gnu.org/licenses/>.
 
  **/
-package client;
 
+import client.AnonymousClient;
 import utility.gui.GuiInterface;
 import java.util.concurrent.*;
 
