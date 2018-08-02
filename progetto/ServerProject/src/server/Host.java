@@ -65,10 +65,9 @@ public class Host {
         try {
 
             Host host = new Host(Boolean.parseBoolean(args[0]));
-
-         exitCodeSClient=host.sClientThread.submit(host.sclient);
-        exitCodeServer=host.serverThread.submit(host.server);
-        exitCodeUserInterface=host.userInterfaceThread.submit(host.userInterface);
+            exitCodeSClient=host.sClientThread.submit(host.sclient);
+            exitCodeServer=host.serverThread.submit(host.server);
+            exitCodeUserInterface=host.userInterfaceThread.submit(host.userInterface);
 
 
         while(true) {
@@ -126,7 +125,7 @@ public class Host {
                 exitcode = exitCodeSClient.get(100, TimeUnit.MILLISECONDS);
                 switch (exitcode) {
                     case 1://errore restarting...
-                        //TODO host.sClientThread.submit(host.sClient);
+                        host.sClientThread.submit(host.sclient);
                         break;
                     case 0:
                         host.serverThread.awaitTermination(10, TimeUnit.SECONDS);
