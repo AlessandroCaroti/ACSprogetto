@@ -4,7 +4,7 @@ import guiClient.WindowType;
 
 import static java.util.Objects.requireNonNull;
 
-public class OpenWindow implements Event {
+public abstract class Window implements Event {
 
     private WindowType window;
 
