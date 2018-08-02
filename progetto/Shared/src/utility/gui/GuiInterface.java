@@ -53,7 +53,7 @@ public class GuiInterface implements Callable<Integer> {
     }
 
     /**
-     * Avvia l'interfaccia grafica
+     * Avvia l'interfaccia grafica (usare @Override sul metodo run() )
      * @return 0 quando l'utente vuole spegnere l'host,1 in caso di errore dell'interfaccia grafica
      */
     public Integer call(){
