@@ -19,7 +19,10 @@ package server;
 import utility.ResponseCode;
 import utility.ServerInfo;
 import utility.ServerInfoRecover;
+
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -80,7 +83,17 @@ public class SClient implements Callable<Integer> {
         }
 
 
+        System.out.println("Enter something here : ");
+        try{
+            BufferedReader bufferRead = new BufferedReader(new InputStreamReader(System.in));
+            String s = bufferRead.readLine();
 
+        }
+        catch(IOException e)
+        {
+            e.printStackTrace();
+        }
+        System.out.println("Closing Sclient with exitcode:0");
         return 0;
     }
 
