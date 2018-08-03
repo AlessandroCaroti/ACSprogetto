@@ -1,5 +1,13 @@
 package client;
 
+
+/**
+QUESTO FILE è INUTILE SERVE SOLO PER CAPIRE QUALI SONO LE SCHERMATE DELLA GUI , COSA RICEVONO E COSA MANDANO
+ **/
+
+
+
+
 public interface AnonymousClientInterface {//implementare da strafo
 
     //login
