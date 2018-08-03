@@ -176,6 +176,18 @@ public class Client extends AnonymousClient {
         return false;
     }
 
+    /**
+     * Permette all'utente di creare una nuova password per l'account
+     * @param email l'email associata all'account
+     * @param newPassword
+     * @param repeatPassword
+     * @return
+     */
+    public boolean retrievePassword(String email,String newPassword,String repeatPassword){
+        //todo tobe implemented
+        return false;
+    }
+
     public String getPlainPassword() {
         return plainPassword;
     }
