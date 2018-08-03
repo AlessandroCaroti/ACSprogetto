@@ -1,5 +1,5 @@
 package Events;
-import static guiClient.WindowType.NEWACCOUNT;
+import static client.WindowType.NEWACCOUNT;
 
 public class NewAccountWindow extends  Window {
 

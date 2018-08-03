@@ -1,7 +1,7 @@
 package Events;
 
 
-import static guiClient.WindowType.FORUM;
+import static client.WindowType.FORUM;
 
 public class ForumWindow extends Window {
 

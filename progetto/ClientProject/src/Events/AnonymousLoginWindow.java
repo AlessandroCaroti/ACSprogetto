@@ -1,6 +1,6 @@
 package Events;
 
-import static guiClient.WindowType.ANONYMOUSLOGIN;
+import static client.WindowType.ANONYMOUSLOGIN;
 
 public class AnonymousLoginWindow extends Window {
 

@@ -1,6 +1,6 @@
 package Events;
 
-import static guiClient.WindowType.FORGOTPASSWORD;
+import static client.WindowType.FORGOTPASSWORD;
 
 public class ForgotPasswordWindow extends Window {
 
