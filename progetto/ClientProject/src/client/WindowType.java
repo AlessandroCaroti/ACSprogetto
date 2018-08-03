@@ -1,4 +1,4 @@
-package guiClient;
+package client;
 
 public enum WindowType {
 

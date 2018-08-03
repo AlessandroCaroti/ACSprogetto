@@ -1,5 +1,5 @@
 package Events;
-import static guiClient.WindowType.LOGIN;
+import static client.WindowType.LOGIN;
 
 public class AccountLoginWindow extends AnonymousLoginWindow {
     private String username;

@@ -1,6 +1,6 @@
 package Events;
 
-import guiClient.WindowType;
+import client.WindowType;
 
 import static java.util.Objects.requireNonNull;
 
