@@ -214,14 +214,14 @@ public class AccountListMonitor implements AccountCollectionInterface {
 
 
     public Account isMember(String email,String username) throws IllegalArgumentException {
-        if(email==null||username==null){throw new IllegalArgumentException("email==null || username==null");}
+        if(email==null&&username==null){throw new IllegalArgumentException("email==null AND username==null");}
         String[] coppia;
 
         listLock.readLock().lock();
         try {
             for (int i = 0; i < this.MAXACCOUNTNUMBER; i++) {
                 coppia = this.getEmailAndUsername(i);
-                if (email.equalsIgnoreCase(coppia[0]) || username.equalsIgnoreCase(coppia[1])) {
+                if (email.equalsIgnoreCase(coppia[0]) || username.equals(coppia[1])) {
                     return this.getAccountCopy(i);
                 }
             }
