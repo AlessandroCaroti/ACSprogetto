@@ -153,7 +153,6 @@ public class Server implements ServerInterface,Callable<Integer> {
      */
     public Integer call(){
 
-        System.out.println("Enter something here : ");
 
         try{
             BufferedReader bufferRead = new BufferedReader(new InputStreamReader(System.in));
@@ -511,7 +510,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
 
      @Override
-     public ResponseCode subscribeNewTopicNotification(String cookie) throws  RemoteException{
+     public ResponseCode subscribeNewTopicNotification(String cookie){
 
         try {
             Integer accountId = getAccountId(cookie);
@@ -525,6 +524,43 @@ public class Server implements ServerInterface,Callable<Integer> {
             errorStamp(e);
         }
         return ResponseCodeList.InternalError;
+     }
+
+     public ResponseCode recoverPassword(String email,String newPassword,String repeatPassword,ClientInterface stubCurrentHost){//il current host potrebbe essere diverso da quello salvtao nella classe account
+        Account copy;
+         if (newPassword == null || repeatPassword == null) {
+            return new ResponseCode(ResponseCode.Codici.R510,ResponseCode.TipoClasse.SERVER,"newpassword or password ==null");
+         }
+         if(newPassword.isEmpty()){
+             return new ResponseCode(ResponseCode.Codici.R510,ResponseCode.TipoClasse.SERVER,"newpassword is empty");
+         }
+         if (!newPassword.equals(repeatPassword)) {
+             return new ResponseCode(ResponseCode.Codici.R510,ResponseCode.TipoClasse.SERVER,"newpassword != password");
+         }
+
+             try {
+                 if ((copy = accountList.isMember(email, null)) == null) {//l'account non esiste
+                     pedanticInfo("Password recover refused ,\'" + email + "\' doesn't exist.(possible attempt to enumerate accounts!)");
+                     this.antiAccountEnum(stubCurrentHost);
+                     return  ResponseCodeList.WrongCodeValidation;
+                 }
+                 else {//l'account esiste
+                     if (this.emailValidation(email, stubCurrentHost)) {
+                         pedanticInfo("Password recovered! UserName: \'" + copy.getUsername() + "\' - NewPassword: \'" + newPassword + "\'");
+                         accountList.setPassword(newPassword,copy.getAccountId());//todo probabile bug sulla concorrenza se qualcuno fa una deleteaccount( ma noi non la diamo disponibile quindi scialla)
+                         return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER,"password successfully changed.");
+                     } else {
+                         pedanticInfo("Client password recovering refused; wrong code.");
+                         return ResponseCodeList.WrongCodeValidation;
+                     }
+
+                 }
+
+             } catch (Exception e) {
+                errorStamp(e);
+             }
+
+         return ResponseCodeList.InternalError;
      }
 
 
