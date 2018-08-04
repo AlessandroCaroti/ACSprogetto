@@ -526,6 +526,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         return ResponseCodeList.InternalError;
      }
 
+     @Override
      public ResponseCode recoverPassword(String email,String newPassword,String repeatPassword,ClientInterface stubCurrentHost){//il current host potrebbe essere diverso da quello salvtao nella classe account
         Account copy;
          if (newPassword == null || repeatPassword == null) {

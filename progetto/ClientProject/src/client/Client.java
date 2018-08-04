@@ -183,8 +183,24 @@ public class Client extends AnonymousClient {
      * @param repeatPassword
      * @return
      */
-    public boolean retrievePassword(String email,String newPassword,String repeatPassword){
-        //todo tobe implemented
+    public boolean recoverPassword(String email,String newPassword,String repeatPassword){
+        try {
+            ResponseCode resp = server_stub.recoverPassword(email, newPassword, repeatPassword, this.skeleton);
+            if(resp.IsOK()){
+                infoStamp("password successfully changed.");
+                return true;
+            }else{
+                if(resp.getCodice()==ResponseCode.Codici.R510){
+                    infoStamp("invalid arguments.");
+                }else{
+                    infoStamp("Unknown error.");
+                }
+                return false;
+            }
+        }catch(Exception exc){
+            errorStamp("Not connected.");
+        }
+
         return false;
     }
 
