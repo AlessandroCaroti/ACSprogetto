@@ -100,7 +100,24 @@ public class ClientEngine implements Callable<Integer> {
                         }
                             break;
                     case FORGOTPASSWORD:
-
+                        try {
+                            client = new AnonymousClient();
+                            ServerInfoRecover infoServer = new ServerInfoRecover();
+                            String[] a = infoServer.getServerInfo(
+                                    InetAddress.getByName(((AnonymousLoginWindow)current).getServerAddress())
+                            );
+                            client.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
+                            if(client.recoverPassword(((ForgotPasswordWindow)current).getEmail(),((ForgotPasswordWindow)current).getNewPassword(),((ForgotPasswordWindow)current).getRepeatPassword()))
+                            {
+                                clientEngineToGUI.add(new AccountLoginWindow());//todo settare la roba da passare
+                                System.out.println("RECUPERATA");
+                            } else {
+                                System.out.println("NON RECUPERATA");
+                                /*todo come gestisco l'errore nella schermata?*/
+                            }
+                        }catch(Exception exc){
+                            //todo
+                        }
                         break;
                 }
             }
