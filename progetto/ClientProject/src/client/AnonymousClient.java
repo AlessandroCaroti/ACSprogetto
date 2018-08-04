@@ -331,6 +331,35 @@ public class AnonymousClient implements ClientInterface {
                 "(-) Internal client error");
     }
 
+    /**
+     * Permette all'utente di creare una nuova password per l'account associato ad email
+     * @param email l'email associata all'account
+     * @param newPassword
+     * @param repeatPassword
+     * @return
+     */
+
+    public boolean recoverPassword(String email,String newPassword,String repeatPassword){
+        try {
+            ResponseCode resp = server_stub.recoverPassword(email, newPassword, repeatPassword, this.skeleton);
+            if(resp.IsOK()){
+                infoStamp("password successfully changed.");
+                return true;
+            }else{
+                if(resp.getCodice()==ResponseCode.Codici.R510){
+                    infoStamp("invalid arguments.");
+                }else{
+                    infoStamp("Unknown error.");
+                }
+                return false;
+            }
+        }catch(Exception exc){
+            errorStamp("Not connected.");
+        }
+
+        return false;
+    }
+
     @Override
     public PublicKey publicKeyExchange(byte[] serverPubKey_encrypted){
         throw new UnsupportedOperationException();
