@@ -153,7 +153,7 @@ public interface AccountCollectionInterface {
 
      byte[] setPassword(String plainPassword,int accountId)throws NoSuchAlgorithmException;
 
-     String setUsername(String username,int acountId);
+     String setUsername(String username,int accountId);
 
      ClientInterface setStub(ClientInterface clientStub,int accountId);
 
