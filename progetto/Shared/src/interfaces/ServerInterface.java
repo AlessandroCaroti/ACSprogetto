@@ -49,6 +49,8 @@ public interface ServerInterface extends Remote,Serializable
 
     ResponseCode subscribeNewTopicNotification(String cookie) throws  RemoteException;
 
+    ResponseCode recoverPassword(String email,String newPassword,String repeatPassword,ClientInterface stubCurrentHost)throws  RemoteException;
+
     void ping() throws RemoteException;
 
     String[] getTopicList() throws RemoteException;
