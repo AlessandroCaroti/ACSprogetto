@@ -1,5 +1,6 @@
 package server_gui;
 
+import java.awt.event.*;
 import java.util.Objects;
 import keeptoo.KGradientPanel;
 import utility.AddressIp;
@@ -11,22 +12,18 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Component;
 import java.awt.Cursor;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Point;
-import java.awt.event.MouseMotionAdapter;
 import java.awt.CardLayout;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import java.util.Objects;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.border.LineBorder;
 import javax.swing.border.MatteBorder;
 
-public class ServerGuiRisizable extends JFrame {
+public class ServerGuiResizable extends JFrame implements ActionListener {
 
 	private static final Color BLACKBLUE = new Color(23, 35, 51);
 
@@ -79,13 +76,16 @@ public class ServerGuiRisizable extends JFrame {
 	private JLabel lblS;
 	private JLabel lblProgettoPcad;
 
+    private ServerStatistic serverStat;
+    private Timer timer = new Timer(1000, this);
+
 	/**
 	 * Launch the application.
 	 */
-	public static void main(String[] args) {
+	/*public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
 			try {
-				ServerGuiRisizable frame = new ServerGuiRisizable();
+				ServerGuiResizable frame = new ServerGuiResizable();
 				frame.setMinimumSize(new Dimension(780, 420));
 				frame.setUndecorated(true);
 				frame.update();
@@ -94,7 +94,7 @@ public class ServerGuiRisizable extends JFrame {
 				e.printStackTrace();
 			}
 		});
-	}
+	}*/
 
 	public void update() {
 		setIpAddress();
@@ -111,7 +111,9 @@ public class ServerGuiRisizable extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public ServerGuiRisizable() {
+	public ServerGuiResizable(ServerStatistic serverStat) {
+	    this.serverStat = Objects.requireNonNull(serverStat);
+
 		ClassLoader classLoader = ClassLoader.getSystemClassLoader();
 		clsL = new ImageIcon(Objects.requireNonNull(classLoader.getResource("CloseLight_28px.png")));
 		clsB = new ImageIcon(Objects.requireNonNull(classLoader.getResource("CloseDark_28px.png")));
@@ -131,7 +133,6 @@ public class ServerGuiRisizable extends JFrame {
 		reduceWhite = new ImageIcon(Objects.requireNonNull(classLoader.getResource("Double_Left_White_32px.png")));
 		reduceGray = new ImageIcon(Objects.requireNonNull(classLoader.getResource("Double_Left_Gray_32px.png")));
 
-		// growGray = new
 		// ImageIcon(Objects.requireNonNull(classLoader.getResource("Double_Right_Gray_32px.png")));
 		growGray = new ImageIcon(Objects.requireNonNull(classLoader.getResource("icons8_Menu_30px.png")));
 		growWhite = new ImageIcon(Objects.requireNonNull(classLoader.getResource("Double_Right_White_32px.png")));
@@ -149,10 +150,10 @@ public class ServerGuiRisizable extends JFrame {
 			@Override
 			public void mouseDragged(MouseEvent arg0) {
 				SwingUtilities.invokeLater(() -> {
-					Point p = ServerGuiRisizable.this.getLocationOnScreen();
+					Point p = ServerGuiResizable.this.getLocationOnScreen();
 					p.x = p.x + arg0.getX() - xx;
 					p.y = p.y + arg0.getY() - xy;
-					ServerGuiRisizable.this.setLocation(p);
+					ServerGuiResizable.this.setLocation(p);
 				});
 			}
 		});
@@ -169,12 +170,12 @@ public class ServerGuiRisizable extends JFrame {
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				SwingUtilities.invokeLater(() -> {
-					Point p = ServerGuiRisizable.this.getLocationOnScreen();
+					Point p = ServerGuiResizable.this.getLocationOnScreen();
 					if (Math.abs(p.x) < 12)
 						p.x = 0;
 					if (Math.abs(p.y) < 12)
 						p.y = 0;
-					ServerGuiRisizable.this.setLocation(p);
+					ServerGuiResizable.this.setLocation(p);
 				});
 			}
 		});
@@ -266,7 +267,7 @@ public class ServerGuiRisizable extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
 				SwingUtilities.invokeLater(() -> {
-					ServerGuiRisizable.this.setState(Frame.ICONIFIED);
+					ServerGuiResizable.this.setState(Frame.ICONIFIED);
 				});
 			}
 
@@ -556,8 +557,8 @@ public class ServerGuiRisizable extends JFrame {
 			public void mouseDragged(MouseEvent arg0) {
 				SwingUtilities.invokeLater(() -> {
 					int x = arg0.getX() - Px;
-					Dimension d = ServerGuiRisizable.this.getSize();
-					ServerGuiRisizable.this.setSize(d.width + x, d.height);
+					Dimension d = ServerGuiResizable.this.getSize();
+					ServerGuiResizable.this.setSize(d.width + x, d.height);
 				});
 			}
 		});
@@ -906,8 +907,8 @@ public class ServerGuiRisizable extends JFrame {
 			public void mouseDragged(MouseEvent arg0) {
 				SwingUtilities.invokeLater(() -> {
 					int y = arg0.getY() - Py;
-					Dimension d = ServerGuiRisizable.this.getSize();
-					ServerGuiRisizable.this.setSize(d.width, d.height + y);
+					Dimension d = ServerGuiResizable.this.getSize();
+					ServerGuiResizable.this.setSize(d.width, d.height + y);
 				});
 			}
 		});
@@ -930,8 +931,8 @@ public class ServerGuiRisizable extends JFrame {
 				SwingUtilities.invokeLater(() -> {
 					int x = arg0.getX() - Px;
 					int y = arg0.getY() - Py;
-					Dimension d = ServerGuiRisizable.this.getSize();
-					ServerGuiRisizable.this.setSize(d.width + x, d.height + y);
+					Dimension d = ServerGuiResizable.this.getSize();
+					ServerGuiResizable.this.setSize(d.width + x, d.height + y);
 				});
 			}
 		});
@@ -972,8 +973,8 @@ public class ServerGuiRisizable extends JFrame {
 			public void mouseDragged(MouseEvent arg0) {
 				SwingUtilities.invokeLater(() -> {
 					int x = arg0.getX() - Px;
-					Dimension d = ServerGuiRisizable.this.getSize();
-					ServerGuiRisizable.this.setSize(d.width + x, d.height);
+					Dimension d = ServerGuiResizable.this.getSize();
+					ServerGuiResizable.this.setSize(d.width + x, d.height);
 				});
 			}
 		});
@@ -1040,6 +1041,9 @@ public class ServerGuiRisizable extends JFrame {
 		panel_3.setLayout(gl_panel_3);
 
 		cl = (CardLayout) (main_panel.getLayout());
+
+		timer.start();
+
 	}
 
 	// UTILITY FUNCTIONS
@@ -1058,7 +1062,7 @@ public class ServerGuiRisizable extends JFrame {
 		AddressIp.updateIp();
 		label_10.setText(AddressIp.getLocalIp());
 		label_11.setText(AddressIp.getPublicIp());
-		if (AddressIp.getLocalIp() != "Unkown") {
+		if (!AddressIp.getLocalIp().equals("Unkown")) {
 			lblC.setIcon(connected);
 			lblC.setToolTipText("Internet access");
 		} else {
@@ -1066,4 +1070,13 @@ public class ServerGuiRisizable extends JFrame {
 			lblC.setToolTipText("No connection are available");
 		}
 	}
+
+	private void updateServerStat(){
+
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        updateServerStat();
+    }
 }

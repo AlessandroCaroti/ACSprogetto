@@ -25,6 +25,8 @@ import email.EmailController;
 import email.EmailHandlerTLS;
 import interfaces.ServerInterface;
 import interfaces.ClientInterface;
+import server_gui.ServerGuiResizable;
+import server_gui.ServerStatistic;
 import utility.*;
 
 import javax.crypto.BadPaddingException;
@@ -32,7 +34,10 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 import javax.mail.MessagingException;
+import javax.swing.*;
+import java.awt.*;
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
@@ -40,10 +45,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.*;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -73,7 +75,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     final private PrivateKey RSA_privateKey;
     final private PrivateKey ECDH_privateKey;
     final private String     RSA_pubKey;
-    final private byte[]     ECDH_pubbKey_encrypted;
+    final private byte[]     ECDH_pubKey_encrypted;
     final private byte[]     messageTest = "Stringa per assicurarsi che la chiave condivisa sia uguale".getBytes(StandardCharsets.UTF_8); //todo forse sarebbe meglio passargli qualcosa di più corto
 
     /* rmi fields */
@@ -86,7 +88,9 @@ public class Server implements ServerInterface,Callable<Integer> {
     /*email handler*/
     private EmailController emailController;
 
-
+    /* GUI fields */
+    private boolean graphicInterfaceReady;
+    final private ServerStatistic serverStat;
 
     /*****************************************************************************************************************************/
     /**Costruttore
@@ -96,7 +100,7 @@ public class Server implements ServerInterface,Callable<Integer> {
      */
 
 
-    public Server() throws Exception {
+    public Server(boolean useGui) throws Exception {
 
         //TODO             creare un nome per il server utilizzato per il registro
         String tmp_name;
@@ -109,7 +113,6 @@ public class Server implements ServerInterface,Callable<Integer> {
 
 
         topicList = new ConcurrentLinkedQueue<>();
-        topicList    = new ConcurrentLinkedQueue<>();
         topicClientList=new ConcurrentSkipListMap<>();
 
         //Caricamento delle impostazioni del server memorizate su file
@@ -126,10 +129,8 @@ public class Server implements ServerInterface,Callable<Integer> {
         setupPKI();
         RSA_privateKey  = RSA_kayPair.getPrivate();
         ECDH_privateKey = ECDH_kayPair.getPrivate();
-
-        RSA_pubKey      = new String(Base64.encode(RSA_kayPair.getPublic().getEncoded()).getBytes());
-        ECDH_pubbKey_encrypted = RSA.encrypt(RSA_privateKey, ECDH_kayPair.getPublic().getEncoded());
-
+        RSA_pubKey = new String(Base64.encode(RSA_kayPair.getPublic().getEncoded()).getBytes());
+        ECDH_pubKey_encrypted = RSA.encrypt(RSA_privateKey, ECDH_kayPair.getPublic().getEncoded());
         infoStamp("Public key infrastructure created.");
 
         setupAes();
@@ -142,7 +143,14 @@ public class Server implements ServerInterface,Callable<Integer> {
         infoStamp("Email Handler created and started.");
 
         randomStringSession=new RandomString();
-        infoStamp("Random String session created");
+        infoStamp("Random String session created.");
+
+        //Inizializazione dell'interfaccia grafica se richiesta
+        serverStat = new ServerStatistic(this.serverName, topicList);
+        graphicInterfaceReady = useGui;
+        initGui(serverStat);
+        if(useGui && graphicInterfaceReady)
+            infoStamp("Graphic interface created.");
     }
 
     /**
@@ -226,6 +234,8 @@ public class Server implements ServerInterface,Callable<Integer> {
         this.registry = r;
         this.skeleton = stub;
 
+        serverStat.setServerReady();
+
         infoStamp("*** SERVER READY! ***");
 
     }
@@ -274,7 +284,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         //CREAZIONE DI UNA CHIAVE CONDIVSA SOLO TRA IL SERVER E IL CLIENT CHE HA INVOCATO QUESTO METODO REMOTO
         try {
             //compute the key
-            PublicKey clientPubKey = stub.publicKeyExchange(ECDH_pubbKey_encrypted);
+            PublicKey clientPubKey = stub.publicKeyExchange(ECDH_pubKey_encrypted);
             byte[] shearedSecretKey = ECDH.sharedSecretKey(ECDH_privateKey, clientPubKey);
             secretAesKey = new SecretKeySpec(shearedSecretKey, "AES");
             
@@ -301,6 +311,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
                 if(this.emailValidation(email,stub)){
                     pedanticInfo("Registered new client, UserName: \'"+userName+"\' - Password: \'"+email+"\'");
+                    serverStat.incrementClientNum();
                     return new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER, getCookie(accountId));
                 }else{
                     pedanticInfo("Client registration refused ,\'"+email+"\' has not been validated.");
@@ -341,8 +352,8 @@ public class Server implements ServerInterface,Callable<Integer> {
                 account = new Account(username, plainPassword, stub, null, 0, email);   //todo la chiave pubblica per l'account anonimo non serve
                 if ((accountId = accountList.putIfAbsentUsername(account)) >= 0) {
                     pedanticInfo("Registered new client \'"+username+"\'  \'"+email+"\'");
+                    serverStat.incrementClientNum();
                     return new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER, getCookie(accountId));
-
                 } else {// username already present
                     if (accountId == -2) {
                         pedanticInfo("Client registration refused, username \'" + username + "\' already used. Trying to generate another one.");
@@ -364,6 +375,7 @@ public class Server implements ServerInterface,Callable<Integer> {
             this.accountList.setStub(null, accountId);
             //todo creare una funzione invalidateTemporantInfo() che imposta a null lo stub e la chiaveSegretaCondivisa
             pedanticInfo("user:"+accountId + "  disconnected.");
+            serverStat.decrementClientNum();
             return new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER,"disconnessione avvenuta con successo");
         }catch (BadPaddingException | IllegalBlockSizeException exc){
             return new ResponseCode(ResponseCode.Codici.R620, ResponseCode.TipoClasse.SERVER,"errore disconnessione");
@@ -378,6 +390,7 @@ public class Server implements ServerInterface,Callable<Integer> {
                 if (account.cmpPassword(plainPassword)) {
                     accountList.setStub(clientStub, account.getAccountId());
                     pedanticInfo(username + " connected.");
+                    serverStat.incrementClientNum();
                     return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER, "login andato a buon fine");
                 } else {
                     pedanticInfo(username + " invalid retrieve account.");
@@ -399,6 +412,7 @@ public class Server implements ServerInterface,Callable<Integer> {
                 if(account.cmpPassword(plainPassword)){
                     accountList.setStub(clientStub, account.getAccountId());
                     pedanticInfo(account.getUsername() + " connected.(cookie):"+cookie);
+                    serverStat.incrementClientNum();
                     return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER, "login andato a buon fine");
                 }
             }else{
@@ -440,7 +454,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         try {
             Integer accountId = getAccountId(cookie);
             topicClientList.get(topicName).remove(accountId);
-            pedanticInfo("user:"+accountId + " unsubscribe from "+topicName+".");
+            pedanticInfo("User:"+accountId + " unsubscribe from "+topicName+".");
             return new ResponseCode(ResponseCode.Codici.R200,ResponseCode.TipoClasse.SERVER,"disiscrizione avvenuta con successo");
         }catch (BadPaddingException| IllegalBlockSizeException e){
             warningStamp(e,"subscribe() - error cookies not recognize");
@@ -456,13 +470,15 @@ public class Server implements ServerInterface,Callable<Integer> {
         try {
             Integer accountId = getAccountId(cookie);
             String topicName  = msg.getTopic();
-            ConcurrentLinkedQueue<Integer> subscribers = topicClientList.putIfAbsent(topicName, new ConcurrentLinkedQueue<Integer>());
+            ConcurrentLinkedQueue<Integer> subscribers = topicClientList.putIfAbsent(topicName, new ConcurrentLinkedQueue<>());
             if(subscribers == null){  //creazione di un nuovo topic
-                pedanticInfo("user:"+accountId + " has created new topic:"+topicName+".");
+                pedanticInfo("User \'"+accountId + "\' has created a new topic named \'"+topicName+"\'.");
                 topicList.add(topicName);
                 (subscribers = topicClientList.get(topicName)).add(accountId);
+                serverStat.incrementTopicNum();
             }
             notifyAll(subscribers.iterator(), msg);      //todo magari si potrebbe eseguire su un altro thread in modo da non bloccare questa funzione
+            serverStat.incrementPostNum();
             return new ResponseCode(ResponseCode.Codici.R200,ResponseCode.TipoClasse.SERVER,"topic pubblicato");
         }catch (BadPaddingException| IllegalBlockSizeException e){
             warningStamp(e,"subscribe() - error cookie not recognized");
@@ -555,7 +571,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         try {
             aesCipher = new AES("RandomInitVectol");        //TODO usiamo un intvector un pò migliore
         }catch (Exception exc){
-            errorStamp(exc, "Unable to create aes encryption class");
+            errorStamp(exc, "Unable to create aes encryption class.");
             throw exc;
         }
     }
@@ -565,7 +581,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         try {
             accManager = new AccountListMonitor(Integer.parseInt(serverSettings.getProperty("maxaccountnumber")));
         }catch (IllegalArgumentException e){
-            warningStamp(e, "Creating AccountManager using default size");
+            warningStamp(e, "Creating AccountManager using default size.");
             accManager = new AccountListMonitor();        //Utilizzo del costruttore di default
         }
         return accManager;
@@ -576,9 +592,34 @@ public class Server implements ServerInterface,Callable<Integer> {
             sm.checkListen(0);
             //sm.checkPackageAccess("sun.rmi.*");
         }catch (Exception e){
-            errorStamp(e, "Policies not imported properly");
+            errorStamp(e, "Policies not imported properly!");
             System.exit(1);
         }
+    }
+
+    private void initGui(ServerStatistic serverStat) {
+        if(graphicInterfaceReady && serverStat!=null){
+            try {
+                SwingUtilities.invokeAndWait(() -> {
+                    try {
+                        ServerGuiResizable frame = new ServerGuiResizable(serverStat);
+                        frame.setMinimumSize(new Dimension(780, 420));
+                        frame.setUndecorated(true);
+                        frame.update();
+                        frame.setVisible(true);
+                        graphicInterfaceReady = true;
+                    } catch (Exception e) {
+                        errorStamp(e, "Impossible to create the graphic user interface!");
+                        graphicInterfaceReady = false;
+                    }
+                });
+            } catch (InterruptedException | InvocationTargetException e) {
+                errorStamp(e, "Impossible to create the graphic user interface!");
+                graphicInterfaceReady = false;
+            }
+        }
+        else
+            graphicInterfaceReady = false;
     }
 
 
@@ -672,11 +713,12 @@ public class Server implements ServerInterface,Callable<Integer> {
         javax.mail.Message message=emailController.createEmailMessage(email,"REGISTRATION ATTEMPT",
                 "Someone tried to register a new account by associating it with this email.\n" +
                         "If you have not made the request, ignore and delete the message.\n" +
-                        "We remind you that the following email is associated with the username \'"+username+"\'\n"+
+                        "We remind you that the following email is associated with the username \'"+username+"\'\n\n"+
                         "The ACSgroup account team."
                 );
         emailController.sendMessage(message);
     }
+
 
 
 
