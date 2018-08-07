@@ -240,7 +240,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
         serverStat.setServerReady();
 
-        infoStamp("*** SERVER READY! ***");
+        infoStamp("***** SERVER READY! *****");
 
     }
 
