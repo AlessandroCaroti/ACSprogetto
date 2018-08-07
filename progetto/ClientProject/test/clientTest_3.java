@@ -31,6 +31,7 @@ public class clientTest_3 {
             else {
                 System.out.println("NON DISCONNESSO");
             }
+            System.exit(0);
 
         }catch (Exception e){
 

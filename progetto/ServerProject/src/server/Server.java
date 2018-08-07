@@ -98,13 +98,12 @@ public class Server implements ServerInterface,Callable<Integer> {
      * Se il file non viene trovato vengono usati i costruttori di default
      * se il file di config non viene trovato
      */
-
-
-    public Server() throws Exception{
-        this(false);
+    @Deprecated
+    public Server() throws Exception {
+        this(new ServerStatistic());
     }
 
-    public Server(boolean useGui) throws Exception {
+    public Server(ServerStatistic serverStat) throws Exception {
 
         //TODO             creare un nome per il server utilizzato per il registro
         String tmp_name;
@@ -149,12 +148,10 @@ public class Server implements ServerInterface,Callable<Integer> {
         randomStringSession=new RandomString();
         infoStamp("Random String session created.");
 
-        //Inizializazione dell'interfaccia grafica se richiesta
-        serverStat = new ServerStatistic(this.serverName, topicList);
-        graphicInterfaceReady = useGui;
-        initGui(serverStat);
-        if(useGui && graphicInterfaceReady)
-            infoStamp("Graphic interface created.");
+
+        this.serverStat = Objects.requireNonNull(serverStat);
+        this.serverStat.setServerInfo(this.serverName, topicList);
+
     }
 
     /**
@@ -601,30 +598,6 @@ public class Server implements ServerInterface,Callable<Integer> {
         }
     }
 
-    private void initGui(ServerStatistic serverStat) {
-        if(graphicInterfaceReady && serverStat!=null){
-            try {
-                SwingUtilities.invokeAndWait(() -> {
-                    try {
-                        ServerGuiResizable frame = new ServerGuiResizable(serverStat);
-                        frame.setMinimumSize(new Dimension(780, 420));
-                        frame.setUndecorated(true);
-                        frame.update();
-                        frame.setVisible(true);
-                        graphicInterfaceReady = true;
-                    } catch (Exception e) {
-                        errorStamp(e, "Impossible to create the graphic user interface!");
-                        graphicInterfaceReady = false;
-                    }
-                });
-            } catch (InterruptedException | InvocationTargetException e) {
-                errorStamp(e, "Impossible to create the graphic user interface!");
-                graphicInterfaceReady = false;
-            }
-        }
-        else
-            graphicInterfaceReady = false;
-    }
 
 
 

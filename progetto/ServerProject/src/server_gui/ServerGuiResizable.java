@@ -92,7 +92,7 @@ public class ServerGuiResizable extends JFrame implements ActionListener {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             try {
-                ServerStatistic serverStat = new ServerStatistic("", new ConcurrentLinkedQueue<String>());
+                ServerStatistic serverStat = new ServerStatistic();
                 ServerGuiResizable frame = new ServerGuiResizable(serverStat);
                 frame.setMinimumSize(new Dimension(780, 420));
                 frame.setUndecorated(true);

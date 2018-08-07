@@ -6,18 +6,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ServerStatistic {
 
-    final private String  serverName;
-    //final private String  topicList;
-    final private ConcurrentLinkedQueue<String> topicList;
+    private String  serverName;
+    private ConcurrentLinkedQueue<String> topicList;
     private AtomicInteger topicNumber;
     private AtomicInteger postNumber;
     private AtomicInteger clientNumber;
     private boolean active;
 
 
-    public ServerStatistic(String serverName, ConcurrentLinkedQueue<String> topicList){
-        this.serverName = Objects.requireNonNull(serverName);
-        this.topicList  = Objects.requireNonNull(topicList);
+
+    private ServerGuiResizable gui = null;
+
+
+    public ServerStatistic(){
         topicNumber  = new AtomicInteger();
         postNumber   = new AtomicInteger();
         clientNumber = new AtomicInteger();
@@ -25,7 +26,13 @@ public class ServerStatistic {
     }
 
 
+
     //SETTER
+    public void setServerInfo(String serverName, ConcurrentLinkedQueue<String> topicList){
+        this.serverName = Objects.requireNonNull(serverName);
+        this.topicList  = Objects.requireNonNull(topicList);
+    }
+
     public void incrementTopicNum(){
         topicNumber.incrementAndGet();
     }
@@ -48,6 +55,10 @@ public class ServerStatistic {
 
     public void setServerReady() {
         active = true;
+    }
+
+    public void setGui(ServerGuiResizable gui) {
+        this.gui = gui;
     }
 
 
@@ -74,6 +85,10 @@ public class ServerStatistic {
 
     public boolean getServerReady() {
         return active;
+    }
+
+    public ServerGuiResizable getGui() {
+        return gui;
     }
 
     public String getGeneralServerStat() {
