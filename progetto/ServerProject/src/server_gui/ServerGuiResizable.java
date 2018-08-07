@@ -2,6 +2,8 @@ package server_gui;
 
 import java.awt.event.*;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import keeptoo.KGradientPanel;
 import utility.AddressIp;
 import utility.gui.MyScrollBar;
@@ -76,16 +78,22 @@ public class ServerGuiResizable extends JFrame implements ActionListener {
 	private JLabel lblS;
 	private JLabel lblProgettoPcad;
 
-    private ServerStatistic serverStat;
-    private Timer timer = new Timer(1000, this);
+	private ServerStatistic serverStat;
+	private Timer timer = new Timer(1000, this);
+	private JLabel lblTopicNumber;
+	private JLabel lblPostNumber;
+	private JLabel lblServerName;
+	private JLabel label_22;
+	private JLabel lblClientOnline;
 
 	/**
 	 * Launch the application.
 	 */
-	/*public static void main(String[] args) {
+	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
 			try {
-				ServerGuiResizable frame = new ServerGuiResizable();
+				ServerStatistic serverStat = new ServerStatistic("", new ConcurrentLinkedQueue<String>());
+				ServerGuiResizable frame = new ServerGuiResizable(serverStat);
 				frame.setMinimumSize(new Dimension(780, 420));
 				frame.setUndecorated(true);
 				frame.update();
@@ -94,7 +102,7 @@ public class ServerGuiResizable extends JFrame implements ActionListener {
 				e.printStackTrace();
 			}
 		});
-	}*/
+	}
 
 	public void update() {
 		setIpAddress();
@@ -112,7 +120,7 @@ public class ServerGuiResizable extends JFrame implements ActionListener {
 	 * Create the frame.
 	 */
 	public ServerGuiResizable(ServerStatistic serverStat) {
-	    this.serverStat = Objects.requireNonNull(serverStat);
+		this.serverStat = Objects.requireNonNull(serverStat);
 
 		ClassLoader classLoader = ClassLoader.getSystemClassLoader();
 		clsL = new ImageIcon(Objects.requireNonNull(classLoader.getResource("CloseLight_28px.png")));
@@ -305,7 +313,7 @@ public class ServerGuiResizable extends JFrame implements ActionListener {
 		lblI.setHorizontalAlignment(SwingConstants.CENTER);
 		lblI.setBounds(0, 0, 56, 40);
 		panel_12.add(lblI);
-		
+
 		lblProgettoPcad = new JLabel("PCAD Project - Server");
 		lblProgettoPcad.setFont(new Font("Tahoma", Font.PLAIN, 15));
 		lblProgettoPcad.setForeground(Color.WHITE);
@@ -627,11 +635,11 @@ public class ServerGuiResizable extends JFrame implements ActionListener {
 		label_4.setBounds(64, 76, 123, 29);
 		panel_7.add(label_4);
 
-		JLabel label_5 = new JLabel("Tempo di attivit\u00E0:");
-		label_5.setVerticalAlignment(SwingConstants.TOP);
-		label_5.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		label_5.setBounds(64, 110, 257, 29);
-		panel_7.add(label_5);
+		JLabel lblTime = new JLabel("Tempo di attivit\u00E0:");
+		lblTime.setVerticalAlignment(SwingConstants.TOP);
+		lblTime.setFont(new Font("Tahoma", Font.PLAIN, 18));
+		lblTime.setBounds(64, 110, 147, 29);
+		panel_7.add(lblTime);
 
 		JLabel label_6 = new JLabel("");
 		label_6.setIcon(dotWhite);
@@ -732,82 +740,110 @@ public class ServerGuiResizable extends JFrame implements ActionListener {
 		label_20.setBounds(0, 24, 26, 26);
 		panel_13.add(label_20);
 
-		JLabel label_22 = new JLabel("0");
-		label_22.setVerticalAlignment(SwingConstants.TOP);
-		label_22.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		label_22.setBounds(216, 76, 146, 29);
-		panel_13.add(label_22);
+		lblTopicNumber = new JLabel("0");
+		lblTopicNumber.setVerticalAlignment(SwingConstants.TOP);
+		lblTopicNumber.setFont(new Font("Tahoma", Font.PLAIN, 18));
+		lblTopicNumber.setBounds(216, 76, 146, 29);
+		panel_13.add(lblTopicNumber);
 
-		JLabel label_23 = new JLabel("0");
-		label_23.setVerticalAlignment(SwingConstants.TOP);
-		label_23.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		label_23.setBounds(216, 109, 149, 29);
-		panel_13.add(label_23);
+		lblPostNumber = new JLabel("0");
+		lblPostNumber.setVerticalAlignment(SwingConstants.TOP);
+		lblPostNumber.setFont(new Font("Tahoma", Font.PLAIN, 18));
+		lblPostNumber.setBounds(216, 109, 149, 29);
+		panel_13.add(lblPostNumber);
 
 		JLabel label_27 = new JLabel("Topics:");
 		label_27.setFont(new Font("Tahoma", Font.PLAIN, 37));
 		label_27.setBounds(30, 0, 123, 70);
 		panel_13.add(label_27);
-		
+
 		JPanel panel_23 = new JPanel();
 		panel_23.setBackground(Color.WHITE);
 		GroupLayout gl_panel_6 = new GroupLayout(panel_6);
 		gl_panel_6.setHorizontalGroup(
-			gl_panel_6.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panel_6.createSequentialGroup()
-					.addContainerGap()
-					.addGroup(gl_panel_6.createParallelGroup(Alignment.LEADING)
+				gl_panel_6.createParallelGroup(Alignment.LEADING)
 						.addGroup(gl_panel_6.createSequentialGroup()
-							.addComponent(panel_13, GroupLayout.PREFERRED_SIZE, 378, GroupLayout.PREFERRED_SIZE)
-							.addGap(106)
-							.addComponent(panel_23, GroupLayout.PREFERRED_SIZE, 502, GroupLayout.PREFERRED_SIZE))
-						.addGroup(gl_panel_6.createParallelGroup(Alignment.LEADING, false)
-							.addComponent(panel_7, GroupLayout.DEFAULT_SIZE, 825, Short.MAX_VALUE)
-							.addComponent(panel_8, GroupLayout.PREFERRED_SIZE, 728, GroupLayout.PREFERRED_SIZE)))
-					.addContainerGap(21, Short.MAX_VALUE))
+								.addContainerGap()
+								.addGroup(gl_panel_6.createParallelGroup(Alignment.LEADING)
+										.addGroup(gl_panel_6.createSequentialGroup()
+												.addComponent(panel_13, GroupLayout.PREFERRED_SIZE, 378, GroupLayout.PREFERRED_SIZE)
+												.addGap(106)
+												.addComponent(panel_23, GroupLayout.PREFERRED_SIZE, 502, GroupLayout.PREFERRED_SIZE))
+										.addGroup(gl_panel_6.createParallelGroup(Alignment.LEADING, false)
+												.addComponent(panel_7, GroupLayout.DEFAULT_SIZE, 825, Short.MAX_VALUE)
+												.addComponent(panel_8, GroupLayout.PREFERRED_SIZE, 728, GroupLayout.PREFERRED_SIZE)))
+								.addContainerGap(21, Short.MAX_VALUE))
 		);
 		gl_panel_6.setVerticalGroup(
-			gl_panel_6.createParallelGroup(Alignment.TRAILING)
-				.addGroup(gl_panel_6.createSequentialGroup()
-					.addContainerGap()
-					.addComponent(panel_7, GroupLayout.PREFERRED_SIZE, 164, GroupLayout.PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(panel_8, GroupLayout.PREFERRED_SIZE, 159, GroupLayout.PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addGroup(gl_panel_6.createParallelGroup(Alignment.LEADING)
-						.addComponent(panel_13, GroupLayout.PREFERRED_SIZE, 194, GroupLayout.PREFERRED_SIZE)
-						.addComponent(panel_23, GroupLayout.PREFERRED_SIZE, 203, GroupLayout.PREFERRED_SIZE))
-					.addContainerGap(40, Short.MAX_VALUE))
+				gl_panel_6.createParallelGroup(Alignment.TRAILING)
+						.addGroup(gl_panel_6.createSequentialGroup()
+								.addContainerGap()
+								.addComponent(panel_7, GroupLayout.PREFERRED_SIZE, 164, GroupLayout.PREFERRED_SIZE)
+								.addPreferredGap(ComponentPlacement.RELATED)
+								.addComponent(panel_8, GroupLayout.PREFERRED_SIZE, 159, GroupLayout.PREFERRED_SIZE)
+								.addPreferredGap(ComponentPlacement.RELATED)
+								.addGroup(gl_panel_6.createParallelGroup(Alignment.LEADING)
+										.addComponent(panel_13, GroupLayout.PREFERRED_SIZE, 194, GroupLayout.PREFERRED_SIZE)
+										.addComponent(panel_23, GroupLayout.PREFERRED_SIZE, 203, GroupLayout.PREFERRED_SIZE))
+								.addContainerGap(40, Short.MAX_VALUE))
 		);
+
+		lblServerName = new JLabel(serverStat.getServerName());
+		lblServerName.setVerticalAlignment(SwingConstants.TOP);
+		lblServerName.setFont(new Font("Tahoma", Font.PLAIN, 18));
+		lblServerName.setBounds(238, 76, 275, 29);
+		panel_7.add(lblServerName);
+
+		label_22 = new JLabel("00:00:00");
+		label_22.setVerticalAlignment(SwingConstants.TOP);
+		label_22.setFont(new Font("Tahoma", Font.PLAIN, 18));
+		label_22.setBounds(238, 110, 103, 29);
+		panel_7.add(label_22);
 		panel_23.setLayout(null);
-		
+
 		JLabel label_24 = new JLabel("Clients:");
 		label_24.setFont(new Font("Tahoma", Font.PLAIN, 37));
-		label_24.setBounds(40, 8, 132, 70);
+		label_24.setBounds(30, 0, 132, 70);
 		panel_23.add(label_24);
-		
+
 		JLabel label_25 = new JLabel("Client online:");
 		label_25.setVerticalAlignment(SwingConstants.TOP);
 		label_25.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		label_25.setBounds(50, 89, 150, 24);
+		label_25.setBounds(64, 76, 106, 29);
 		panel_23.add(label_25);
-		
+
 		JLabel label_26 = new JLabel("Registered:");
 		label_26.setVerticalAlignment(SwingConstants.TOP);
 		label_26.setFont(new Font("Tahoma", Font.PLAIN, 16));
-		label_26.setBounds(77, 121, 84, 19);
+		label_26.setBounds(77, 149, 84, 19);
 		panel_23.add(label_26);
-		
+
 		JLabel label_28 = new JLabel("Anonymous:");
 		label_28.setVerticalAlignment(SwingConstants.TOP);
 		label_28.setFont(new Font("Tahoma", Font.PLAIN, 16));
-		label_28.setBounds(77, 143, 99, 19);
+		label_28.setBounds(77, 171, 99, 19);
 		panel_23.add(label_28);
-		
+
 		JPanel panel_15 = new JPanel();
 		panel_15.setBackground(Color.LIGHT_GRAY);
-		panel_15.setBounds(12, 68, 330, 3);
+		panel_15.setBounds(2, 60, 330, 3);
 		panel_23.add(panel_15);
+
+		lblClientOnline = new JLabel("0");
+		lblClientOnline.setVerticalAlignment(SwingConstants.TOP);
+		lblClientOnline.setFont(new Font("Tahoma", Font.PLAIN, 18));
+		lblClientOnline.setBounds(175, 76, 150, 24);
+		panel_23.add(lblClientOnline);
+
+		JLabel label_23 = new JLabel("");
+		label_23.setBounds(0, 24, 26, 26);
+		label_23.setIcon(dotBlack);
+		panel_23.add(label_23);
+
+		JLabel label_31 = new JLabel("");
+		label_31.setBounds(46, 79, 16, 16);
+		label_31.setIcon(dotWhite);
+		panel_23.add(label_31);
 		panel_6.setLayout(gl_panel_6);
 
 		JScrollPane scrollPane_clientInfo = new JScrollPane();
@@ -818,7 +854,7 @@ public class ServerGuiResizable extends JFrame implements ActionListener {
 		/*
 		 * scrollPanel_serverInfo.setComponentZOrder(scrollPanel_serverInfo.
 		 * getVerticalScrollBar(), 0);
-		 * scrollPanel_serverInfo.setComponentZOrder(scrollPanel_serverInfo.getViewport( * ), 1); 
+		 * scrollPanel_serverInfo.setComponentZOrder(scrollPanel_serverInfo.getViewport( * ), 1);
 		 * scrollPanel_serverInfo.setBorder(null);
 		 * scrollPanel_serverInfo.setOpaque(false);
 		 */
@@ -827,43 +863,53 @@ public class ServerGuiResizable extends JFrame implements ActionListener {
 		JPanel panel_21 = new JPanel();
 		panel_21.setBackground(Color.WHITE);
 		scrollPane_clientInfo.setViewportView(panel_21);
-		
+
 		JPanel panel_24 = new JPanel();
 		panel_24.setBackground(Color.WHITE);
 		panel_24.setBorder(new LineBorder(new Color(0, 0, 0), 3, true));
+
+		JLabel lblWip = new JLabel("W.I.P.");
+		lblWip.setHorizontalAlignment(SwingConstants.CENTER);
+		lblWip.setFont(new Font("Bodoni MT", Font.BOLD, 80));
 		GroupLayout gl_panel_21 = new GroupLayout(panel_21);
 		gl_panel_21.setHorizontalGroup(
-			gl_panel_21.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panel_21.createSequentialGroup()
-					.addGap(74)
-					.addComponent(panel_24, GroupLayout.PREFERRED_SIZE, 367, GroupLayout.PREFERRED_SIZE)
-					.addContainerGap(576, Short.MAX_VALUE))
+				gl_panel_21.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_panel_21.createSequentialGroup()
+								.addGap(74)
+								.addComponent(panel_24, GroupLayout.PREFERRED_SIZE, 367, GroupLayout.PREFERRED_SIZE)
+								.addGap(49)
+								.addComponent(lblWip, GroupLayout.PREFERRED_SIZE, 301, GroupLayout.PREFERRED_SIZE)
+								.addContainerGap(352, Short.MAX_VALUE))
 		);
 		gl_panel_21.setVerticalGroup(
-			gl_panel_21.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panel_21.createSequentialGroup()
-					.addGap(116)
-					.addComponent(panel_24, GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE)
-					.addGap(78))
+				gl_panel_21.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_panel_21.createSequentialGroup()
+								.addGap(116)
+								.addComponent(panel_24, GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE)
+								.addGap(78))
+						.addGroup(gl_panel_21.createSequentialGroup()
+								.addGap(146)
+								.addComponent(lblWip, GroupLayout.PREFERRED_SIZE, 198, GroupLayout.PREFERRED_SIZE)
+								.addContainerGap(311, Short.MAX_VALUE))
 		);
 		panel_24.setLayout(new BorderLayout(0, 0));
-		
+
 		JPanel panel_25 = new JPanel();
 		panel_25.setPreferredSize(new Dimension(10, 32));
 		panel_24.add(panel_25, BorderLayout.NORTH);
 		panel_25.setLayout(null);
-		
+
 		JLabel lblNewLabel = new JLabel("Client Online:");
 		lblNewLabel.setFont(new Font("Comic Sans MS", Font.BOLD | Font.ITALIC, 15));
 		lblNewLabel.setBounds(12, 0, 175, 32);
 		panel_25.add(lblNewLabel);
-		
+
 		JLabel label_21 = new JLabel("0");
 		label_21.setFont(new Font("Consolas", Font.PLAIN, 21));
 		label_21.setHorizontalAlignment(SwingConstants.RIGHT);
 		label_21.setBounds(293, 0, 56, 32);
 		panel_25.add(label_21);
-		
+
 		JPanel panel_26 = new JPanel();
 		panel_26.setBorder(new MatteBorder(1, 0, 0, 0, (Color) new Color(0, 0, 0)));
 		panel_24.add(panel_26, BorderLayout.CENTER);
@@ -886,10 +932,16 @@ public class ServerGuiResizable extends JFrame implements ActionListener {
 		panel_22.setBackground(Color.WHITE);
 		scrollPane_topicInfo.setViewportView(panel_22);
 		panel_22.setLayout(null);
-		
+
 		JPanel panel_27 = new JPanel();
-		panel_27.setBounds(37, 78, 736, 362);
+		panel_27.setBounds(37, 78, 370, 362);
 		panel_22.add(panel_27);
+
+		JLabel label_5 = new JLabel("W.I.P.");
+		label_5.setHorizontalAlignment(SwingConstants.CENTER);
+		label_5.setFont(new Font("Bodoni MT", Font.BOLD, 80));
+		label_5.setBounds(510, 112, 301, 198);
+		panel_22.add(label_5);
 
 		JPanel border_down = new JPanel();
 		border_down.setPreferredSize(new Dimension(10, 25));
@@ -1072,11 +1124,15 @@ public class ServerGuiResizable extends JFrame implements ActionListener {
 	}
 
 	private void updateServerStat(){
+		SwingUtilities.invokeLater(() -> {
+			lblClientOnline.setText(String.valueOf(serverStat.getClientNumber()));
+			lblPostNumber.setText(String.valueOf(serverStat.getPostNumber()));
+			lblTopicNumber.setText(String.valueOf(serverStat.getTopicNumber()));
+		});
+	}
 
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        updateServerStat();
-    }
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		updateServerStat();
+	}
 }

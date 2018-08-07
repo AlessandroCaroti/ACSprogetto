@@ -100,6 +100,10 @@ public class Server implements ServerInterface,Callable<Integer> {
      */
 
 
+    public Server() throws Exception{
+        this(false);
+    }
+
     public Server(boolean useGui) throws Exception {
 
         //TODO             creare un nome per il server utilizzato per il registro
