@@ -23,9 +23,8 @@ import account.AccountListMonitor;
 import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 import email.EmailController;
 import email.EmailHandlerTLS;
-import interfaces.ServerInterface;
 import interfaces.ClientInterface;
-import server_gui.ServerGuiResizable;
+import interfaces.ServerInterface;
 import server_gui.ServerStatistic;
 import utility.*;
 
@@ -34,10 +33,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 import javax.mail.MessagingException;
-import javax.swing.*;
-import java.awt.*;
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
@@ -49,6 +45,7 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Server implements ServerInterface,Callable<Integer> {
@@ -82,7 +79,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     private Registry registry;
     private int regPort = 1099;                 //Default registry port TODO magari si può importare dal file di config
     private String host;
-    final private String serverName;                  //TODO: da creare nel costruttore, il nome con cui si fa la bind dello serverStub sul registro
+    final private String serverName;
     private ServerInterface skeleton;
 
     /*email handler*/
@@ -151,7 +148,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
         this.serverStat = Objects.requireNonNull(serverStat);
         this.serverStat.setServerInfo(this.serverName, topicList);
-
+        infoStamp("***** SERVER CREATED! *****");
     }
 
     /**
@@ -238,7 +235,6 @@ public class Server implements ServerInterface,Callable<Integer> {
         serverStat.setServerReady();
 
         infoStamp("***** SERVER READY! *****");
-
     }
 
     //inverte lo stato del campo pedantic

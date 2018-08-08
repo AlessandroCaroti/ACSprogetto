@@ -13,6 +13,7 @@ public class testGUI {
     static private ServerStatistic serverStat;
     static private ServerGuiResizable gui;
 
+
     public static void main(String[] args) {
         try {
             //Creazione della struttura dati delle statistiche del server (utilizzate per la comunicazione con la GUI)
@@ -31,6 +32,7 @@ public class testGUI {
             //Creazione e esecuzione del provider delle info per potersi connetere al server (visibile sollo all'interno della rete locale)
             ServerInfoProvider infoProvider = new ServerInfoProvider(server.getRegHost(), server.getRegPort(), server.getServerName());
             infoProvider.start();
+
         } catch (Exception e) {
             e.getClass().getSimpleName();
             e.getMessage();
@@ -38,7 +40,7 @@ public class testGUI {
         }
 //        TODO gestione degli errori e spegnimento del server
 
-        
+
 
     }
 
