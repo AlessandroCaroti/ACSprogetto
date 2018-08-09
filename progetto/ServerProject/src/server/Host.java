@@ -40,7 +40,7 @@ public class Host {
 
 
 
-    private Host(boolean usingUserInterface) throws UnsupportedEncodingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, AlreadyBoundException, RemoteException, UnknownHostException {
+    private Host(boolean usingUserInterface) throws Exception {
          userInterface=new GuiInterface(usingUserInterface);
          server=new Server();
          //TODO sclient=new SClient();

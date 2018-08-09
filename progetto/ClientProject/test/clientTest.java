@@ -8,7 +8,7 @@ import java.io.InputStreamReader;
 public class clientTest {
     public static void main(String[] args) {
         try {
-            Client client = new Client("andrea", "ciaozio", "magariunaltravolta", "stessacosa","email@ahah");
+            Client client = new Client("andrea", "ciaozio","email@ahah");
             System.out.println("CLIENT PRONTO");
             System.out.println("Servername:");
             String servername;
@@ -17,7 +17,7 @@ public class clientTest {
             client.setServerInfo("localhost",1099,servername);
 
 
-            if(client.connect()!=null){
+            if(client.connected()){
                 System.out.println("CONNESSO");
             }else {System.out.println("NON CONNESSO");return ;}
 

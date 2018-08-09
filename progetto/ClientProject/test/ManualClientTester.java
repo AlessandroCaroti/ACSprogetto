@@ -47,12 +47,12 @@ public class ManualClientTester {
                     password=bufferRead.readLine();
                     System.out.println("Inserisci email");
                     email=bufferRead.readLine();
-                    clients.add(currentClient=new Client(username,password,pubKey,privKey,email));
+                    clients.add(currentClient=new Client(username,password,email));
                     break;
                 case 2:
                     System.out.println("Inserisci username");
                     username=bufferRead.readLine();
-                    clients.add(currentClient=new AnonymousClient(username,pubKey,privKey));
+                    clients.add(currentClient=new AnonymousClient(username));
                     break;
                 case 3:
                     for(int i=0;i<clients.size();i++){

@@ -4,6 +4,7 @@ package utility;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -27,7 +28,7 @@ public class ServerInfoProvider extends InfoProviderProtocol {
             throw new UnknownHostException();
 
         timer = new Timer();
-        byte[] buf        = "".getBytes("UTF-8");//AddressIp.getLocalAddres().getBytes("UTF-8");   //Stringa contenente l'indirizzo locale della macchina
+        byte[] buf        = "".getBytes(StandardCharsets.UTF_8);//AddressIp.getLocalAddres().getBytes("UTF-8");   //Stringa contenente l'indirizzo locale della macchina
         socket            = new DatagramSocket();
         packet            = new DatagramPacket(buf, buf.length, group, brodcastPort);
         serverSocket      = new ServerSocket(port, 5);
