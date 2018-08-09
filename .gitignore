@@ -32,3 +32,4 @@ progetto/ClientProject/out/*
 progetto/ClientProject/bin/*
 *.project
 *.idea
+/bin/
