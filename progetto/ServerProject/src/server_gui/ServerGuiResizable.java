@@ -1,6 +1,8 @@
 package server_gui;
 
 import java.awt.event.*;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -79,6 +81,7 @@ public class ServerGuiResizable extends JFrame implements ActionListener {
     private JLabel lblProgettoPcad;
 
     private ServerStatistic serverStat;
+    private OutputStream executor;
     private Timer timer = new Timer(1000, this);
     private JLabel lblTopicNumber;
     private JLabel lblPostNumber;
@@ -93,7 +96,7 @@ public class ServerGuiResizable extends JFrame implements ActionListener {
         SwingUtilities.invokeLater(() -> {
             try {
                 ServerStatistic serverStat = new ServerStatistic();
-                ServerGuiResizable frame = new ServerGuiResizable(serverStat);
+                ServerGuiResizable frame = new ServerGuiResizable(serverStat, System.out);
                 frame.setMinimumSize(new Dimension(780, 420));
                 frame.setUndecorated(true);
                 frame.update();
@@ -119,8 +122,9 @@ public class ServerGuiResizable extends JFrame implements ActionListener {
     /**
      * Create the frame.
      */
-    public ServerGuiResizable(ServerStatistic serverStat) {
+    public ServerGuiResizable(ServerStatistic serverStat, OutputStream executor) {
         this.serverStat = Objects.requireNonNull(serverStat);
+        this.executor   = Objects.requireNonNull(executor);
 
         ClassLoader classLoader = ClassLoader.getSystemClassLoader();
         clsL = new ImageIcon(Objects.requireNonNull(classLoader.getResource("CloseLight_28px.png")));
@@ -213,7 +217,13 @@ public class ServerGuiResizable extends JFrame implements ActionListener {
             @Override
             public void mouseClicked(MouseEvent arg0) {
                 SwingUtilities.invokeLater(() -> {
-                    System.exit(0);
+                    try {
+                        System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
+                        executor.write("shutdown\n".getBytes());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+//                    System.exit(0);
                 });
             }
 

@@ -38,7 +38,6 @@ public class testGUI {
             e.getMessage();
             e.printStackTrace();
         }
-//        TODO gestione degli errori e spegnimento del server
 
 
 
@@ -59,7 +58,7 @@ public class testGUI {
         try {
             SwingUtilities.invokeAndWait(() -> {
                 try {
-                    ServerGuiResizable frame = new ServerGuiResizable(serverStat);
+                    ServerGuiResizable frame = new ServerGuiResizable(serverStat, System.out);
                     frame.setMinimumSize(new Dimension(780, 420));
                     frame.setUndecorated(true);
                     frame.update();

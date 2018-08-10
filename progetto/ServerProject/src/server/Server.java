@@ -36,6 +36,7 @@ import javax.mail.MessagingException;
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -58,7 +59,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     /* clients management fields */
     private AccountCollectionInterface accountList;                     //monitor della lista contente tutti gli account salvati
     private RandomString randomStringSession;
-    private AtomicInteger anonymousCounter=new AtomicInteger(0);
+    private AtomicInteger anonymousCounter = new AtomicInteger(0);
 
     /* server settings fields */
     private Properties serverSettings = new Properties();                 //setting del server
@@ -88,6 +89,8 @@ public class Server implements ServerInterface,Callable<Integer> {
     /* GUI fields */
     private boolean graphicInterfaceReady;
     final private ServerStatistic serverStat;
+
+
 
     /*****************************************************************************************************************************/
     /**Costruttore
@@ -197,7 +200,6 @@ public class Server implements ServerInterface,Callable<Integer> {
         try {
             //Importing the security policy and ...
             System.setProperty("java.security.policy","file:./src/server/sec.policy");
-
             infoStamp("Policy and codebase setted.");
 
             //Creating and Installing a Security Manager
@@ -236,6 +238,25 @@ public class Server implements ServerInterface,Callable<Integer> {
 
         infoStamp("***** SERVER READY! *****");
     }
+
+
+    public void stop(){
+        if(registry==null)  //Nothing to do
+            return;
+
+        pedanticInfo("Stopping server ...");
+        try {
+            registry.unbind(serverName);
+            UnicastRemoteObject.unexportObject(this.registry, true);
+
+        } catch (RemoteException | NotBoundException e) {
+            errorStamp(e);
+            System.exit(-1);
+        }
+        registry = null;
+        infoStamp("***** SERVER OFFLINE! *****");
+    }
+
 
     //inverte lo stato del campo pedantic
     public void togglePedantic(){
@@ -634,7 +655,7 @@ public class Server implements ServerInterface,Callable<Integer> {
                     whatismyip.openStream()));
             return in.readLine();
         }catch (IOException exc){
-            this.errorStamp(exc,"unable to get server external ip.");
+            this.errorStamp(exc,"Unable to get server external ip.");
             throw exc;
         }
     }
@@ -712,7 +733,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         System.err.println("[SERVER-ERROR]: "      + msg);
         System.err.println("\tException type: "    + e.getClass().getSimpleName());
         System.err.println("\tException message: " + e.getMessage());
-        e.printStackTrace();
+        //e.printStackTrace();
     }
 
     private void warningStamp(Exception e, String msg){

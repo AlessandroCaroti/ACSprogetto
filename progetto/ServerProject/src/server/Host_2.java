@@ -7,6 +7,8 @@ import utility.ServerInfoProvider;
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Scanner;
 
@@ -19,13 +21,17 @@ public class Host_2 extends Thread {
     private ServerInfoProvider infoProvider = null;
     private boolean stopAll = false;
 
+    private final PipedOutputStream output = new PipedOutputStream();
+    private final PipedInputStream input = new PipedInputStream(output);
+    private boolean redirected;
+
     final private String cmdList = "***********************************************\nCOMMANDS LIST:\n" +
             "\t\t?/help\n" +
             "\t\tstart [server/infoProvider]\n" +
             "\t\tstop [server/infoProvider]\n" +
             "\t\tshutdown\n" +
             "\t\tshow [info/topic]\n" +
-            "\t\tpedantic\n"+
+            "\t\tpedantic\n" +
             "***********************************************";
 
 
@@ -34,14 +40,15 @@ public class Host_2 extends Thread {
         //Creazione della struttura dati delle statistiche del server (utilizzate per la comunicazione con la GUI)
         serverStat = new ServerStatistic();
 
+        //Creazione della gui
+        if (useGui) {
+            redirectIO();
+            gui = initGui(serverStat);
+        }
+
         //Creazione del server
         server = new Server(serverStat);
 
-        //Creazione della gui
-        if (useGui) {
-            gui = initGui(serverStat);
-            //redirect I/O stream
-        }
     }
 
 
@@ -49,13 +56,12 @@ public class Host_2 extends Thread {
         if (!started) {
             server.start();
             started = true;
-        }
-        else
+        } else
             infoStamp(" Server already started!");
     }
 
     private void startInfoProvider() {
-        if(infoProvider==null) {
+        if (infoProvider == null) {
             try {
                 infoProvider = new ServerInfoProvider(server.getRegHost(), server.getRegPort(), server.getServerName());
             } catch (IOException e) {
@@ -64,7 +70,7 @@ public class Host_2 extends Thread {
                 return;
             }
             infoProvider.start();
-        }else
+        } else
             infoStamp(" InfoProvider already active!");
 
     }
@@ -72,14 +78,12 @@ public class Host_2 extends Thread {
     private void stopServer() {
         //ferma il server ma non cancella nessun dato
         //il server può essere fatto ripartire
-        infoStamp("COMANDO NON ANCORA IMPLEMNTATO");
-        /*
-        if (started) {
-            //server.stop();
-            //started = false;
 
+        if (started) {
+            server.stop();
+            serverStat.setServerOffline();
+            started = false;
         }
-        */
     }
 
     private void stopInfoProvider() {
@@ -91,21 +95,21 @@ public class Host_2 extends Thread {
 
     private void shutdownServer() {
         //chiude il server e tutto ciò a cui ne è associato (GUI, infoProvider)
-        infoStamp("COMANDO NON ANCORA IMPLEMNTATO");
+        infoStamp("shutdown: COMANDO NON ANCORA IMPLEMNTATO");
 
 //        stopInfoProvider();
 //        stop GUI
 //        stop all sClient
 //        stopServer();
-//        server.shutdown();
+//        server = null;
 //        stopAll = true;
     }
 
 
     private void showInfo() {
-        String statusGui = "Graphic Interface: " +  (gui!=null?"active":"inactive");
-        String statusInfoProvider ="InfoProvider: " +  (infoProvider!=null?"active":"inactive");
-        infoStamp(serverStat.getGeneralServerStat()+"\n"+statusGui+"\n"+statusInfoProvider);
+        String statusGui = "Graphic Interface: " + (gui != null ? "active" : "inactive");
+        String statusInfoProvider = "InfoProvider: " + (infoProvider != null ? "active" : "inactive");
+        infoStamp(serverStat.getGeneralServerStat() + "\n" + statusGui + "\n" + statusInfoProvider);
     }
 
     private ServerGuiResizable initGui(ServerStatistic serverStat) {
@@ -114,7 +118,7 @@ public class Host_2 extends Thread {
         try {
             SwingUtilities.invokeAndWait(() -> {
                 try {
-                    ServerGuiResizable frame = new ServerGuiResizable(serverStat);
+                    ServerGuiResizable frame = new ServerGuiResizable(serverStat, output);
                     frame.setMinimumSize(new Dimension(780, 420));
                     frame.setUndecorated(true);
                     frame.update();
@@ -130,6 +134,17 @@ public class Host_2 extends Thread {
             errorStamp(e);
         }
         return serverStat.getGui();
+    }
+
+    private void redirectIO() {
+        /*
+        if(redirected)
+            System.setIn(System.in);
+        else
+            System.setIn(input);
+        */
+        System.setIn(redirected ? System.in : input);
+        redirected = !redirected;
     }
 
     private void commandExecutorLoop() {
@@ -178,15 +193,19 @@ public class Host_2 extends Thread {
         }
     }
 
+
+
     @Override
-    public void run(){
+    public void run() {
         commandExecutorLoop();
         System.exit(0);
     }
 
+
+
     public static void main(String[] args) {
         if (args.length < 1) {
-            System.err.println("args: userinterface(true/false) ");
+            System.err.println("args: userinterface[true/false] ");
             return;
         }
 
@@ -200,6 +219,14 @@ public class Host_2 extends Thread {
             e.printStackTrace();
         }
     }
+
+
+
+
+
+
+
+
 
 
     static private void errorStamp(Exception e) {
@@ -217,7 +244,8 @@ public class Host_2 extends Thread {
     private void errStamp(String msg) {
         System.err.println(msg);
     }
-    private void prompt(){
+
+    private void prompt() {
         //System.out.print("\n$ ");
     }
 }

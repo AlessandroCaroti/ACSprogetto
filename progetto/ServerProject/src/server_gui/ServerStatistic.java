@@ -57,6 +57,10 @@ public class ServerStatistic {
         active = true;
     }
 
+    public void setServerOffline() {
+        active = false;
+    }
+
     public void setGui(ServerGuiResizable gui) {
         this.gui = gui;
     }
