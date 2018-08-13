@@ -93,9 +93,9 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
 	private JTextField textField;
 	private JTextArea textArea;
 
-	private OutputStream executor;
-	private InputStream stdOut;
-	private InputStream stdErr;
+	final private OutputStream executor;
+    final private InputStream stdOut;
+    final private InputStream stdErr;
 	private Thread readerStdOut;
 	private Thread readerStdErr;
 	private boolean quit;
@@ -335,10 +335,10 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
 		lblI.setBounds(0, 0, 56, 40);
 		panel_12.add(lblI);
 
-		lblProgettoPcad = new JLabel("PCAD Project - Server");
+		lblProgettoPcad = new JLabel("PCAD Project - Server alpha 0.4.2");
 		lblProgettoPcad.setFont(new Font("Tahoma", Font.PLAIN, 15));
 		lblProgettoPcad.setForeground(Color.WHITE);
-		lblProgettoPcad.setBounds(12, 0, 150, 32);
+		lblProgettoPcad.setBounds(12, 0, 221, 32);
 		panel_12.add(lblProgettoPcad);
 
 		side_panel = new JPanel();

@@ -104,6 +104,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     public Server(ServerStatistic serverStat) throws Exception {
+        infoStamp("Creating server ...");
 
         //TODO             creare un nome per il server utilizzato per il registro
         String tmp_name;
