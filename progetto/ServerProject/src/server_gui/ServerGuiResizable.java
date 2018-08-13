@@ -1275,16 +1275,22 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
 			}
 			sc.close();
 		} catch (Exception e) {
-			textArea.append("\nConsole reports an Internal error. ");
+			textArea.append("\n[GUI-ERROR] Console reports an Internal error. ");
 			textArea.append("The error is: " + e);
 
-            System.err.println("\nConsole reports an Internal error. ");
-            System.err.println("The error is: " + e);
             try {
-                StreamRedirector.resetAllStdStreams();
-            } catch (IOException e1) {
-                e1.printStackTrace();
+                if(Thread.currentThread() == readerStdOut) {
+                    textArea.append(" - StdOut\n");
+                    StreamRedirector.redirectStdOut();
+                }
+                else if(Thread.currentThread() == readerStdErr) {
+                    textArea.append(" - StdErr\n");
+                    StreamRedirector.redirectStdErr();
+                }
+            }catch (IOException ioEx){
+                ioEx.printStackTrace();
             }
+
         }
 	}
 	
