@@ -1280,13 +1280,14 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
 
             try {
                 if(Thread.currentThread() == readerStdOut) {
-                    textArea.append(" StdOut. Resetting it\n");
+                    textArea.append(" StdOut.");
                     StreamRedirector.resetStdOut();
                 }
                 else if(Thread.currentThread() == readerStdErr) {
-                    textArea.append(" StdErr. Resetting it\n");
+                    textArea.append(" StdErr.");
                     StreamRedirector.resetStdErr();
                 }
+                textArea.append(" Resetting it to the initial stream\n");
             }catch (IOException ioEx){
                 ioEx.printStackTrace();
             }
