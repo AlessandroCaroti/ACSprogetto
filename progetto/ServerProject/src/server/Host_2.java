@@ -86,7 +86,7 @@ public class Host_2 extends Thread {
             while (!stopAll) {
                 line = sc.nextLine();
                 //todo rimmuovere stampa di debug
-                System.err.println("-Read from System.in: \'"+line+"\'");
+                System.err.println("-[DEBUG-STAMP] Read from System.in: \'"+line+"\'");
                 switch (line) {
                     case "?":
                     case "help":
