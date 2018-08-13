@@ -1,7 +1,15 @@
 package server_gui;
 
+import java.awt.event.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Objects;
+import java.util.Scanner;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import keeptoo.KGradientPanel;
+import server.StreamRedirector;
 import utility.AddressIp;
 import utility.gui.MyScrollBar;
 import utility.gui.MyScrollPaneLayout;
@@ -11,22 +19,19 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Component;
 import java.awt.Cursor;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Point;
-import java.awt.event.MouseMotionAdapter;
 import java.awt.CardLayout;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import java.util.Objects;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.border.LineBorder;
 import javax.swing.border.MatteBorder;
+import java.awt.Insets;
 
-public class ServerGuiRisizable extends JFrame {
+public class ServerGuiResizable extends JFrame implements ActionListener, Runnable {
 
 	private static final Color BLACKBLUE = new Color(23, 35, 51);
 
@@ -35,9 +40,6 @@ public class ServerGuiRisizable extends JFrame {
 	private int Px, Py;
 	private int section = 1;
 	private int size_sidePnl = 230;
-	final int resizeBorder_size = 5;
-	private int titleSize = 37;
-	private int textSize = 18;
 	final private ImageIcon minB;
 	final private ImageIcon minL;
 	final private ImageIcon clsB;
@@ -79,13 +81,33 @@ public class ServerGuiRisizable extends JFrame {
 	private JLabel lblS;
 	private JLabel lblProgettoPcad;
 
+	private ServerStatistic serverStat;
+	private Timer timer = new Timer(1000, this);
+	private JLabel lblTopicNumber;
+	private JLabel lblPostNumber;
+	private JLabel lblServerName;
+	private JLabel label_22;
+	private JLabel lblClientOnline;
+	private JPanel sideBtn_4;
+	private JPanel ind_4;
+	private JTextField textField;
+	private JTextArea textArea;
+
+	private OutputStream executor;
+	private InputStream stdOut;
+	private InputStream stdErr;
+	private Thread readerStdOut;
+	private Thread readerStdErr;
+	private boolean quit;
+
 	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
 			try {
-				ServerGuiRisizable frame = new ServerGuiRisizable();
+				ServerStatistic serverStat = new ServerStatistic();
+				ServerGuiResizable frame = new ServerGuiResizable(serverStat, System.out, null, null);
 				frame.setMinimumSize(new Dimension(780, 420));
 				frame.setUndecorated(true);
 				frame.update();
@@ -111,7 +133,12 @@ public class ServerGuiRisizable extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public ServerGuiRisizable() {
+	public ServerGuiResizable(ServerStatistic serverStat, OutputStream executor, InputStream out, InputStream err) {
+		this.serverStat = Objects.requireNonNull(serverStat);
+		this.executor   = Objects.requireNonNull(executor);
+        this.stdOut     = out;
+		this.stdErr     = err;
+
 		ClassLoader classLoader = ClassLoader.getSystemClassLoader();
 		clsL = new ImageIcon(Objects.requireNonNull(classLoader.getResource("CloseLight_28px.png")));
 		clsB = new ImageIcon(Objects.requireNonNull(classLoader.getResource("CloseDark_28px.png")));
@@ -131,7 +158,6 @@ public class ServerGuiRisizable extends JFrame {
 		reduceWhite = new ImageIcon(Objects.requireNonNull(classLoader.getResource("Double_Left_White_32px.png")));
 		reduceGray = new ImageIcon(Objects.requireNonNull(classLoader.getResource("Double_Left_Gray_32px.png")));
 
-		// growGray = new
 		// ImageIcon(Objects.requireNonNull(classLoader.getResource("Double_Right_Gray_32px.png")));
 		growGray = new ImageIcon(Objects.requireNonNull(classLoader.getResource("icons8_Menu_30px.png")));
 		growWhite = new ImageIcon(Objects.requireNonNull(classLoader.getResource("Double_Right_White_32px.png")));
@@ -149,10 +175,10 @@ public class ServerGuiRisizable extends JFrame {
 			@Override
 			public void mouseDragged(MouseEvent arg0) {
 				SwingUtilities.invokeLater(() -> {
-					Point p = ServerGuiRisizable.this.getLocationOnScreen();
+					Point p = ServerGuiResizable.this.getLocationOnScreen();
 					p.x = p.x + arg0.getX() - xx;
 					p.y = p.y + arg0.getY() - xy;
-					ServerGuiRisizable.this.setLocation(p);
+					ServerGuiResizable.this.setLocation(p);
 				});
 			}
 		});
@@ -169,12 +195,12 @@ public class ServerGuiRisizable extends JFrame {
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				SwingUtilities.invokeLater(() -> {
-					Point p = ServerGuiRisizable.this.getLocationOnScreen();
+					Point p = ServerGuiResizable.this.getLocationOnScreen();
 					if (Math.abs(p.x) < 12)
 						p.x = 0;
 					if (Math.abs(p.y) < 12)
 						p.y = 0;
-					ServerGuiRisizable.this.setLocation(p);
+					ServerGuiResizable.this.setLocation(p);
 				});
 			}
 		});
@@ -204,7 +230,11 @@ public class ServerGuiRisizable extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
 				SwingUtilities.invokeLater(() -> {
-					System.exit(0);
+					try {
+						executor.write("shutdown\n".getBytes());
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 				});
 			}
 
@@ -266,7 +296,7 @@ public class ServerGuiRisizable extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
 				SwingUtilities.invokeLater(() -> {
-					ServerGuiRisizable.this.setState(Frame.ICONIFIED);
+					ServerGuiResizable.this.setState(Frame.ICONIFIED);
 				});
 			}
 
@@ -304,7 +334,7 @@ public class ServerGuiRisizable extends JFrame {
 		lblI.setHorizontalAlignment(SwingConstants.CENTER);
 		lblI.setBounds(0, 0, 56, 40);
 		panel_12.add(lblI);
-		
+
 		lblProgettoPcad = new JLabel("PCAD Project - Server");
 		lblProgettoPcad.setFont(new Font("Tahoma", Font.PLAIN, 15));
 		lblProgettoPcad.setForeground(Color.WHITE);
@@ -329,7 +359,7 @@ public class ServerGuiRisizable extends JFrame {
 		side_panel.add(label);
 
 		conteiner_btn = new JPanel();
-		conteiner_btn.setBounds(0, 159, 244, 175);
+		conteiner_btn.setBounds(0, 159, 244, 248);
 		conteiner_btn.setOpaque(false);
 		side_panel.add(conteiner_btn);
 		conteiner_btn.setLayout(null);
@@ -344,7 +374,7 @@ public class ServerGuiRisizable extends JFrame {
 					section = 1;
 					setColor(sideBtn_1);
 					ind_1.setOpaque(true);
-					resetColor(new JPanel[] { sideBtn_2, sideBtn_3 }, new JPanel[] { ind_2, ind_3 });
+					resetColor(new JPanel[] { sideBtn_2, sideBtn_3, sideBtn_4 }, new JPanel[] { ind_2, ind_3, ind_4 });
 					cl.show(main_panel, "serverInfo");
 				});
 			}
@@ -380,7 +410,7 @@ public class ServerGuiRisizable extends JFrame {
 					section = 2;
 					setColor(sideBtn_2);
 					ind_2.setOpaque(true);
-					resetColor(new JPanel[] { sideBtn_1, sideBtn_3 }, new JPanel[] { ind_1, ind_3 });
+					resetColor(new JPanel[] { sideBtn_1, sideBtn_3, sideBtn_4 }, new JPanel[] { ind_1, ind_3, ind_4 });
 					cl.show(main_panel, "clientInfo");
 				});
 			}
@@ -417,7 +447,7 @@ public class ServerGuiRisizable extends JFrame {
 					section = 3;
 					setColor(sideBtn_3);
 					ind_3.setOpaque(true);
-					resetColor(new JPanel[] { sideBtn_1, sideBtn_2 }, new JPanel[] { ind_1, ind_2 });
+					resetColor(new JPanel[] { sideBtn_1, sideBtn_2, sideBtn_4 }, new JPanel[] { ind_1, ind_2, ind_4 });
 					cl.show(main_panel, "topicInfo");
 				});
 			}
@@ -453,6 +483,49 @@ public class ServerGuiRisizable extends JFrame {
 		panel_10.setBackground(Color.LIGHT_GRAY);
 		panel_10.setBounds(8, 107, 224, 1);
 		conteiner_btn.add(panel_10);
+
+		sideBtn_4 = new JPanel();
+		sideBtn_4.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+
+				SwingUtilities.invokeLater(() -> {
+					if (section == 4)
+						return;
+					section = 4;
+					setColor(sideBtn_4);
+					ind_4.setOpaque(true);
+					resetColor(new JPanel[] { sideBtn_1, sideBtn_2, sideBtn_3 }, new JPanel[] { ind_1, ind_2, ind_3 });
+					cl.show(main_panel, "console");
+				});
+			}
+		});
+		sideBtn_4.setLayout(null);
+		sideBtn_4.setBackground(new Color(23, 35, 51));
+		sideBtn_4.setBounds(0, 171, 244, 44);
+		conteiner_btn.add(sideBtn_4);
+
+		JLabel label_32 = new JLabel("");
+		label_32.setHorizontalAlignment(SwingConstants.CENTER);
+		label_32.setIcon(new ImageIcon(Objects.requireNonNull(classLoader.getResource("Console_28px.png"))));
+		label_32.setBounds(10, 0, 44, 42);
+		sideBtn_4.add(label_32);
+
+		JLabel lblConsole = new JLabel("Console");
+		lblConsole.setForeground(Color.LIGHT_GRAY);
+		lblConsole.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		lblConsole.setBounds(70, 0, 203, 42);
+		sideBtn_4.add(lblConsole);
+
+		ind_4 = new JPanel();
+		ind_4.setOpaque(false);
+		ind_4.setBounds(0, 0, 5, 44);
+		sideBtn_4.add(ind_4);
+
+		JPanel panel_30 = new JPanel();
+		panel_30.setBackground(Color.LIGHT_GRAY);
+		panel_30.setBounds(8, 164, 224, 1);
+		conteiner_btn.add(panel_30);
 
 		JLabel label_30 = new JLabel("");
 		label_30.setVerticalAlignment(SwingConstants.TOP);
@@ -556,8 +629,8 @@ public class ServerGuiRisizable extends JFrame {
 			public void mouseDragged(MouseEvent arg0) {
 				SwingUtilities.invokeLater(() -> {
 					int x = arg0.getX() - Px;
-					Dimension d = ServerGuiRisizable.this.getSize();
-					ServerGuiRisizable.this.setSize(d.width + x, d.height);
+					Dimension d = ServerGuiResizable.this.getSize();
+					ServerGuiResizable.this.setSize(d.width + x, d.height);
 				});
 			}
 		});
@@ -626,11 +699,11 @@ public class ServerGuiRisizable extends JFrame {
 		label_4.setBounds(64, 76, 123, 29);
 		panel_7.add(label_4);
 
-		JLabel label_5 = new JLabel("Tempo di attivit\u00E0:");
-		label_5.setVerticalAlignment(SwingConstants.TOP);
-		label_5.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		label_5.setBounds(64, 110, 257, 29);
-		panel_7.add(label_5);
+		JLabel lblTime = new JLabel("Tempo di attivit\u00E0:");
+		lblTime.setVerticalAlignment(SwingConstants.TOP);
+		lblTime.setFont(new Font("Tahoma", Font.PLAIN, 18));
+		lblTime.setBounds(64, 110, 147, 29);
+		panel_7.add(lblTime);
 
 		JLabel label_6 = new JLabel("");
 		label_6.setIcon(dotWhite);
@@ -731,164 +804,166 @@ public class ServerGuiRisizable extends JFrame {
 		label_20.setBounds(0, 24, 26, 26);
 		panel_13.add(label_20);
 
-		JLabel label_22 = new JLabel("0");
-		label_22.setVerticalAlignment(SwingConstants.TOP);
-		label_22.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		label_22.setBounds(216, 76, 146, 29);
-		panel_13.add(label_22);
+		lblTopicNumber = new JLabel("0");
+		lblTopicNumber.setVerticalAlignment(SwingConstants.TOP);
+		lblTopicNumber.setFont(new Font("Tahoma", Font.PLAIN, 18));
+		lblTopicNumber.setBounds(216, 76, 146, 29);
+		panel_13.add(lblTopicNumber);
 
-		JLabel label_23 = new JLabel("0");
-		label_23.setVerticalAlignment(SwingConstants.TOP);
-		label_23.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		label_23.setBounds(216, 109, 149, 29);
-		panel_13.add(label_23);
+		lblPostNumber = new JLabel("0");
+		lblPostNumber.setVerticalAlignment(SwingConstants.TOP);
+		lblPostNumber.setFont(new Font("Tahoma", Font.PLAIN, 18));
+		lblPostNumber.setBounds(216, 109, 149, 29);
+		panel_13.add(lblPostNumber);
 
 		JLabel label_27 = new JLabel("Topics:");
 		label_27.setFont(new Font("Tahoma", Font.PLAIN, 37));
 		label_27.setBounds(30, 0, 123, 70);
 		panel_13.add(label_27);
-		
+
 		JPanel panel_23 = new JPanel();
 		panel_23.setBackground(Color.WHITE);
 		GroupLayout gl_panel_6 = new GroupLayout(panel_6);
-		gl_panel_6.setHorizontalGroup(
-			gl_panel_6.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panel_6.createSequentialGroup()
-					.addContainerGap()
-					.addGroup(gl_panel_6.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_panel_6.createSequentialGroup()
-							.addComponent(panel_13, GroupLayout.PREFERRED_SIZE, 378, GroupLayout.PREFERRED_SIZE)
-							.addGap(106)
-							.addComponent(panel_23, GroupLayout.PREFERRED_SIZE, 502, GroupLayout.PREFERRED_SIZE))
+		gl_panel_6.setHorizontalGroup(gl_panel_6.createParallelGroup(Alignment.LEADING).addGroup(gl_panel_6
+				.createSequentialGroup().addContainerGap()
+				.addGroup(gl_panel_6.createParallelGroup(Alignment.LEADING).addGroup(gl_panel_6.createSequentialGroup()
+						.addComponent(panel_13, GroupLayout.PREFERRED_SIZE, 378, GroupLayout.PREFERRED_SIZE).addGap(106)
+						.addComponent(panel_23, GroupLayout.PREFERRED_SIZE, 502, GroupLayout.PREFERRED_SIZE))
 						.addGroup(gl_panel_6.createParallelGroup(Alignment.LEADING, false)
-							.addComponent(panel_7, GroupLayout.DEFAULT_SIZE, 825, Short.MAX_VALUE)
-							.addComponent(panel_8, GroupLayout.PREFERRED_SIZE, 728, GroupLayout.PREFERRED_SIZE)))
-					.addContainerGap(21, Short.MAX_VALUE))
-		);
-		gl_panel_6.setVerticalGroup(
-			gl_panel_6.createParallelGroup(Alignment.TRAILING)
-				.addGroup(gl_panel_6.createSequentialGroup()
-					.addContainerGap()
-					.addComponent(panel_7, GroupLayout.PREFERRED_SIZE, 164, GroupLayout.PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(panel_8, GroupLayout.PREFERRED_SIZE, 159, GroupLayout.PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addGroup(gl_panel_6.createParallelGroup(Alignment.LEADING)
-						.addComponent(panel_13, GroupLayout.PREFERRED_SIZE, 194, GroupLayout.PREFERRED_SIZE)
-						.addComponent(panel_23, GroupLayout.PREFERRED_SIZE, 203, GroupLayout.PREFERRED_SIZE))
-					.addContainerGap(40, Short.MAX_VALUE))
-		);
+								.addComponent(panel_7, GroupLayout.DEFAULT_SIZE, 825, Short.MAX_VALUE)
+								.addComponent(panel_8, GroupLayout.PREFERRED_SIZE, 728, GroupLayout.PREFERRED_SIZE)))
+				.addContainerGap(21, Short.MAX_VALUE)));
+		gl_panel_6.setVerticalGroup(gl_panel_6.createParallelGroup(Alignment.TRAILING)
+				.addGroup(gl_panel_6.createSequentialGroup().addContainerGap()
+						.addComponent(panel_7, GroupLayout.PREFERRED_SIZE, 164, GroupLayout.PREFERRED_SIZE)
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addComponent(panel_8, GroupLayout.PREFERRED_SIZE, 159, GroupLayout.PREFERRED_SIZE)
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addGroup(gl_panel_6.createParallelGroup(Alignment.LEADING)
+								.addComponent(panel_13, GroupLayout.PREFERRED_SIZE, 194, GroupLayout.PREFERRED_SIZE)
+								.addComponent(panel_23, GroupLayout.PREFERRED_SIZE, 124, GroupLayout.PREFERRED_SIZE))
+						.addContainerGap(49, Short.MAX_VALUE)));
+
+		lblServerName = new JLabel(serverStat.getServerName());
+		lblServerName.setVerticalAlignment(SwingConstants.TOP);
+		lblServerName.setFont(new Font("Tahoma", Font.PLAIN, 18));
+		lblServerName.setBounds(238, 76, 275, 29);
+		panel_7.add(lblServerName);
+
+		label_22 = new JLabel("00:00:00");
+		label_22.setVerticalAlignment(SwingConstants.TOP);
+		label_22.setFont(new Font("Tahoma", Font.PLAIN, 18));
+		label_22.setBounds(238, 110, 103, 29);
+		panel_7.add(label_22);
 		panel_23.setLayout(null);
-		
+
 		JLabel label_24 = new JLabel("Clients:");
 		label_24.setFont(new Font("Tahoma", Font.PLAIN, 37));
-		label_24.setBounds(40, 8, 132, 70);
+		label_24.setBounds(30, 0, 132, 70);
 		panel_23.add(label_24);
-		
+
 		JLabel label_25 = new JLabel("Client online:");
 		label_25.setVerticalAlignment(SwingConstants.TOP);
 		label_25.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		label_25.setBounds(50, 89, 150, 24);
+		label_25.setBounds(64, 76, 106, 29);
 		panel_23.add(label_25);
-		
-		JLabel label_26 = new JLabel("Registered:");
-		label_26.setVerticalAlignment(SwingConstants.TOP);
-		label_26.setFont(new Font("Tahoma", Font.PLAIN, 16));
-		label_26.setBounds(77, 121, 84, 19);
-		panel_23.add(label_26);
-		
-		JLabel label_28 = new JLabel("Anonymous:");
-		label_28.setVerticalAlignment(SwingConstants.TOP);
-		label_28.setFont(new Font("Tahoma", Font.PLAIN, 16));
-		label_28.setBounds(77, 143, 99, 19);
-		panel_23.add(label_28);
-		
+
 		JPanel panel_15 = new JPanel();
 		panel_15.setBackground(Color.LIGHT_GRAY);
-		panel_15.setBounds(12, 68, 330, 3);
+		panel_15.setBounds(2, 60, 330, 3);
 		panel_23.add(panel_15);
+
+		lblClientOnline = new JLabel("0");
+		lblClientOnline.setVerticalAlignment(SwingConstants.TOP);
+		lblClientOnline.setFont(new Font("Tahoma", Font.PLAIN, 18));
+		lblClientOnline.setBounds(175, 76, 150, 24);
+		panel_23.add(lblClientOnline);
+
+		JLabel label_23 = new JLabel("");
+		label_23.setBounds(0, 24, 26, 26);
+		label_23.setIcon(dotBlack);
+		panel_23.add(label_23);
+
+		JLabel label_31 = new JLabel("");
+		label_31.setBounds(46, 79, 16, 16);
+		label_31.setIcon(dotWhite);
+		panel_23.add(label_31);
 		panel_6.setLayout(gl_panel_6);
 
 		JScrollPane scrollPane_clientInfo = new JScrollPane();
 		scrollPane_clientInfo.setLayout(new MyScrollPaneLayout());
 		scrollPane_clientInfo.getVerticalScrollBar().setUI(new MyScrollBar());
 		scrollPane_clientInfo.getVerticalScrollBar().setOpaque(false);
-
-		/*
-		 * scrollPanel_serverInfo.setComponentZOrder(scrollPanel_serverInfo.
-		 * getVerticalScrollBar(), 0);
-		 * scrollPanel_serverInfo.setComponentZOrder(scrollPanel_serverInfo.getViewport( * ), 1); 
-		 * scrollPanel_serverInfo.setBorder(null);
-		 * scrollPanel_serverInfo.setOpaque(false);
-		 */
 		main_panel.add(scrollPane_clientInfo, "clientInfo");
 
 		JPanel panel_21 = new JPanel();
+		panel_21.setBorder(null);
 		panel_21.setBackground(Color.WHITE);
 		scrollPane_clientInfo.setViewportView(panel_21);
-		
+
 		JPanel panel_24 = new JPanel();
 		panel_24.setBackground(Color.WHITE);
 		panel_24.setBorder(new LineBorder(new Color(0, 0, 0), 3, true));
+
+		JLabel lblWip = new JLabel("W.I.P.");
+		lblWip.setHorizontalAlignment(SwingConstants.CENTER);
+		lblWip.setFont(new Font("Bodoni MT", Font.BOLD, 80));
 		GroupLayout gl_panel_21 = new GroupLayout(panel_21);
-		gl_panel_21.setHorizontalGroup(
-			gl_panel_21.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panel_21.createSequentialGroup()
-					.addGap(74)
-					.addComponent(panel_24, GroupLayout.PREFERRED_SIZE, 367, GroupLayout.PREFERRED_SIZE)
-					.addContainerGap(576, Short.MAX_VALUE))
-		);
-		gl_panel_21.setVerticalGroup(
-			gl_panel_21.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panel_21.createSequentialGroup()
-					.addGap(116)
-					.addComponent(panel_24, GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE)
-					.addGap(78))
-		);
+		gl_panel_21.setHorizontalGroup(gl_panel_21.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panel_21.createSequentialGroup().addGap(74)
+						.addComponent(panel_24, GroupLayout.PREFERRED_SIZE, 367, GroupLayout.PREFERRED_SIZE).addGap(49)
+						.addComponent(lblWip, GroupLayout.PREFERRED_SIZE, 301, GroupLayout.PREFERRED_SIZE)
+						.addContainerGap(352, Short.MAX_VALUE)));
+		gl_panel_21.setVerticalGroup(gl_panel_21.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panel_21.createSequentialGroup().addGap(116)
+						.addComponent(panel_24, GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE).addGap(78))
+				.addGroup(gl_panel_21.createSequentialGroup().addGap(146)
+						.addComponent(lblWip, GroupLayout.PREFERRED_SIZE, 198, GroupLayout.PREFERRED_SIZE)
+						.addContainerGap(311, Short.MAX_VALUE)));
 		panel_24.setLayout(new BorderLayout(0, 0));
-		
+
 		JPanel panel_25 = new JPanel();
 		panel_25.setPreferredSize(new Dimension(10, 32));
 		panel_24.add(panel_25, BorderLayout.NORTH);
 		panel_25.setLayout(null);
-		
+
 		JLabel lblNewLabel = new JLabel("Client Online:");
 		lblNewLabel.setFont(new Font("Comic Sans MS", Font.BOLD | Font.ITALIC, 15));
 		lblNewLabel.setBounds(12, 0, 175, 32);
 		panel_25.add(lblNewLabel);
-		
+
 		JLabel label_21 = new JLabel("0");
 		label_21.setFont(new Font("Consolas", Font.PLAIN, 21));
 		label_21.setHorizontalAlignment(SwingConstants.RIGHT);
 		label_21.setBounds(293, 0, 56, 32);
 		panel_25.add(label_21);
-		
+
 		JPanel panel_26 = new JPanel();
 		panel_26.setBorder(new MatteBorder(1, 0, 0, 0, (Color) new Color(0, 0, 0)));
 		panel_24.add(panel_26, BorderLayout.CENTER);
 		panel_21.setLayout(gl_panel_21);
 
 		JScrollPane scrollPane_topicInfo = new JScrollPane();
-		/*
-		 * scrollPanel_serverInfo.setComponentZOrder(scrollPanel_serverInfo.
-		 * getVerticalScrollBar(), 0);
-		 * scrollPanel_serverInfo.setComponentZOrder(scrollPanel_serverInfo.getViewport(
-		 * ), 1); scrollPanel_serverInfo.setBorder(null);
-		 * scrollPanel_serverInfo.setOpaque(false);
-		 */
 		scrollPane_topicInfo.getVerticalScrollBar().setOpaque(false);
 		scrollPane_topicInfo.setLayout(new MyScrollPaneLayout());
 		scrollPane_topicInfo.getVerticalScrollBar().setUI(new MyScrollBar());
 		main_panel.add(scrollPane_topicInfo, "topicInfo");
 
 		JPanel panel_22 = new JPanel();
+		panel_22.setBorder(null);
 		panel_22.setBackground(Color.WHITE);
 		scrollPane_topicInfo.setViewportView(panel_22);
 		panel_22.setLayout(null);
-		
+
 		JPanel panel_27 = new JPanel();
-		panel_27.setBounds(37, 78, 736, 362);
+		panel_27.setBounds(37, 78, 370, 362);
 		panel_22.add(panel_27);
+
+		JLabel label_5 = new JLabel("W.I.P.");
+		label_5.setHorizontalAlignment(SwingConstants.CENTER);
+		label_5.setFont(new Font("Bodoni MT", Font.BOLD, 80));
+		label_5.setBounds(510, 112, 301, 198);
+		panel_22.add(label_5);
 
 		JPanel border_down = new JPanel();
 		border_down.setPreferredSize(new Dimension(10, 25));
@@ -906,8 +981,8 @@ public class ServerGuiRisizable extends JFrame {
 			public void mouseDragged(MouseEvent arg0) {
 				SwingUtilities.invokeLater(() -> {
 					int y = arg0.getY() - Py;
-					Dimension d = ServerGuiRisizable.this.getSize();
-					ServerGuiRisizable.this.setSize(d.width, d.height + y);
+					Dimension d = ServerGuiResizable.this.getSize();
+					ServerGuiResizable.this.setSize(d.width, d.height + y);
 				});
 			}
 		});
@@ -930,8 +1005,8 @@ public class ServerGuiRisizable extends JFrame {
 				SwingUtilities.invokeLater(() -> {
 					int x = arg0.getX() - Px;
 					int y = arg0.getY() - Py;
-					Dimension d = ServerGuiRisizable.this.getSize();
-					ServerGuiRisizable.this.setSize(d.width + x, d.height + y);
+					Dimension d = ServerGuiResizable.this.getSize();
+					ServerGuiResizable.this.setSize(d.width + x, d.height + y);
 				});
 			}
 		});
@@ -972,8 +1047,8 @@ public class ServerGuiRisizable extends JFrame {
 			public void mouseDragged(MouseEvent arg0) {
 				SwingUtilities.invokeLater(() -> {
 					int x = arg0.getX() - Px;
-					Dimension d = ServerGuiRisizable.this.getSize();
-					ServerGuiRisizable.this.setSize(d.width + x, d.height);
+					Dimension d = ServerGuiResizable.this.getSize();
+					ServerGuiResizable.this.setSize(d.width + x, d.height);
 				});
 			}
 		});
@@ -1040,6 +1115,101 @@ public class ServerGuiRisizable extends JFrame {
 		panel_3.setLayout(gl_panel_3);
 
 		cl = (CardLayout) (main_panel.getLayout());
+
+		JPanel panel_console = new JPanel();
+		panel_console.setOpaque(false);
+		panel_console.setBackground(Color.WHITE);
+		main_panel.add(panel_console, "console");
+
+		JPanel panel_28 = new JPanel();
+		panel_28.setBorder(new LineBorder(Color.WHITE, 8, true));
+		panel_28.setBackground(Color.DARK_GRAY);
+		GroupLayout gl_panel_console = new GroupLayout(panel_console);
+		gl_panel_console.setHorizontalGroup(gl_panel_console.createParallelGroup(Alignment.LEADING)
+				.addComponent(panel_28, GroupLayout.DEFAULT_SIZE, 1027, Short.MAX_VALUE));
+		gl_panel_console.setVerticalGroup(gl_panel_console.createParallelGroup(Alignment.LEADING).addComponent(panel_28,
+				GroupLayout.DEFAULT_SIZE, 593, Short.MAX_VALUE));
+
+		JPanel panel_29 = new JPanel();
+		panel_29.setBackground(new Color(20, 20, 20));
+
+		JScrollPane scrollPane = new JScrollPane();
+
+		scrollPane.setComponentZOrder(scrollPane.getVerticalScrollBar(), 0);
+		scrollPane.setComponentZOrder(scrollPane.getViewport(), 1);
+		scrollPane.getVerticalScrollBar().setOpaque(false);
+		scrollPane.setOpaque(false);
+		scrollPane.setLayout(new MyScrollPaneLayout());
+		scrollPane.getVerticalScrollBar().setUI(new MyScrollBar(new Color(250, 250, 250)));
+
+		scrollPane.setBackground(Color.DARK_GRAY);
+		scrollPane.setBorder(null);
+		GroupLayout gl_panel_28 = new GroupLayout(panel_28);
+		gl_panel_28.setHorizontalGroup(gl_panel_28.createParallelGroup(Alignment.LEADING)
+				.addComponent(panel_29, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+				.addGroup(gl_panel_28.createSequentialGroup().addGap(5)
+						.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 994, Short.MAX_VALUE).addGap(1)));
+		gl_panel_28.setVerticalGroup(gl_panel_28.createParallelGroup(Alignment.TRAILING)
+				.addGroup(gl_panel_28.createSequentialGroup().addGap(5)
+						.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 540, Short.MAX_VALUE).addGap(1)
+						.addComponent(panel_29, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE)));
+
+		textArea = new JTextArea();
+		textArea.setEditable(false);
+		textArea.setBorder(null);
+		textArea.setForeground(Color.WHITE);
+		textArea.setFont(new Font("Consolas", Font.PLAIN, 16));
+		textArea.setBackground(Color.DARK_GRAY);
+		scrollPane.setViewportView(textArea);
+
+		JLabel label_26 = new JLabel(">:");
+		label_26.setFont(new Font("Consolas", Font.BOLD, 18));
+		label_26.setForeground(Color.WHITE);
+		label_26.setHorizontalAlignment(SwingConstants.CENTER);
+
+		textField = new JTextField();
+		textField.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String command = textField.getText()+"\n";
+				if (!command.isEmpty()) {
+					SwingUtilities.invokeLater(() -> {
+						textArea.append(">: " + command);
+						textField.setText("");
+
+						try {
+							executor.write(command.getBytes());
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					});
+				}
+			}
+		});
+		textField.setMargin(new Insets(2, 0, 2, 2));
+		textField.setHorizontalAlignment(SwingConstants.LEFT);
+		textField.setForeground(Color.WHITE);
+		textField.setBorder(null);
+		textField.setFont(new Font("Consolas", Font.PLAIN, 18));
+		textField.setOpaque(false);
+		textField.setColumns(10);
+		GroupLayout gl_panel_29 = new GroupLayout(panel_29);
+		gl_panel_29.setHorizontalGroup(gl_panel_29.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panel_29.createSequentialGroup()
+						.addComponent(label_26, GroupLayout.PREFERRED_SIZE, 26, GroupLayout.PREFERRED_SIZE)
+						.addPreferredGap(ComponentPlacement.RELATED, 1, Short.MAX_VALUE)
+						.addComponent(textField, GroupLayout.PREFERRED_SIZE, 980, GroupLayout.PREFERRED_SIZE)));
+		gl_panel_29.setVerticalGroup(gl_panel_29.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panel_29.createParallelGroup(Alignment.BASELINE)
+						.addComponent(label_26, GroupLayout.DEFAULT_SIZE, 25, Short.MAX_VALUE)
+						.addComponent(textField, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE)));
+		panel_29.setLayout(gl_panel_29);
+		panel_28.setLayout(gl_panel_28);
+		panel_console.setLayout(gl_panel_console);
+
+		timer.start();
+		startReaders();
+
 	}
 
 	// UTILITY FUNCTIONS
@@ -1058,7 +1228,7 @@ public class ServerGuiRisizable extends JFrame {
 		AddressIp.updateIp();
 		label_10.setText(AddressIp.getLocalIp());
 		label_11.setText(AddressIp.getPublicIp());
-		if (AddressIp.getLocalIp() != "Unkown") {
+		if (!AddressIp.getLocalIp().equals("Unkown")) {
 			lblC.setIcon(connected);
 			lblC.setToolTipText("Internet access");
 		} else {
@@ -1066,4 +1236,72 @@ public class ServerGuiRisizable extends JFrame {
 			lblC.setToolTipText("No connection are available");
 		}
 	}
+
+	private void updateServerStat() {
+		SwingUtilities.invokeLater(() -> {
+			lblClientOnline.setText(String.valueOf(serverStat.getClientNumber()));
+			lblPostNumber.setText(String.valueOf(serverStat.getPostNumber()));
+			lblTopicNumber.setText(String.valueOf(serverStat.getTopicNumber()));
+		});
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		if (serverStat.getServerReady())
+			updateServerStat();
+	}
+
+	@Override
+	public void run() {
+		Scanner sc = null;
+		try {
+			if(Thread.currentThread() == readerStdOut) {
+			    if(stdOut == null)
+			        return;
+				sc = new Scanner(stdOut);		
+				
+			} else if(Thread.currentThread() == readerStdErr) {
+			    if(stdErr == null)
+			        return;
+				sc = new Scanner(stdErr);				
+			}
+			else
+			    return;
+			while(!quit) {
+				final String s = sc.nextLine();
+				SwingUtilities.invokeLater(() -> {					
+					textArea.append(s+"\n");
+				});
+			}
+			sc.close();
+		} catch (Exception e) {
+			textArea.append("\n[GUI-ERROR] Console reports an Internal error. ");
+			textArea.append("The error is: " + e);
+
+            try {
+                if(Thread.currentThread() == readerStdOut) {
+                    textArea.append(" - StdOut\n");
+                    StreamRedirector.redirectStdOut();
+                }
+                else if(Thread.currentThread() == readerStdErr) {
+                    textArea.append(" - StdErr\n");
+                    StreamRedirector.redirectStdErr();
+                }
+            }catch (IOException ioEx){
+                ioEx.printStackTrace();
+            }
+
+        }
+	}
+	
+	private void startReaders() {
+		readerStdOut = new Thread(this);
+		readerStdOut.setDaemon(true);
+		readerStdOut.start();
+		
+		readerStdErr = new Thread(this);
+		readerStdErr.setDaemon(true);
+		readerStdErr.start();
+	}
 }
+

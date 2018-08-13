@@ -52,8 +52,7 @@ public class ServerInfoProvider extends InfoProviderProtocol {
             warningStamp(e, "");
             if(tooManyError() || stop){
                 errorStamp(e,"Info provider has stop working.");
-                timer.cancel();
-                timer.purge();
+                stopTimer();
                 stop = true;
             }
         }
@@ -64,7 +63,6 @@ public class ServerInfoProvider extends InfoProviderProtocol {
     @Override
     public void run() {
         try {
-
             timer.schedule(new TimerTask()
             {
                 @Override
@@ -75,20 +73,23 @@ public class ServerInfoProvider extends InfoProviderProtocol {
             errorStamp(e, "An error occurred during the start of the Info Provider.");
             stop = true;
         }
-        while (true) {
+        while (!stop) {
             try {
                 clientSocket = serverSocket.accept();
                 sendInfo();
                 errorCnt=0;
             } catch (Exception e) {
-                warningStamp(e, "Error during accept loop.");
-                if(tooManyError() || stop){
-                    errorStamp(e,"Info provider has stop working.");
-                    stop = true;
-                    break;
+                if(!(errorCnt <= maxError && stop)) {
+                    warningStamp(e, "Error during accept loop.");
+                    if (tooManyError() || stop) {
+                        errorStamp(e, "Info provider has stop working.");
+                        stop = true;
+                    }
                 }
             }
         }
+        stopTimer();
+        infoStamp("Info Provider stopped.");
     }
 
     private void sendInfo() {
@@ -110,7 +111,17 @@ public class ServerInfoProvider extends InfoProviderProtocol {
     }
 
     public void stopIt(){
+        try {
+            serverSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         stop = true;
+    }
+
+    private void stopTimer(){
+        timer.cancel();
+        timer.purge();
     }
 
     public boolean stopped(){
@@ -135,7 +146,6 @@ public class ServerInfoProvider extends InfoProviderProtocol {
             System.err.println("\tException message: "    + e.getMessage());
         }
     }
-
 
     private void errorStamp(Exception e, String msg){
         System.out.flush();
