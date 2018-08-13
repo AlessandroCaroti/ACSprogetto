@@ -85,7 +85,8 @@ public class Host_2 extends Thread {
         try {
             while (!stopAll) {
                 line = sc.nextLine();
-                System.err.println("-Read from standard input: \'"+line+"\'");
+                //todo rimmuovere stampa di debug
+                System.err.println("-Read from System.in: \'"+line+"\'");
                 switch (line) {
                     case "?":
                     case "help":
@@ -241,9 +242,9 @@ public class Host_2 extends Thread {
 
         try {
 
-            toStdIn = StreamRedirector.redirectStdIn();
-            //fromStdOut = StreamRedirector.redirectStdOut();
-            //fromStdErr = StreamRedirector.redirectStdErr();
+            toStdIn    = StreamRedirector.redirectStdIn();
+            fromStdOut = StreamRedirector.redirectStdOut();
+            fromStdErr = StreamRedirector.redirectStdErr();
         } catch (IOException e) {
             errorStamp(e, "Couldn't redirect STDIO to this console.");
             return false;
