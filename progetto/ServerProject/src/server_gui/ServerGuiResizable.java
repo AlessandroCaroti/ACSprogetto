@@ -1275,17 +1275,17 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
 			}
 			sc.close();
 		} catch (Exception e) {
-			textArea.append("\n[GUI-ERROR] Console reports an Internal error. ");
+			textArea.append("\n[GUI-ERROR] Console reports an Internal error on ");
 			textArea.append("The error is: " + e);
 
             try {
                 if(Thread.currentThread() == readerStdOut) {
-                    textArea.append(" - StdOut\n");
-                    StreamRedirector.redirectStdOut();
+                    textArea.append(" StdOut. Resetting it\n");
+                    StreamRedirector.resetStdOut();
                 }
                 else if(Thread.currentThread() == readerStdErr) {
-                    textArea.append(" - StdErr\n");
-                    StreamRedirector.redirectStdErr();
+                    textArea.append(" StdErr. Resetting it\n");
+                    StreamRedirector.resetStdErr();
                 }
             }catch (IOException ioEx){
                 ioEx.printStackTrace();
@@ -1297,10 +1297,11 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
 	private void startReaders() {
 		readerStdOut = new Thread(this);
 		readerStdOut.setDaemon(true);
-		readerStdOut.start();
-		
+
 		readerStdErr = new Thread(this);
 		readerStdErr.setDaemon(true);
+
+		readerStdOut.start();
 		readerStdErr.start();
 	}
 }

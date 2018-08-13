@@ -44,7 +44,7 @@ public class Host_2 extends Thread {
 
         try {
             Host_2 h = new Host_2(Boolean.parseBoolean(args[0]));
-            h.start();
+            h.commandExecutorLoop();
         } catch (Exception e) {
 
             e.getClass().getSimpleName();
@@ -82,6 +82,7 @@ public class Host_2 extends Thread {
     private void commandExecutorLoop() {
         Scanner sc = new Scanner(System.in);
         String line;
+
         try {
             while (!stopAll) {
                 line = sc.nextLine();
