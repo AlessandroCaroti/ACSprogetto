@@ -10,7 +10,7 @@ import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Scanner;
 
-public class Host_2 extends Thread {
+public class Host_2 {
 
     private Server server;
     private boolean started;
@@ -71,12 +71,6 @@ public class Host_2 extends Thread {
 
         //Creazione del server
         server = new Server(serverStat);
-    }
-
-    @Override
-    public void run() {
-        commandExecutorLoop();
-        System.exit(0);
     }
 
     private void commandExecutorLoop() {
