@@ -1,15 +1,15 @@
+import server.StreamRedirector;
+
 import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
+import java.io.OutputStream;
 import java.util.Scanner;
 
 public class testPipeStream {
-    static PipedOutputStream output = new PipedOutputStream();
-    static PipedInputStream  input;
+    static OutputStream output;
 
     static {
         try {
-            input = new PipedInputStream(output);
+            output = StreamRedirector.redirectStdIn();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -41,7 +41,6 @@ public class testPipeStream {
         });
 
 
-        //System.setIn(input);
         thread2.start();
         thread1.start();
 

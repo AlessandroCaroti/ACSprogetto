@@ -6,6 +6,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.util.Objects;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -13,8 +14,17 @@ import javax.swing.JScrollBar;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 
 public class MyScrollBar extends BasicScrollBarUI {
-	Color c1 = new Color(115,129,139);
+	static final Color defCol = new Color(115,129,139);
+	final Color cl;
   private final Dimension d = new Dimension();
+  
+  public MyScrollBar() {
+	  cl = defCol;
+  }
+  
+  public MyScrollBar(Color c) {
+	  cl = Objects.requireNonNull(c);
+  }
 
   @Override
   protected JButton createDecreaseButton(int orientation) {
@@ -49,10 +59,10 @@ public class MyScrollBar extends BasicScrollBarUI {
     if (!sb.isEnabled() || r.width > r.height) {
       return;
     } else if (isDragging || isThumbRollover()) {
-      g2.setPaint(c1);
+      g2.setPaint(cl);
       g2.fillRoundRect(r.x, r.y, r.width, r.height, 10, 10);
     } else {
-      g2.setPaint(c1);
+      g2.setPaint(cl);
       g2.fillRoundRect((r.x+r.width)/2, r.y, 3, r.height, 3, 1);
     }
     g2.dispose();

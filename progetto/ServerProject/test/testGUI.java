@@ -58,7 +58,7 @@ public class testGUI {
         try {
             SwingUtilities.invokeAndWait(() -> {
                 try {
-                    ServerGuiResizable frame = new ServerGuiResizable(serverStat, System.out);
+                    ServerGuiResizable frame = new ServerGuiResizable(serverStat, System.out, null, null);
                     frame.setMinimumSize(new Dimension(780, 420));
                     frame.setUndecorated(true);
                     frame.update();
