@@ -6,6 +6,7 @@ public class AnonymousLoginWindow extends Window {
 
     private String serverAddress;
     private String port;
+    private boolean err;
 
     public AnonymousLoginWindow(){
         this.setWindowType(ANONYMOUSLOGIN);
@@ -28,5 +29,13 @@ public class AnonymousLoginWindow extends Window {
     public void setPort(String port) {
         this.port = port;
     }
+    public boolean isErr() {
+        return err;
+    }
+
+    public void setErr(boolean err) {
+        this.err = err;
+    }
+
 
 }

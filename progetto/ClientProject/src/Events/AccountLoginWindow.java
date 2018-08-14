@@ -4,16 +4,11 @@ import static client.WindowType.LOGIN;
 public class AccountLoginWindow extends AnonymousLoginWindow {
     private String username;
     private String password;
-    private String email;
-    private boolean err;
+
 
     public AccountLoginWindow(){
         this.setWindowType(LOGIN);
     }
-
-    public String getEmail() { return email; }
-
-    public void setEmail(String email) { this.email = email; }
 
     public String getUsername() {
         return username;
@@ -30,14 +25,6 @@ public class AccountLoginWindow extends AnonymousLoginWindow {
     public void setPassword(String password) {
         this.password = password;
     }
-
-	public boolean isErr() {
-		return err;
-	}
-
-	public void setErr(boolean err) {
-		this.err = err;
-	}
 
 
 
