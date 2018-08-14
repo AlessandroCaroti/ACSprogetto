@@ -5,6 +5,7 @@ public class AccountLoginWindow extends AnonymousLoginWindow {
     private String username;
     private String password;
     private String email;
+    private boolean err;
 
     public AccountLoginWindow(){
         this.setWindowType(LOGIN);
@@ -29,6 +30,14 @@ public class AccountLoginWindow extends AnonymousLoginWindow {
     public void setPassword(String password) {
         this.password = password;
     }
+
+	public boolean isErr() {
+		return err;
+	}
+
+	public void setErr(boolean err) {
+		this.err = err;
+	}
 
 
 
