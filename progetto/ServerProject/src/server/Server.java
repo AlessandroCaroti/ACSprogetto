@@ -619,15 +619,6 @@ public class Server implements ServerInterface,Callable<Integer> {
      ****    METODI PKG             ******************************************************************************
      *************************************************************************************************************/
 
-     void forwardMessage(Message msg){
-
-            String topicName  = msg.getTopic();
-            ConcurrentLinkedQueue<Integer> subscribers = topicClientList.putIfAbsent(topicName, new ConcurrentLinkedQueue<Integer>());
-            if(subscribers == null){  //creazione di un nuovo topic
-                topicList.add(topicName);
-            }
-            notifyAll(subscribers.iterator(), msg);      //todo magari si potrebbe eseguire su un altro thread in modo da non bloccare questa funzione
-    }
 
     void addTopic(String topic){
          if(topic==null) throw new NullPointerException("topic==null");
