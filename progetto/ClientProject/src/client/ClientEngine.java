@@ -49,15 +49,17 @@ public class ClientEngine implements Callable<Integer> {
                                     InetAddress.getByName(((AnonymousLoginWindow)current).getServerAddress())
                             );
                             client.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
-                            if(client.retrieveAccount()){
+                            if(((Client)client).retrieveAccount()){
                                 System.out.println("Account recuperato");
                                 clientEngineToGUI.add(new ForumWindow());//todo settare la roba da passare
                             }else{
                                 System.out.println("NON recuperato");
-                                /*todo come gestisco l'errore nella schermata?*/
+                                ((AccountLoginWindow)current).setErr(true);
+                                clientEngineToGUI.add(current);
+                                current=null;
                             }
                         }catch(Exception exc){
-                            //todo
+                            //todo avviene quando: infoprovider non inizializzato oppure unicast object fallito
                         }
                         break;
                     case NEWACCOUNT:
@@ -68,7 +70,7 @@ public class ClientEngine implements Callable<Integer> {
                                     InetAddress.getByName(((AnonymousLoginWindow)current).getServerAddress())
                             );
                             client.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
-                            if(client.register()){
+                            if(((Client) client).register()){
                                 System.out.println("Account creato");
                                 clientEngineToGUI.add(new ForumWindow());//todo settare la roba da passare
                             }else{

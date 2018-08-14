@@ -18,15 +18,18 @@
 package client;
 
 import utility.gui.GuiInterface;
+
+import java.awt.EventQueue;
 import java.util.concurrent.*;
 import Events.*;
+import guiClient.ClientGUI;
 
 public class ClientHost {
     private ExecutorService userInterfaceThread;
     private ExecutorService clientThread;
 
 
-    private GuiInterface userInterface;
+    private ClientGUI userInterface;
     private boolean guiActivated;
     private ClientEngine clientEngine;
 
@@ -35,7 +38,7 @@ public class ClientHost {
 
     private ClientHost(boolean usingUserInterface) {
         this.guiActivated=usingUserInterface;
-        userInterface = new GuiInterface(usingUserInterface);
+        userInterface = new ClientGUI(clientEngineToGUI,guiToClientEngine);
         clientEngine=new ClientEngine(clientEngineToGUI,guiToClientEngine);
         userInterfaceThread = Executors.newSingleThreadExecutor();
         clientThread = Executors.newSingleThreadExecutor();
@@ -58,7 +61,7 @@ public class ClientHost {
 
 
             exitCodeClient = host.clientThread.submit(host.clientEngine);
-            exitCodeUserInterface = host.userInterfaceThread.submit(host.userInterface);
+            //exitCodeUserInterface = host.userInterfaceThread.submit(host.userInterface);
 
 
             while (true) {
@@ -70,13 +73,13 @@ public class ClientHost {
                  *
                  */
                 try {
-                    exitcode = exitCodeUserInterface.get(100, TimeUnit.MILLISECONDS);
+                    //exitcode = exitCodeUserInterface.get(100, TimeUnit.MILLISECONDS);
                     switch (exitcode) {
                         case 0://chiudo tutto
                             host.clientThread.awaitTermination(10, TimeUnit.SECONDS);
                             return;
                         case 1://errore restarting...
-                            host.userInterfaceThread.submit((host.userInterface=new GuiInterface(host.guiActivated)));
+                            EventQueue.invokeLater((host.userInterface=new ClientGUI(host.clientEngineToGUI,host.guiToClientEngine)));
                             break;
                     }
                 } catch (ExecutionException | InterruptedException e) {

@@ -170,9 +170,13 @@ public class ClientGUI extends JFrame implements Runnable{
     private ImageIcon registrateW;
     private ImageIcon registrateC;
     private ImageIcon user;
+    private ImageIcon err;
     
     private ConcurrentLinkedQueue<Event> clientEngineToGui;
     private ConcurrentLinkedQueue<Event> guiToClient;
+	private JTextField textField_1;
+	private JLabel lblSubmit_1;
+	private JLabel lblNewLabel_23;
     
 	private static final Color BLACKBLUE = new Color(23, 35, 51);
 
@@ -265,7 +269,11 @@ public class ClientGUI extends JFrame implements Runnable{
         pnl_fp = new javax.swing.JPanel();
         pnl_fo = new javax.swing.JPanel();
         pnl_afo = new javax.swing.JPanel();
+        pnl_rc = new javax.swing.JPanel();
+        pnl_error = new javax.swing.JPanel();
+        
         jPanel1 = new javax.swing.JPanel();
+        
         login = new javax.swing.JPanel();
         login.setForeground(Color.BLACK);
         jLabel6 = new javax.swing.JLabel();
@@ -277,6 +285,8 @@ public class ClientGUI extends JFrame implements Runnable{
         forum = new javax.swing.JPanel();
         Anonymousforum = new javax.swing.JPanel();
         img_loader = new javax.swing.JLabel();
+        RecoveryCode = new javax.swing.JPanel();
+        error = new javax.swing.JPanel();
         
         ClassLoader classLoader= ClassLoader.getSystemClassLoader();
         logoGif=new ImageIcon(Objects.requireNonNull(classLoader.getResource("logogif.gif")));
@@ -308,7 +318,7 @@ public class ClientGUI extends JFrame implements Runnable{
         registrateW = new ImageIcon(Objects.requireNonNull(classLoader.getResource("register_user.png")));
         registrateC = new ImageIcon(Objects.requireNonNull(classLoader.getResource("register_user2.png")));
         user = new ImageIcon(Objects.requireNonNull(classLoader.getResource("user.png")));
-        
+        err = new ImageIcon(Objects.requireNonNull(classLoader.getResource("icons8-error.png")));
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setLocationByPlatform(true);
@@ -2000,6 +2010,68 @@ public class ClientGUI extends JFrame implements Runnable{
         	}
         });
         
+      //--------------------------RecoveryCode form-----------------
+        jPanel1.add(RecoveryCode, "card8");
+        RecoveryCode.setLayout(null);
+        RecoveryCode.setBackground(BLACKBLUE);
+        
+        JPanel panel_6 = new JPanel();
+        panel_6.setForeground(Color.WHITE);
+        panel_6.setBorder(new MatteBorder(1, 1, 1, 1, (Color) Color.GRAY));
+        panel_6.setBounds(200, 200, 400, 200);
+        RecoveryCode.add(panel_6);
+        panel_6.setLayout(null);
+        panel_6.setBackground(new Color(20,35,45));
+        
+        lblRecoveryCode = new JLabel("Recovery code");
+        lblRecoveryCode.setFont(new Font("Tahoma", Font.PLAIN, 15));
+        lblRecoveryCode.setForeground(Color.WHITE);
+        lblRecoveryCode.setBounds(100, 23, 186, 30);
+        lblRecoveryCode.setIcon(dot);
+        panel_6.add(lblRecoveryCode);
+        
+        textField_1 = new JTextField();
+        textField_1.setBounds(100, 79, 200, 36);
+        panel_6.add(textField_1);
+        textField_1.setColumns(10);
+        
+        lblSubmit_1 = new JLabel("Submit");
+        lblSubmit_1.addMouseListener(new MouseAdapter() {
+        	@Override
+        	public void mouseEntered(MouseEvent e) {
+        		lblSubmit_1.setForeground(Color.CYAN);
+        		lblSubmit_1.setIcon(loginC);
+        	}
+        	@Override
+        	public void mouseExited(MouseEvent e) {
+        		lblSubmit_1.setForeground(Color.WHITE);
+        		lblSubmit_1.setIcon(loginW);
+        	}
+        });
+        lblSubmit_1.setForeground(Color.WHITE);
+        lblSubmit_1.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        lblSubmit_1.setBounds(100, 127, 105, 47);
+        lblSubmit_1.setIcon(loginW);
+        panel_6.add(lblSubmit_1);
+        
+//-------------------------Error form-------------------------------------------
+        jPanel1.add(error, "card9");
+        error.setLayout(null);
+        error.setBackground(BLACKBLUE);
+        JPanel panel_8 = new JPanel();
+        panel_8.setForeground(Color.WHITE);
+        panel_8.setBorder(new MatteBorder(1, 1, 1, 1, (Color) Color.GRAY));
+        panel_8.setBounds(200, 200, 400, 200);
+        error.add(panel_8);
+        panel_8.setLayout(null);
+        panel_8.setBackground(new Color(255,255,255));
+        
+        lblNewLabel_23 = new JLabel("ERROR");
+        lblNewLabel_23.setFont(new Font("Tahoma", Font.PLAIN, 20));
+        lblNewLabel_23.setBounds(137, 77, 146, 40);
+        lblNewLabel_23.setIcon(err);
+        panel_8.add(lblNewLabel_23);
+              
         pack(); 
     }
 
