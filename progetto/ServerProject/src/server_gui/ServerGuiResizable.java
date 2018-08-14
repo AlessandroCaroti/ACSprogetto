@@ -29,7 +29,13 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.border.LineBorder;
 import javax.swing.border.MatteBorder;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+
 import java.awt.Insets;
+import java.awt.ComponentOrientation;
 
 public class ServerGuiResizable extends JFrame implements ActionListener, Runnable {
 
@@ -91,14 +97,17 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
 	private JPanel sideBtn_4;
 	private JPanel ind_4;
 	private JTextField textField;
-	private JTextArea textArea;
+	private final MutableAttributeSet attributeInput;
+	private final MutableAttributeSet attributeOutput;
+	private final MutableAttributeSet attributeError;
 
 	final private OutputStream executor;
-    final private InputStream stdOut;
-    final private InputStream stdErr;
+	final private InputStream stdOut;
+	final private InputStream stdErr;
 	private Thread readerStdOut;
 	private Thread readerStdErr;
 	private boolean quit;
+	private JTextPane textPane;
 
 	/**
 	 * Launch the application.
@@ -135,9 +144,9 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
 	 */
 	public ServerGuiResizable(ServerStatistic serverStat, OutputStream executor, InputStream out, InputStream err) {
 		this.serverStat = Objects.requireNonNull(serverStat);
-		this.executor   = Objects.requireNonNull(executor);
-        this.stdOut     = out;
-		this.stdErr     = err;
+		this.executor = Objects.requireNonNull(executor);
+		this.stdOut = out;
+		this.stdErr = err;
 
 		ClassLoader classLoader = ClassLoader.getSystemClassLoader();
 		clsL = new ImageIcon(Objects.requireNonNull(classLoader.getResource("CloseLight_28px.png")));
@@ -844,7 +853,7 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
 								.addComponent(panel_23, GroupLayout.PREFERRED_SIZE, 124, GroupLayout.PREFERRED_SIZE))
 						.addContainerGap(49, Short.MAX_VALUE)));
 
-		lblServerName = new JLabel(serverStat.getServerName());
+		lblServerName = new JLabel("");
 		lblServerName.setVerticalAlignment(SwingConstants.TOP);
 		lblServerName.setFont(new Font("Tahoma", Font.PLAIN, 18));
 		lblServerName.setBounds(238, 76, 275, 29);
@@ -956,8 +965,9 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
 		panel_22.setLayout(null);
 
 		JPanel panel_27 = new JPanel();
-		panel_27.setBounds(37, 78, 370, 362);
+		panel_27.setBounds(37, 78, 501, 464);
 		panel_22.add(panel_27);
+		panel_27.setLayout(new BorderLayout(0, 0));
 
 		JLabel label_5 = new JLabel("W.I.P.");
 		label_5.setHorizontalAlignment(SwingConstants.CENTER);
@@ -1154,26 +1164,37 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
 						.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 540, Short.MAX_VALUE).addGap(1)
 						.addComponent(panel_29, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE)));
 
-		textArea = new JTextArea();
-		textArea.setEditable(false);
-		textArea.setBorder(null);
-		textArea.setForeground(Color.WHITE);
-		textArea.setFont(new Font("Consolas", Font.PLAIN, 16));
-		textArea.setBackground(Color.DARK_GRAY);
-		scrollPane.setViewportView(textArea);
+		textPane = new JTextPane();
+		textPane.setEditable(false);
+		textPane.setBorder(null);
+		textPane.setForeground(Color.WHITE);
+		textPane.setFont(new Font("Consolas", Font.PLAIN, 16));
+		textPane.setBackground(Color.DARK_GRAY);
+		scrollPane.setViewportView(textPane);
+
+		attributeInput = new SimpleAttributeSet(textPane.getInputAttributes());
+		StyleConstants.setForeground(attributeInput, Color.GREEN);
+		attributeOutput = new SimpleAttributeSet(textPane.getInputAttributes());
+		StyleConstants.setForeground(attributeOutput, Color.WHITE);
+		attributeError = new SimpleAttributeSet(textPane.getInputAttributes());
+		StyleConstants.setForeground(attributeError, new Color(255,0,0));
 
 		JLabel label_26 = new JLabel(">:");
+		label_26.setBorder(null);
+		label_26.setAlignmentY(0.0f);
 		label_26.setFont(new Font("Consolas", Font.BOLD, 18));
 		label_26.setForeground(Color.WHITE);
-		label_26.setHorizontalAlignment(SwingConstants.CENTER);
+		label_26.setHorizontalAlignment(SwingConstants.RIGHT);
 
 		textField = new JTextField();
+		textField.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+		textField.setAlignmentX(0.1f);
 		textField.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				String command = textField.getText()+"\n";
+				String command = textField.getText() + "\n";
 				if (!command.isEmpty()) {
 					SwingUtilities.invokeLater(() -> {
-						textArea.append(">: " + command);
+						appendToPane(">: " + command, attributeInput);
 						textField.setText("");
 
 						try {
@@ -1197,12 +1218,12 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
 		gl_panel_29.setHorizontalGroup(gl_panel_29.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_panel_29.createSequentialGroup()
 						.addComponent(label_26, GroupLayout.PREFERRED_SIZE, 26, GroupLayout.PREFERRED_SIZE)
-						.addPreferredGap(ComponentPlacement.RELATED, 1, Short.MAX_VALUE)
-						.addComponent(textField, GroupLayout.PREFERRED_SIZE, 980, GroupLayout.PREFERRED_SIZE)));
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addComponent(textField, GroupLayout.DEFAULT_SIZE, 972, Short.MAX_VALUE)));
 		gl_panel_29.setVerticalGroup(gl_panel_29.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_panel_29.createParallelGroup(Alignment.BASELINE)
 						.addComponent(label_26, GroupLayout.DEFAULT_SIZE, 25, Short.MAX_VALUE)
-						.addComponent(textField, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE)));
+						.addComponent(textField, GroupLayout.DEFAULT_SIZE, 25, Short.MAX_VALUE)));
 		panel_29.setLayout(gl_panel_29);
 		panel_28.setLayout(gl_panel_28);
 		panel_console.setLayout(gl_panel_console);
@@ -1244,6 +1265,12 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
 			lblTopicNumber.setText(String.valueOf(serverStat.getTopicNumber()));
 		});
 	}
+	
+	public void setServerName() {
+		SwingUtilities.invokeLater(() -> {
+			lblServerName.setText(serverStat.getServerName());
+		});
+	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -1253,48 +1280,47 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
 
 	@Override
 	public void run() {
-		Scanner sc = null;
+		Scanner sc;
+		final MutableAttributeSet myAttribute;
 		try {
-			if(Thread.currentThread() == readerStdOut) {
-			    if(stdOut == null)
-			        return;
-				sc = new Scanner(stdOut);		
-				
-			} else if(Thread.currentThread() == readerStdErr) {
-			    if(stdErr == null)
-			        return;
-				sc = new Scanner(stdErr);				
-			}
-			else
-			    return;
-			while(!quit) {
+			if (Thread.currentThread() == readerStdOut) {
+				if (stdOut == null)
+					return;
+				sc = new Scanner(stdOut);
+				myAttribute = attributeOutput;
+			} else if (Thread.currentThread() == readerStdErr) {
+				if (stdErr == null)
+					return;
+				sc = new Scanner(stdErr);
+				myAttribute = attributeError;
+			} else
+				return;
+			while (!quit) {
 				final String s = sc.nextLine();
-				SwingUtilities.invokeLater(() -> {					
-					textArea.append(s+"\n");
+				SwingUtilities.invokeLater(() -> {
+					appendToPane(s + "\n", myAttribute);
 				});
 			}
 			sc.close();
 		} catch (Exception e) {
-			textArea.append("\n[GUI-ERROR] Console reports an Internal error on ");
-			textArea.append("The error is: " + e);
-
-            try {
-                if(Thread.currentThread() == readerStdOut) {
-                    textArea.append(" StdOut.");
-                    StreamRedirector.resetStdOut();
-                }
-                else if(Thread.currentThread() == readerStdErr) {
-                    textArea.append(" StdErr.");
-                    StreamRedirector.resetStdErr();
-                }
-                textArea.append(" Resetting it to the initial stream\n");
-            }catch (IOException ioEx){
-                ioEx.printStackTrace();
-            }
-
-        }
+			SwingUtilities.invokeLater(() -> {
+				appendToPane("\n[GUI-ERROR] Console reports an Internal error on ", attributeError);
+				try {
+					if (Thread.currentThread() == readerStdOut) {
+						appendToPane("StdOut ", attributeError);
+						StreamRedirector.resetStdOut();
+					} else if (Thread.currentThread() == readerStdErr) {
+						appendToPane("StdErr ", attributeError);
+						StreamRedirector.resetStdErr();
+					}
+					appendToPane("The error is: " + e + ". Resetting it to the initial stream\n", attributeError);
+				} catch (IOException ioEx) {
+					ioEx.printStackTrace();
+				}
+			});
+		}
 	}
-	
+
 	private void startReaders() {
 		readerStdOut = new Thread(this);
 		readerStdOut.setDaemon(true);
@@ -1305,5 +1331,12 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
 		readerStdOut.start();
 		readerStdErr.start();
 	}
-}
 
+	private void appendToPane(String msg, MutableAttributeSet attr) {
+		try {
+			textPane.getStyledDocument().insertString(textPane.getDocument().getLength(), msg, attr);
+		} catch (BadLocationException ignored) {
+		}
+
+	}
+}

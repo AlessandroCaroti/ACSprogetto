@@ -69,14 +69,17 @@ public class Host_2 {
         //Creazione della gui
         if (useGui) {
             redirectStdIO();
-            gui = initGui(serverStat);
+            gui = startGui(serverStat);
         }
 
         //Creazione del server
         server = new Server(serverStat);
 
+        initGui();
         //todo creazione di sClient
     }
+
+
 
     private void commandExecutorLoop() {
         Scanner sc = new Scanner(System.in);
@@ -163,7 +166,7 @@ public class Host_2 {
 
     }
 
-    private ServerGuiResizable initGui(ServerStatistic serverStat) {
+    private ServerGuiResizable startGui(ServerStatistic serverStat) {
         if (serverStat == null)
             throw new NullPointerException();
         try {
@@ -185,6 +188,12 @@ public class Host_2 {
             errorStamp(e, "Impossible to create the graphic user interface!");
         }
         return serverStat.getGui();
+    }
+
+    private void initGui(){
+        if(gui == null)
+            return;
+        gui.setServerName();
     }
 
 
