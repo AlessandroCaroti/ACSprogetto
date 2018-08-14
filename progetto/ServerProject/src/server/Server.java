@@ -55,6 +55,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     //todo se qualcuno trova un nome migliore cambitelo quello che ci ho messo fa schifo
     private ConcurrentSkipListMap<String,ConcurrentLinkedQueue<Integer>> topicClientList;                 // topic -> lista idAccount    -   PUNTI 1 e 2
     private ConcurrentLinkedQueue<String> topicList;        //utilizzata per tenere traccia di tutti i topic e da utilizzare in getTopicList()
+    private ConcurrentLinkedQueue<Integer> notificationList;
 
     /* clients management fields */
     private AccountCollectionInterface accountList;                     //monitor della lista contente tutti gli account salvati
@@ -116,7 +117,8 @@ public class Server implements ServerInterface,Callable<Integer> {
         serverName = tmp_name;
 
 
-        topicList = new ConcurrentLinkedQueue<>();
+        topicList    = new ConcurrentLinkedQueue<>();
+        notificationList=new ConcurrentLinkedQueue<>();
         topicClientList=new ConcurrentSkipListMap<>();
 
         //Caricamento delle impostazioni del server memorizate su file
@@ -161,7 +163,6 @@ public class Server implements ServerInterface,Callable<Integer> {
      */
     public Integer call(){
 
-        System.out.println("Enter something here : ");
 
         try{
             BufferedReader bufferRead = new BufferedReader(new InputStreamReader(System.in));
@@ -499,6 +500,7 @@ public class Server implements ServerInterface,Callable<Integer> {
             }
             notifyAll(subscribers.iterator(), msg);      //todo magari si potrebbe eseguire su un altro thread in modo da non bloccare questa funzione
             serverStat.incrementPostNum();
+
             return new ResponseCode(ResponseCode.Codici.R200,ResponseCode.TipoClasse.SERVER,"topic pubblicato");
         }catch (BadPaddingException| IllegalBlockSizeException e){
             warningStamp(e,"subscribe() - error cookie not recognized");
@@ -556,6 +558,86 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
 
+     @Override
+     public ResponseCode subscribeNewTopicNotification(String cookie){
+
+        try {
+            Integer accountId = getAccountId(cookie);
+            synchronized (notificationList) {
+                if (!notificationList.contains(accountId)) {
+                    notificationList.add(accountId);
+                }
+            }
+            return new ResponseCode(ResponseCode.Codici.R200,ResponseCode.TipoClasse.SERVER,"iscrizione avvenuta con successo");
+        }catch (Exception e){
+            errorStamp(e);
+        }
+        return ResponseCodeList.InternalError;
+     }
+
+     @Override
+     public ResponseCode recoverPassword(String email,String newPassword,String repeatPassword,ClientInterface stubCurrentHost){//il current host potrebbe essere diverso da quello salvtao nella classe account
+        Account copy;
+         if (newPassword == null || repeatPassword == null) {
+            return new ResponseCode(ResponseCode.Codici.R510,ResponseCode.TipoClasse.SERVER,"newpassword or password ==null");
+         }
+         if(newPassword.isEmpty()){
+             return new ResponseCode(ResponseCode.Codici.R510,ResponseCode.TipoClasse.SERVER,"newpassword is empty");
+         }
+         if (!newPassword.equals(repeatPassword)) {
+             return new ResponseCode(ResponseCode.Codici.R510,ResponseCode.TipoClasse.SERVER,"newpassword != password");
+         }
+
+             try {
+                 if ((copy = accountList.isMember(email, null)) == null) {//l'account non esiste
+                     pedanticInfo("Password recover refused ,\'" + email + "\' doesn't exist.(possible attempt to enumerate accounts!)");
+                     this.antiAccountEnum(stubCurrentHost);
+                     return  ResponseCodeList.WrongCodeValidation;
+                 }
+                 else {//l'account esiste
+                     if (this.emailValidation(email, stubCurrentHost)) {
+                         pedanticInfo("Password recovered! UserName: \'" + copy.getUsername() + "\' - NewPassword: \'" + newPassword + "\'");
+                         accountList.setPassword(newPassword,copy.getAccountId());//todo probabile bug sulla concorrenza se qualcuno fa una deleteaccount( ma noi non la diamo disponibile quindi scialla)
+                         return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER,"password successfully changed.");
+                     } else {
+                         pedanticInfo("Client password recovering refused; wrong code.");
+                         return ResponseCodeList.WrongCodeValidation;
+                     }
+
+                 }
+
+             } catch (Exception e) {
+                errorStamp(e);
+             }
+
+         return ResponseCodeList.InternalError;
+     }
+
+
+
+    /*************************************************************************************************************
+     ****    METODI PKG             ******************************************************************************
+     *************************************************************************************************************/
+
+     void forwardMessage(Message msg){
+
+            String topicName  = msg.getTopic();
+            ConcurrentLinkedQueue<Integer> subscribers = topicClientList.putIfAbsent(topicName, new ConcurrentLinkedQueue<Integer>());
+            if(subscribers == null){  //creazione di un nuovo topic
+                topicList.add(topicName);
+            }
+            notifyAll(subscribers.iterator(), msg);      //todo magari si potrebbe eseguire su un altro thread in modo da non bloccare questa funzione
+    }
+
+    void addTopic(String topic){
+         if(topic==null) throw new NullPointerException("topic==null");
+         if(topic.isEmpty()) throw new IllegalArgumentException("topic is empty");
+         synchronized (topicList){
+             if(!topicList.contains(topic)){
+                 topicList.add(topic);
+             }
+         }
+    }
     /*************************************************************************************************************
     ****    METODI PRIVATI          ******************************************************************************
     *************************************************************************************************************/
