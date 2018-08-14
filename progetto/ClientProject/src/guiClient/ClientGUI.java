@@ -6,18 +6,25 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import keeptoo.KGradientPanel;
+import utility.ServerInfoRecover;
 
 import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
+import java.net.InetAddress;
 import java.util.TimerTask;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.Objects;
 import java.util.Timer;
 import javax.swing.JTextField;
 import java.awt.Color;
 import java.awt.Dimension;
+import Events.*;
+import client.AnonymousClient;
+import client.Client;
 
 import javax.swing.SwingConstants;
 import javax.swing.GroupLayout.Alignment;
@@ -43,7 +50,7 @@ import javax.swing.JTextArea;
 import java.awt.CardLayout;
 
 
-public class ClientGUI extends JFrame  {
+public class ClientGUI extends JFrame implements Runnable{
 	
 	// Variables declaration
     private javax.swing.JLabel btn_login;
@@ -57,11 +64,15 @@ public class ClientGUI extends JFrame  {
     private javax.swing.JPanel login;
     private javax.swing.JPanel forum;
     private javax.swing.JPanel Anonymousforum;
+    private javax.swing.JPanel RecoveryCode;
+    private javax.swing.JPanel error;
     private javax.swing.JPanel pnl_bg;
     private javax.swing.JPanel pnl_rg;
     private javax.swing.JPanel pnl_fp;
     private javax.swing.JPanel pnl_fo;
     private javax.swing.JPanel pnl_afo;
+    private javax.swing.JPanel pnl_rc;
+    private javax.swing.JPanel pnl_error;
     private JTextField txtEmail;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -89,13 +100,12 @@ public class ClientGUI extends JFrame  {
     private JLabel lblUsernameDoesntAvaiable;
     private JLabel lblNewLabel_9;
     private JLabel lblEmailDoesnExists;
-    private JTextField txtServerPortAddress;
+    private JTextField txtusername;
     private JTextField txtServerIpAdress;
     private JLabel lblServerIpAddress;
     private JLabel label_4;
     private JLabel label_6;
     private JPanel panel_2;
-    private JLabel lblServerIpAddress_1;
     private JLabel label_7;
     private JLabel lblServerIpAddress_2;
     private JTextField txtEmail_1;
@@ -161,13 +171,15 @@ public class ClientGUI extends JFrame  {
     private ImageIcon registrateC;
     private ImageIcon user;
     
+    private ConcurrentLinkedQueue<Event> clientEngineToGui;
+    private ConcurrentLinkedQueue<Event> guiToClient;
     
 	private static final Color BLACKBLUE = new Color(23, 35, 51);
 
 	/**
 	 * Launch the application.
 	 */
-	public static void main(String[] args) {
+	/**public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
@@ -182,13 +194,67 @@ public class ClientGUI extends JFrame  {
 				}
 			}
 		});
+	}**/
+	
+	public void run() {
+		try {
+			Event current;
+	        boolean uscita=false;
+	        do{
+
+	            current=clientEngineToGui.poll();
+	            if(current instanceof ClientEvent){
+	                switch(((ClientEvent) current).getType()){
+	                    case SHUTDOWN:
+	                        uscita=true;
+	                        break;
+	                }
+	            }
+	            if(current instanceof Window){
+	                switch (((Window) current).getWindowType()){
+	                    case FORUM:
+
+	                        break;
+	                        
+	                    case LOGIN:
+	                        	login.setVisible(true);
+	                        	if(((AccountLoginWindow)current).isErr())
+							{
+								lbldont.setVisible(true);
+							}	
+	                        break;
+	                        
+	                    case NEWACCOUNT:
+	                      
+	                        break;
+	                        
+	                    case ANONYMOUSLOGIN:
+	                        
+	                        break;
+	                            
+	                    case FORGOTPASSWORD:
+	                        
+	                        break;
+	                }
+	            }
+	        }while(!uscita);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
+
 	
 	/**
 	 * Create the frame.
 	 */
-	public ClientGUI() {
-		
+	public ClientGUI(ConcurrentLinkedQueue<Event> clientEngineToGui, ConcurrentLinkedQueue<Event> guiToClientEngine) {
+		this.clientEngineToGui=clientEngineToGui;
+		this.guiToClient=guiToClientEngine;
+		this.setVisible(true);
+		Dimension objDimension = Toolkit.getDefaultToolkit().getScreenSize();
+        int iCoordX = (objDimension.width - this.getWidth()) / 2;
+        int iCoordY = (objDimension.height - this.getHeight()) / 2;
+        this.setLocation(iCoordX, iCoordY); 
 		initComponents();	
 	}
 	
@@ -213,35 +279,35 @@ public class ClientGUI extends JFrame  {
         img_loader = new javax.swing.JLabel();
         
         ClassLoader classLoader= ClassLoader.getSystemClassLoader();
-        logoGif=new ImageIcon(Objects.requireNonNull(classLoader.getResource("/risorse/logogif.gif")));
+        logoGif=new ImageIcon(Objects.requireNonNull(classLoader.getResource("logogif.gif")));
         img_loader.setIcon(logoGif);
-        dot= new ImageIcon(Objects.requireNonNull(classLoader.getResource("/risorse/dot.png")));
-        closeW = new ImageIcon(Objects.requireNonNull(classLoader.getResource("/risorse/close1.png")));
-        closeR = new ImageIcon(Objects.requireNonNull(classLoader.getResource("/risorse/close2.png")));
-        minW = new ImageIcon(Objects.requireNonNull(classLoader.getResource("/risorse/minimize1.png")));
-        minC = new ImageIcon(Objects.requireNonNull(classLoader.getResource("/risorse/minimize2.png")));
-        addL = new ImageIcon(Objects.requireNonNull(classLoader.getResource("/risorse/add.png")));
-        addD = new ImageIcon(Objects.requireNonNull(classLoader.getResource("/risorse/icons8-add.png")));
-        emailW = new ImageIcon(Objects.requireNonNull(classLoader.getResource("/risorse/email.png")));
-        anonymousS = new ImageIcon(Objects.requireNonNull(classLoader.getResource("/risorse/anonymous_mask.png")));
-        anonymousL = new ImageIcon(Objects.requireNonNull(classLoader.getResource("/risorse/icons8-anonymous_mask.png")));
-        logoutW = new ImageIcon(Objects.requireNonNull(classLoader.getResource("/risorse/export.png")));
-        logoutR = new ImageIcon(Objects.requireNonNull(classLoader.getResource("/risorse/icons8-export.png")));
-        code = new ImageIcon(Objects.requireNonNull(classLoader.getResource("/risorse/icons8-qr_code.png")));
-        sent = new ImageIcon(Objects.requireNonNull(classLoader.getResource("/risorse/icons8-sent.png")));
-        server = new ImageIcon(Objects.requireNonNull(classLoader.getResource("/risorse/icons8-server.png")));
-        canc = new ImageIcon(Objects.requireNonNull(classLoader.getResource("/risorse/icons8-trash.png")));
-        port = new ImageIcon(Objects.requireNonNull(classLoader.getResource("/risorse/icons8-wired_network.png")));
-        lock = new ImageIcon(Objects.requireNonNull(classLoader.getResource("/risorse/lock.png")));
-        loginW = new ImageIcon(Objects.requireNonNull(classLoader.getResource("/risorse/login.png")));
-        loginC = new ImageIcon(Objects.requireNonNull(classLoader.getResource("/risorse/login2.png")));
-        logo128 = new ImageIcon(Objects.requireNonNull(classLoader.getResource("/risorse/logo.png")));
-        logo32 = new ImageIcon(Objects.requireNonNull(classLoader.getResource("/risorse/logo1.png")));
-        ok = new ImageIcon(Objects.requireNonNull(classLoader.getResource("/risorse/ok.png")));
-        notOk = new ImageIcon(Objects.requireNonNull(classLoader.getResource("/risorse/notok.png")));
-        registrateW = new ImageIcon(Objects.requireNonNull(classLoader.getResource("/risorse/register_user.png")));
-        registrateC = new ImageIcon(Objects.requireNonNull(classLoader.getResource("/risorse/register_user2.png")));
-        user = new ImageIcon(Objects.requireNonNull(classLoader.getResource("/risorse/user.png")));
+        dot= new ImageIcon(Objects.requireNonNull(classLoader.getResource("dot.png")));
+        closeW = new ImageIcon(Objects.requireNonNull(classLoader.getResource("close1.png")));
+        closeR = new ImageIcon(Objects.requireNonNull(classLoader.getResource("close2.png")));
+        minW = new ImageIcon(Objects.requireNonNull(classLoader.getResource("minimize1.png")));
+        minC = new ImageIcon(Objects.requireNonNull(classLoader.getResource("minimize2.png")));
+        addL = new ImageIcon(Objects.requireNonNull(classLoader.getResource("add.png")));
+        addD = new ImageIcon(Objects.requireNonNull(classLoader.getResource("icons8-add.png")));
+        emailW = new ImageIcon(Objects.requireNonNull(classLoader.getResource("email.png")));
+        anonymousS = new ImageIcon(Objects.requireNonNull(classLoader.getResource("anonymous_mask.png")));
+        anonymousL = new ImageIcon(Objects.requireNonNull(classLoader.getResource("icons8-anonymous_mask.png")));
+        logoutW = new ImageIcon(Objects.requireNonNull(classLoader.getResource("export.png")));
+        logoutR = new ImageIcon(Objects.requireNonNull(classLoader.getResource("icons8-export.png")));
+        code = new ImageIcon(Objects.requireNonNull(classLoader.getResource("icons8-qr_code.png")));
+        sent = new ImageIcon(Objects.requireNonNull(classLoader.getResource("icons8-sent.png")));
+        server = new ImageIcon(Objects.requireNonNull(classLoader.getResource("icons8-server.png")));
+        canc = new ImageIcon(Objects.requireNonNull(classLoader.getResource("icons8-trash.png")));
+        port = new ImageIcon(Objects.requireNonNull(classLoader.getResource("icons8-wired_network.png")));
+        lock = new ImageIcon(Objects.requireNonNull(classLoader.getResource("lock.png")));
+        loginW = new ImageIcon(Objects.requireNonNull(classLoader.getResource("login.png")));
+        loginC = new ImageIcon(Objects.requireNonNull(classLoader.getResource("login2.png")));
+        logo128 = new ImageIcon(Objects.requireNonNull(classLoader.getResource("logo.png")));
+        logo32 = new ImageIcon(Objects.requireNonNull(classLoader.getResource("logo1.png")));
+        ok = new ImageIcon(Objects.requireNonNull(classLoader.getResource("ok.png")));
+        notOk = new ImageIcon(Objects.requireNonNull(classLoader.getResource("notok.png")));
+        registrateW = new ImageIcon(Objects.requireNonNull(classLoader.getResource("register_user.png")));
+        registrateC = new ImageIcon(Objects.requireNonNull(classLoader.getResource("register_user2.png")));
+        user = new ImageIcon(Objects.requireNonNull(classLoader.getResource("user.png")));
         
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -396,7 +462,7 @@ public class ClientGUI extends JFrame  {
         txtEmail.setBounds(56, 212, 277, 36);
         panel.add(txtEmail);
         txtEmail.setFont(new Font("Tahoma", Font.PLAIN, 13));
-        txtEmail.setText("Email or username");
+        txtEmail.setText("Email");
         txtEmail.setHorizontalAlignment(SwingConstants.LEFT);
         txtEmail.setForeground(Color.BLACK);
         txtEmail.setBackground(Color.WHITE);
@@ -406,7 +472,7 @@ public class ClientGUI extends JFrame  {
         
         jLabel2.setIcon(user);
         
-        lblEmail_1 = new JLabel("Email or username");
+        lblEmail_1 = new JLabel("Email");
         lblEmail_1.setBounds(56, 195, 117, 16);
         panel.add(lblEmail_1);
         lblEmail_1.setFont(new Font("Tahoma", Font.PLAIN, 13));
@@ -418,28 +484,28 @@ public class ClientGUI extends JFrame  {
         separator_6.setBounds(56, 160, 277, 12);
         panel.add(separator_6);
         
-        txtServerPortAddress = new JTextField();
-        txtServerPortAddress.setText("Server port");
-        txtServerPortAddress.setHorizontalAlignment(SwingConstants.LEFT);
-        txtServerPortAddress.setForeground(Color.BLACK);
-        txtServerPortAddress.setFont(new Font("Tahoma", Font.PLAIN, 13));
-        txtServerPortAddress.setBackground(Color.WHITE);
-        txtServerPortAddress.setBounds(56, 124, 277, 36);
-        panel.add(txtServerPortAddress);
+        txtusername = new JTextField();
+        txtusername.setText("Username");
+        txtusername.setHorizontalAlignment(SwingConstants.LEFT);
+        txtusername.setForeground(Color.BLACK);
+        txtusername.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        txtusername.setBackground(Color.WHITE);
+        txtusername.setBounds(56, 124, 277, 36);
+        panel.add(txtusername);
         
-        JLabel lblServerPortAddress = new JLabel("Server port");
-        lblServerPortAddress.setForeground(Color.WHITE);
-        lblServerPortAddress.setFont(new Font("Tahoma", Font.PLAIN, 13));
-        lblServerPortAddress.setBounds(56, 108, 70, 16);
-        panel.add(lblServerPortAddress);
-        lblServerPortAddress.setVisible(false);
+        JLabel lblusername = new JLabel("Username");
+        lblusername.setForeground(Color.WHITE);
+        lblusername.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        lblusername.setBounds(56, 108, 70, 16);
+        panel.add(lblusername);
+        lblusername.setVisible(false);
         
-        txtServerPortAddress.addMouseListener(new MouseAdapter() {
+        txtusername.addMouseListener(new MouseAdapter() {
         	@Override
         	public void mouseEntered(MouseEvent e) {
-        		if(txtServerPortAddress.getText().equals("Server port"))
-        			txtServerPortAddress.setText(null);
-        		 lblServerPortAddress.setVisible(true);
+        		if(txtusername.getText().equals("Server port"))
+        			txtusername.setText(null);
+        		 lblusername.setVisible(true);
         	}
         });
         
@@ -521,7 +587,7 @@ public class ClientGUI extends JFrame  {
         	}
         });
         
-        lblServerIpAddress_2 = new JLabel("Server IP address or port do not correspond");
+        lblServerIpAddress_2 = new JLabel("Server IP address does not correspond");
         lblServerIpAddress_2.setIcon(notOk);
         lblServerIpAddress_2.setForeground(Color.RED);
         lblServerIpAddress_2.setFont(new Font("Tahoma", Font.PLAIN, 13));
@@ -574,19 +640,13 @@ public class ClientGUI extends JFrame  {
         		}
         	});
         
-        lbldont = new JLabel("Email, username or password do not correspond");
-        lbldont.setBounds(230, 516, 308, 25);
+        lbldont = new JLabel("Username, Server IP address or password does not correspond");
+        lbldont.setBounds(207, 516, 369, 25);
         login.add(lbldont);
         lbldont.setFont(new Font("Tahoma", Font.PLAIN, 13));
         lbldont.setIcon(notOk);
         lbldont.setForeground(Color.RED);
-        
-        lblServerIpAddress_1 = new JLabel("Server IP address or port do not correspond");
-        lblServerIpAddress_1.setIcon(notOk);
-        lblServerIpAddress_1.setForeground(Color.RED);
-        lblServerIpAddress_1.setFont(new Font("Tahoma", Font.PLAIN, 13));
-        lblServerIpAddress_1.setBounds(230, 542, 308, 25);
-        login.add(lblServerIpAddress_1);
+        lbldont.setVisible(false);
        
         KGradientPanel panel_1 = new KGradientPanel();
         panel_1.setkEndColor(Color.BLACK);
@@ -1949,6 +2009,13 @@ public class ClientGUI extends JFrame  {
 		btn_login.setVisible(false);
 		loader.setVisible(true);
 		
+		AccountLoginWindow event=new AccountLoginWindow();
+		event.setEmail(txtEmail.getText());
+		event.setPassword(textField.getText());
+		event.setServerAddress(txtServerIpAdress.getText());
+		event.setUsername(txtusername.getText());
+		this.guiToClient.offer(event);
+		
 		Timer t=new Timer();
 		TimerTask task=new MyTask();
 		t.schedule(task,5000);
@@ -1987,7 +2054,9 @@ public class ClientGUI extends JFrame  {
     }
     
     private void lbl_closeMousePressed(java.awt.event.MouseEvent evt) {
-        // TODO add your handling code here:
+        ShutDown event=new ShutDown();
+        event.setErrExit(false);
+        this.guiToClient.offer(event);
         System.exit(0);
     }
 
