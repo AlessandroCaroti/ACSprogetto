@@ -6,25 +6,19 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import keeptoo.KGradientPanel;
-import utility.ServerInfoRecover;
 
 import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.MouseEvent;
-import java.net.InetAddress;
 import java.util.TimerTask;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.Objects;
 import java.util.Timer;
 import javax.swing.JTextField;
 import java.awt.Color;
 import java.awt.Dimension;
-import Events.*;
-import client.AnonymousClient;
-import client.Client;
 
 import javax.swing.SwingConstants;
 import javax.swing.GroupLayout.Alignment;
@@ -48,9 +42,12 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.JTextArea;
 import java.awt.CardLayout;
+import Events.*;
+import client.AnonymousClient;
+import client.Client;
 
 
-public class ClientGUI extends JFrame implements Runnable{
+public class ClientGUI extends JFrame {
 	
 	// Variables declaration
     private javax.swing.JLabel btn_login;
@@ -100,21 +97,18 @@ public class ClientGUI extends JFrame implements Runnable{
     private JLabel lblUsernameDoesntAvaiable;
     private JLabel lblNewLabel_9;
     private JLabel lblEmailDoesnExists;
-    private JTextField txtusername;
     private JTextField txtServerIpAdress;
     private JLabel lblServerIpAddress;
-    private JLabel label_4;
     private JLabel label_6;
     private JPanel panel_2;
+    private JLabel lblServerIpAddress_1;
     private JLabel label_7;
     private JLabel lblServerIpAddress_2;
     private JTextField txtEmail_1;
-    private JTextField txtRecoveryCode;
     private JTextField txtPassword;
     private JTextField txtRepeatPassword;
     private JLabel label_16;
     private JLabel label_17;
-    private JLabel label_18;
     private JLabel label_19;
     private JLabel label_20;
     private JLabel lblSubmit;
@@ -171,12 +165,14 @@ public class ClientGUI extends JFrame implements Runnable{
     private ImageIcon registrateC;
     private ImageIcon user;
     private ImageIcon err;
-    
+	private JTextField txtusername;
+	
     private ConcurrentLinkedQueue<Event> clientEngineToGui;
     private ConcurrentLinkedQueue<Event> guiToClient;
 	private JTextField textField_1;
 	private JLabel lblSubmit_1;
 	private JLabel lblNewLabel_23;
+    
     
 	private static final Color BLACKBLUE = new Color(23, 35, 51);
 
@@ -246,21 +242,14 @@ public class ClientGUI extends JFrame implements Runnable{
 			e.printStackTrace();
 		}
 	}
-
 	
 	/**
 	 * Create the frame.
 	 */
-	public ClientGUI(ConcurrentLinkedQueue<Event> clientEngineToGui, ConcurrentLinkedQueue<Event> guiToClientEngine) {
-		this.clientEngineToGui=clientEngineToGui;
-		this.guiToClient=guiToClientEngine;
-		this.setVisible(true);
-		Dimension objDimension = Toolkit.getDefaultToolkit().getScreenSize();
-        int iCoordX = (objDimension.width - this.getWidth()) / 2;
-        int iCoordY = (objDimension.height - this.getHeight()) / 2;
-        this.setLocation(iCoordX, iCoordY); 
+	/**public ClientGUI() {
+		
 		initComponents();	
-	}
+	}**/
 	
 	private void initComponents() {
 
@@ -273,20 +262,22 @@ public class ClientGUI extends JFrame implements Runnable{
         pnl_error = new javax.swing.JPanel();
         
         jPanel1 = new javax.swing.JPanel();
-        
         login = new javax.swing.JPanel();
+        
         login.setForeground(Color.BLACK);
         jLabel6 = new javax.swing.JLabel();
-        jLabel6.setBounds(69, 50, 101, 37);
+        jLabel6.setIcon(dot);
+        jLabel6.setBounds(52, 50, 101, 37);
        
         loader = new javax.swing.JPanel();
         registration = new javax.swing.JPanel();
         forgot = new javax.swing.JPanel();
         forum = new javax.swing.JPanel();
         Anonymousforum = new javax.swing.JPanel();
-        img_loader = new javax.swing.JLabel();
         RecoveryCode = new javax.swing.JPanel();
         error = new javax.swing.JPanel();
+        
+        img_loader = new javax.swing.JLabel();
         
         ClassLoader classLoader= ClassLoader.getSystemClassLoader();
         logoGif=new ImageIcon(Objects.requireNonNull(classLoader.getResource("logogif.gif")));
@@ -319,6 +310,7 @@ public class ClientGUI extends JFrame implements Runnable{
         registrateC = new ImageIcon(Objects.requireNonNull(classLoader.getResource("register_user2.png")));
         user = new ImageIcon(Objects.requireNonNull(classLoader.getResource("user.png")));
         err = new ImageIcon(Objects.requireNonNull(classLoader.getResource("icons8-error.png")));
+        
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setLocationByPlatform(true);
@@ -394,7 +386,7 @@ public class ClientGUI extends JFrame implements Runnable{
         lblNewLabel_6.setFont(new Font("Tahoma", Font.PLAIN, 13));
         lblNewLabel_6.setIcon(registrateW);
         lblNewLabel_6.setForeground(Color.WHITE);
-        lblNewLabel_6.setBounds(69, 516, 85, 25);
+        lblNewLabel_6.setBounds(52, 534, 85, 25);
         login.add(lblNewLabel_6);
         lblNewLabel_6.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt) {
@@ -419,135 +411,204 @@ public class ClientGUI extends JFrame implements Runnable{
         lblNewLabel_7.setBounds(716, 516, 61, 64);
         login.add(lblNewLabel_7);
         
-        JPanel panel = new JPanel();
-        //panel.setBorder(new MatteBorder(1, 1, 1, 1, (Color) new Color(64, 64, 64)));
-        panel.setBackground(BLACKBLUE);
-        panel.setBounds(207, 113, 369, 390);
-        login.add(panel);
-        panel.setLayout(null);
-        btn_login = new javax.swing.JLabel();
-        btn_login.setBounds(301, 335, 32, 32);
-        panel.add(btn_login);
+        lbldont = new JLabel("Username, Server IP address or password does not correspond");
+        lbldont.setBounds(52, 471, 369, 25);
+        login.add(lbldont);
+        lbldont.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        lbldont.setIcon(notOk);
+        lbldont.setForeground(Color.RED);
+        lbldont.setVisible(false);
         
-        btn_login.setIcon(loginW);       
+        //panel_3 = new JPanel();
+        KGradientPanel panel_3 = new KGradientPanel();
+        panel_3.setBounds(407, 158, 343, 181);
+        login.add(panel_3);
+        panel_3.setkEndColor(Color.BLACK);
+        panel_3.setkStartColor(BLACKBLUE);
+        panel_3.setBorder(new MatteBorder(0, 0, 0, 0, (Color) new Color(0, 0, 0)));
+        panel_3.setBackground(Color.BLACK);
+        panel_3.setLayout(null);
         
-        JLabel lblNewLabel_5 = new JLabel("Forgot password?");
-        lblNewLabel_5.setBounds(56, 335, 102, 16);
-        panel.add(lblNewLabel_5);
-        lblNewLabel_5.setFont(new Font("Tahoma", Font.PLAIN, 13));
-        lblNewLabel_5.setForeground(Color.WHITE);
-        jSeparator1 = new javax.swing.JSeparator();
-        jSeparator1.setBounds(56, 321, 277, 12);
-        panel.add(jSeparator1);
+        label_7 = new JLabel();
+        label_7.setBounds(287, 122, 33, 35);
+        panel_3.add(label_7);
+        label_7.setIcon(loginW);
         
-                jSeparator1.setBackground(Color.CYAN);
-                jSeparator1.setForeground(Color.CYAN);
+        textField_6 = new JTextField();
+        textField_6.setText("Server IP address");
+        textField_6.setHorizontalAlignment(SwingConstants.LEFT);
+        textField_6.setForeground(Color.BLACK);
+        textField_6.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        textField_6.setBackground(Color.WHITE);
+        textField_6.setBounds(46, 69, 277, 36);
+        panel_3.add(textField_6);
+        
+        JLabel lblServerIpAddress_3 = new JLabel("Server IP address");
+        lblServerIpAddress_3.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        lblServerIpAddress_3.setForeground(Color.WHITE);
+        lblServerIpAddress_3.setBounds(46, 53, 111, 16);
+        panel_3.add(lblServerIpAddress_3);
+        lblServerIpAddress_3.setVisible(false);
+        
+        textField_6.addMouseListener(new MouseAdapter() {
+        	@Override
+        	public void mouseEntered(MouseEvent e) {
+        		if(textField_6.getText().equals("Server IP address"))
+        			textField_6.setText(null);
+        		lblServerIpAddress_3.setVisible(true);
+        	}
+        });
+        
+        
+        JLabel lblAnonymous = new JLabel("Anonymous");
+        lblAnonymous.setBounds(221, 6, 116, 32);
+        panel_3.add(lblAnonymous);
+        lblAnonymous.setIcon(anonymousS);
+        lblAnonymous.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        lblAnonymous.setForeground(Color.WHITE);
+        
+        label_4 = new JLabel();
+        label_4.setBounds(16, 69, 25, 36);
+        label_4.setIcon(server);
+        panel_3.add(label_4);
+                
+                JPanel panel = new JPanel();
+                panel.setBorder(new MatteBorder(1, 1, 1, 1, (Color) Color.GRAY));
+                panel.setBounds(52, 158, 343, 280);
+                login.add(panel);
+                //panel.setBorder(new MatteBorder(1, 1, 1, 1, (Color) new Color(64, 64, 64)));
+                panel.setBackground(BLACKBLUE);
+                panel.setLayout(null);
+                btn_login = new javax.swing.JLabel();
+                btn_login.setBounds(290, 234, 32, 32);
+                panel.add(btn_login);
+                
+                btn_login.setIcon(loginW);    
+                
+                JSeparator separator_7 = new JSeparator();
+                separator_7.setForeground(Color.CYAN);
+                separator_7.setBackground(Color.CYAN);
+                separator_7.setBounds(45, 62, 277, 12);
+                panel.add(separator_7);
+                
+                txtServerIpAdress = new JTextField();
+                txtServerIpAdress.setText("Server IP address");
+                txtServerIpAdress.setHorizontalAlignment(SwingConstants.LEFT);
+                txtServerIpAdress.setForeground(Color.BLACK);
+                txtServerIpAdress.setFont(new Font("Tahoma", Font.PLAIN, 13));
+                txtServerIpAdress.setBackground(Color.WHITE);
+                txtServerIpAdress.setBounds(45, 31, 277, 36);
+                panel.add(txtServerIpAdress);
+                
+                lblServerIpAddress = new JLabel("Server IP address");
+                lblServerIpAddress.setForeground(Color.WHITE);
+                lblServerIpAddress.setFont(new Font("Tahoma", Font.PLAIN, 13));
+                lblServerIpAddress.setBounds(45, 17, 102, 16);
+                panel.add(lblServerIpAddress);
+                lblServerIpAddress.setVisible(false);
+                txtServerIpAdress.addMouseListener(new MouseAdapter() {
+                	@Override
+                	public void mouseEntered(MouseEvent e) {
+                		if(txtServerIpAdress.getText().equals("Server IP address"))
+                			txtServerIpAdress.setText(null);
+                		lblServerIpAddress.setVisible(true);
+                	}
+                });
+                
+                label_6 = new JLabel();
+                label_6.setIcon(server);
+                label_6.setBounds(19, 31, 25, 36);
+                panel.add(label_6);
                 
                 textField = new JPasswordField();
-                textField.setBounds(56, 287, 277, 36);
+                textField.setBounds(45, 186, 277, 36);
                 panel.add(textField);
                 textField.setFont(new Font("Tahoma", Font.PLAIN, 13));
                 textField.setText("********");
                 textField.setHorizontalAlignment(SwingConstants.LEFT);
                 textField.setForeground(Color.BLACK);
                 textField.setBackground(Color.WHITE);
-                jLabel3=new javax.swing.JLabel();
-                jLabel3.setBounds(19, 286, 25, 37);
-                panel.add(jLabel3);
-                jLabel3.setIcon(lock);
+                jSeparator1 = new javax.swing.JSeparator();
+                jSeparator1.setBounds(45, 221, 277, 12);
+                panel.add(jSeparator1);
                 
-                lblPassword = new JLabel("Password");
-                lblPassword.setBounds(56, 270, 61, 16);
-                panel.add(lblPassword);
-                lblPassword.setFont(new Font("Tahoma", Font.PLAIN, 13));
-                lblPassword.setForeground(Color.WHITE);
+                        jSeparator1.setBackground(Color.CYAN);
+                        jSeparator1.setForeground(Color.CYAN);
+                        
+                        lblPassword = new JLabel("Password");
+                        lblPassword.setBounds(45, 168, 61, 16);
+                        panel.add(lblPassword);
+                        lblPassword.setFont(new Font("Tahoma", Font.PLAIN, 13));
+                        lblPassword.setForeground(Color.WHITE);
+                        
+                        txtusername = new JTextField();
+                        txtusername.setBounds(45, 107, 277, 36);
+                        panel.add(txtusername);
+                        txtusername.setText("Username");
+                        txtusername.setHorizontalAlignment(SwingConstants.LEFT);
+                        txtusername.setForeground(Color.BLACK);
+                        txtusername.setFont(new Font("Tahoma", Font.PLAIN, 13));
+                        txtusername.setBackground(Color.WHITE);
+                        
+                        JLabel lblusername = new JLabel("Username");
+                        lblusername.setBounds(45, 93, 70, 16);
+                        panel.add(lblusername);
+                        lblusername.setForeground(Color.WHITE);
+                        lblusername.setFont(new Font("Tahoma", Font.PLAIN, 13));
+                        
+                        JSeparator separator_6 = new JSeparator();
+                        separator_6.setBounds(45, 139, 277, 12);
+                        panel.add(separator_6);
+                        separator_6.setForeground(Color.CYAN);
+                        separator_6.setBackground(Color.CYAN);
+                        
+                        JLabel lblNewLabel_5 = new JLabel("Forgot password?");
+                        lblNewLabel_5.setBounds(45, 245, 102, 16);
+                        panel.add(lblNewLabel_5);
+                        lblNewLabel_5.setFont(new Font("Tahoma", Font.PLAIN, 13));
+                        lblNewLabel_5.setForeground(Color.WHITE);
+                        jLabel3=new javax.swing.JLabel();
+                        jLabel3.setBounds(19, 185, 25, 37);
+                        panel.add(jLabel3);
+                        jLabel3.setIcon(lock);
+                        jLabel2= new javax.swing.JLabel();
+                        jLabel2.setBounds(19, 107, 25, 36);
+                        panel.add(jLabel2);
+                        
+                        jLabel2.setIcon(user);
+                        
+                        lblServerIpAddress_2 = new JLabel("Server IP address does not correspond");
+                        lblServerIpAddress_2.setBounds(456, 351, 262, 25);
+                        login.add(lblServerIpAddress_2);
+                        lblServerIpAddress_2.setIcon(notOk);
+                        lblServerIpAddress_2.setForeground(Color.RED);
+                        lblServerIpAddress_2.setFont(new Font("Tahoma", Font.PLAIN, 13));
+                        lblServerIpAddress_2.setVisible(false);
+                lblNewLabel_5.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseEntered(MouseEvent arg0) {
+				lblNewLabel_5.setForeground(Color.cyan);
+			}
+			@Override
+			public void mouseExited(MouseEvent arg0) {
+				lblNewLabel_5.setForeground(Color.white);
+			}
+                		@Override
+                		public void mouseClicked(MouseEvent e) {
+                			forgot_loginMousePressed(e);
+                		}
+		});
+                lblusername.setVisible(false);
                 
-                separator_3 = new JSeparator();
-                separator_3.setBounds(56, 246, 277, 12);
-                panel.add(separator_3);
-                separator_3.setForeground(Color.CYAN);
-                separator_3.setBackground(Color.CYAN);
-                
-        txtEmail = new JTextField();
-        txtEmail.setBounds(56, 212, 277, 36);
-        panel.add(txtEmail);
-        txtEmail.setFont(new Font("Tahoma", Font.PLAIN, 13));
-        txtEmail.setText("Email");
-        txtEmail.setHorizontalAlignment(SwingConstants.LEFT);
-        txtEmail.setForeground(Color.BLACK);
-        txtEmail.setBackground(Color.WHITE);
-        jLabel2= new javax.swing.JLabel();
-        jLabel2.setBounds(19, 212, 25, 36);
-        panel.add(jLabel2);
-        
-        jLabel2.setIcon(user);
-        
-        lblEmail_1 = new JLabel("Email");
-        lblEmail_1.setBounds(56, 195, 117, 16);
-        panel.add(lblEmail_1);
-        lblEmail_1.setFont(new Font("Tahoma", Font.PLAIN, 13));
-        lblEmail_1.setForeground(Color.WHITE);
-        
-        JSeparator separator_6 = new JSeparator();
-        separator_6.setForeground(Color.CYAN);
-        separator_6.setBackground(Color.CYAN);
-        separator_6.setBounds(56, 160, 277, 12);
-        panel.add(separator_6);
-        
-        txtusername = new JTextField();
-        txtusername.setText("Username");
-        txtusername.setHorizontalAlignment(SwingConstants.LEFT);
-        txtusername.setForeground(Color.BLACK);
-        txtusername.setFont(new Font("Tahoma", Font.PLAIN, 13));
-        txtusername.setBackground(Color.WHITE);
-        txtusername.setBounds(56, 124, 277, 36);
-        panel.add(txtusername);
-        
-        JLabel lblusername = new JLabel("Username");
-        lblusername.setForeground(Color.WHITE);
-        lblusername.setFont(new Font("Tahoma", Font.PLAIN, 13));
-        lblusername.setBounds(56, 108, 70, 16);
-        panel.add(lblusername);
-        lblusername.setVisible(false);
-        
-        txtusername.addMouseListener(new MouseAdapter() {
-        	@Override
-        	public void mouseEntered(MouseEvent e) {
-        		if(txtusername.getText().equals("Server port"))
-        			txtusername.setText(null);
-        		 lblusername.setVisible(true);
-        	}
-        });
-        
-        JSeparator separator_7 = new JSeparator();
-        separator_7.setForeground(Color.CYAN);
-        separator_7.setBackground(Color.CYAN);
-        separator_7.setBounds(56, 84, 277, 12);
-        panel.add(separator_7);
-        
-        txtServerIpAdress = new JTextField();
-        txtServerIpAdress.setText("Server IP address");
-        txtServerIpAdress.setHorizontalAlignment(SwingConstants.LEFT);
-        txtServerIpAdress.setForeground(Color.BLACK);
-        txtServerIpAdress.setFont(new Font("Tahoma", Font.PLAIN, 13));
-        txtServerIpAdress.setBackground(Color.WHITE);
-        txtServerIpAdress.setBounds(56, 48, 277, 36);
-        panel.add(txtServerIpAdress);
-        
-        lblServerIpAddress = new JLabel("Server IP address");
-        lblServerIpAddress.setForeground(Color.WHITE);
-        lblServerIpAddress.setFont(new Font("Tahoma", Font.PLAIN, 13));
-        lblServerIpAddress.setBounds(56, 31, 102, 16);
-        panel.add(lblServerIpAddress);
-        lblServerIpAddress.setVisible(false);
-        txtServerIpAdress.addMouseListener(new MouseAdapter() {
-        	@Override
-        	public void mouseEntered(MouseEvent e) {
-        		if(txtServerIpAdress.getText().equals("Server IP address"))
-        			txtServerIpAdress.setText(null);
-        		lblServerIpAddress.setVisible(true);
-        	}
-        });
+                txtusername.addMouseListener(new MouseAdapter() {
+                	@Override
+                	public void mouseEntered(MouseEvent e) {
+                		if(txtusername.getText().equals("Username"))
+                			txtusername.setText(null);
+                		 lblusername.setVisible(true);
+                	}
+                });
+                lblPassword.setVisible(false);
                 lblPassword.setVisible(false);
                 textField.addMouseListener(new MouseAdapter() {
                 	@Override
@@ -557,32 +618,28 @@ public class ClientGUI extends JFrame implements Runnable{
                 		lblPassword.setVisible(true);
                 	}
                 });
-        
-        label_4 = new JLabel();
-        label_4.setIcon(port);
-        label_4.setBounds(19, 124, 25, 36);
-        panel.add(label_4);
-        
-        label_6 = new JLabel();
-        label_6.setIcon(server);
-        label_6.setBounds(19, 48, 25, 36);
-        panel.add(label_6);
-        
-        //panel_3 = new JPanel();
-        KGradientPanel panel_3 = new KGradientPanel();
-        panel_3.setkEndColor(Color.BLACK);
-        panel_3.setkStartColor(BLACKBLUE);
-        panel_3.setBorder(new MatteBorder(0, 0, 0, 0, (Color) new Color(0, 0, 0)));
-        panel_3.setBackground(Color.BLACK);
-        panel_3.setBounds(0, 0, 369, 286);
-        panel.add(panel_3);
-        panel_3.setLayout(null);
-        panel_3.setVisible(false);
-        
-        label_7 = new JLabel();
-        label_7.setBounds(301, 185, 32, 32);
-        panel_3.add(label_7);
-        label_7.setIcon(loginW);
+                textField.addMouseListener(new MouseAdapter() {
+                	@Override
+                	public void mouseEntered(MouseEvent e) {
+                		if(textField.getText().equals("********"))
+                		textField.setText(null);
+                		lblPassword.setVisible(true);
+                	}
+                });
+                btn_login.addMouseListener(new java.awt.event.MouseAdapter() {
+                    public void mousePressed(java.awt.event.MouseEvent evt) {
+                    			btn_loginMousePressed(evt);
+                    			
+                    }
+                		@Override
+                		public void mouseEntered(MouseEvent e) {
+                			btn_login.setIcon(loginC);
+                		}
+                		@Override
+                		public void mouseExited(MouseEvent e) {
+                			btn_login.setIcon(loginW);
+                		}
+                	});
         label_7.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt) {
                 btn_loginMousePressed3(evt);
@@ -596,125 +653,53 @@ public class ClientGUI extends JFrame implements Runnable{
         		label_7.setIcon(loginW);
         	}
         });
-        
-        lblServerIpAddress_2 = new JLabel("Server IP address does not correspond");
-        lblServerIpAddress_2.setIcon(notOk);
-        lblServerIpAddress_2.setForeground(Color.RED);
-        lblServerIpAddress_2.setFont(new Font("Tahoma", Font.PLAIN, 13));
-        lblServerIpAddress_2.setBounds(55, 255, 308, 25);
-        panel_3.add(lblServerIpAddress_2);
-        lblEmail_1.setVisible(false);
-        txtEmail.addMouseListener(new MouseAdapter() {
-        	@Override
-        	public void mouseEntered(MouseEvent e) {
-        		if(txtEmail.getText().equals("Email or username"))
-        		txtEmail.setText(null);
-        		lblEmail_1.setVisible(true);
-        	}
-        });
-                lblPassword.setVisible(false);
-                textField.addMouseListener(new MouseAdapter() {
-                	@Override
-                	public void mouseEntered(MouseEvent e) {
-                		if(textField.getText().equals("********"))
-                		textField.setText(null);
-                		lblPassword.setVisible(true);
-                	}
-                });
-        lblNewLabel_5.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseEntered(MouseEvent arg0) {
-				lblNewLabel_5.setForeground(Color.cyan);
-			}
-			@Override
-			public void mouseExited(MouseEvent arg0) {
-				lblNewLabel_5.setForeground(Color.white);
-			}
-        		@Override
-        		public void mouseClicked(MouseEvent e) {
-        			forgot_loginMousePressed(e);
-        		}
-		});
-        btn_login.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-            			btn_loginMousePressed(evt);
-            			
-            }
-        		@Override
-        		public void mouseEntered(MouseEvent e) {
-        			btn_login.setIcon(loginC);
-        		}
-        		@Override
-        		public void mouseExited(MouseEvent e) {
-        			btn_login.setIcon(loginW);
-        		}
-        	});
-        
-        lbldont = new JLabel("Username, Server IP address or password does not correspond");
-        lbldont.setBounds(207, 516, 369, 25);
-        login.add(lbldont);
-        lbldont.setFont(new Font("Tahoma", Font.PLAIN, 13));
-        lbldont.setIcon(notOk);
-        lbldont.setForeground(Color.RED);
-        lbldont.setVisible(false);
-       
-        KGradientPanel panel_1 = new KGradientPanel();
-        panel_1.setkEndColor(Color.BLACK);
-        panel_1.setkStartColor(BLACKBLUE);
-        panel_1.setBorder(new MatteBorder(0, 0, 0, 0, (Color) new Color(64, 64, 64)));
-        panel_1.setBackground(BLACKBLUE);
-        panel_1.setBounds(391, 81, 185, 32);
-        login.add(panel_1);
+        /**
         panel_1.addMouseListener(new MouseAdapter() {
-        		public void mouseClicked(MouseEvent e) 
-        		{
-        			//panel_1.setBorder(new MatteBorder(1, 1, 0, 1, (Color) new Color(64, 64, 64)));
-        			panel_3.setVisible(true);
-        			//panel_3.setBorder(new MatteBorder(1, 1, 1, 1, (Color) new Color(64, 64, 64)));
-        			panel.setBorder(null);
-        			lblEmail_1.setVisible(false);
-        			jLabel2.setVisible(false);
-        			txtEmail.setVisible(false);
-        			separator_3.setVisible(false);
-        			lblPassword.setVisible(false);
-        			jLabel3.setVisible(false);
-        			textField.setVisible(false);
-        			jSeparator1.setVisible(false);
-        			lblNewLabel_5.setVisible(false);
-        			btn_login.setVisible(false);
-        			lbldont.setVisible(false);
-        			lblServerIpAddress_1.setVisible(false);
-        		}
-        });
-        
-        login.addMouseListener(new MouseAdapter() {
     		public void mouseClicked(MouseEvent e) 
     		{
-    			panel_3.setVisible(false);
-    			panel_1.setBackground(BLACKBLUE);
-    			//panel_1.setBorder(new MatteBorder(0, 0, 0, 0, (Color) new Color(64, 64, 64)));
-    			//panel.setBorder(new MatteBorder(1, 1, 1, 1, (Color) new Color(64, 64, 64)));
-    			lblEmail_1.setVisible(true);
-    			jLabel2.setVisible(true);
-    			txtEmail.setVisible(true);
-    			separator_3.setVisible(true);
-    			lblPassword.setVisible(true);
-    			jLabel3.setVisible(true);
-    			textField.setVisible(true);
-    			jSeparator1.setVisible(true);
-    			lblNewLabel_5.setVisible(true);
-    			btn_login.setVisible(true);
-    			lbldont.setVisible(true);
-    			lblServerIpAddress_1.setVisible(true);
+    			panel_3.setVisible(true);
+    			/**panel_1.setBorder(new MatteBorder(1, 1, 0, 1, (Color) new Color(64, 64, 64)));
+    			panel_3.setVisible(true);
+    			//panel_3.setBorder(new MatteBorder(1, 1, 1, 1, (Color) new Color(64, 64, 64)));
+    			panel.setBorder(null);
+    			jLabel2.setVisible(false);
+    			separator_3.setVisible(false);
+    			lblPassword.setVisible(false);
+    			jLabel3.setVisible(false);
+    			textField.setVisible(false);
+    			jSeparator1.setVisible(false);
+    			lblNewLabel_5.setVisible(false);
+    			btn_login.setVisible(false);
+    			lbldont.setVisible(false);
+    			txtusername.setVisible(false);
+    			lblusername.setVisible(false);
+    			jSeparator1.setVisible(false);
     		}
-        });
+    });
+    
+    login.addMouseListener(new MouseAdapter() {
+		public void mouseClicked(MouseEvent e) 
+		{
+			panel_3.setVisible(false);
+			panel_1.setBackground(BLACKBLUE);
+			//panel_1.setBorder(new MatteBorder(0, 0, 0, 0, (Color) new Color(64, 64, 64)));
+			//panel.setBorder(new MatteBorder(1, 1, 1, 1, (Color) new Color(64, 64, 64)));
+			/**lblEmail_1.setVisible(true);
+			jLabel2.setVisible(true);
+			txtEmail.setVisible(true);
+			separator_3.setVisible(true);
+			lblPassword.setVisible(true);
+			jLabel3.setVisible(true);
+			textField.setVisible(true);
+			jSeparator1.setVisible(true);
+			lblNewLabel_5.setVisible(true);
+			btn_login.setVisible(true);
+			lbldont.setVisible(true);
+			lblServerIpAddress_1.setVisible(true);
+		}
+    });
+    **/
         
-        JLabel lblAnonymous = new JLabel("Anonymous");
-        panel_1.add(lblAnonymous);
-        lblAnonymous.setIcon(anonymousS);
-        lblAnonymous.setFont(new Font("Tahoma", Font.PLAIN, 13));
-        lblAnonymous.setForeground(Color.WHITE);
-       
 //------------------------------ Loader Form -------------------------------------------------------------        
         
         loader.setBackground(BLACKBLUE);
@@ -788,7 +773,7 @@ public class ClientGUI extends JFrame implements Runnable{
         lblNewLabel.setIcon(logo32);
         
         lblAccedi = new JLabel("Or access");
-        lblAccedi.setBounds(69, 516, 97, 32);
+        lblAccedi.setBounds(69, 548, 97, 32);
         lblAccedi.setIcon(loginW);
         lblAccedi.setForeground(Color.WHITE);
         lblAccedi.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -843,19 +828,19 @@ public class ClientGUI extends JFrame implements Runnable{
         
         panel_2 = new JPanel();
         panel_2.setBorder(new MatteBorder(0, 0, 0, 0, (Color) new Color(64, 64, 64)));
-        panel_2.setBounds(205, 111, 369, 390);
+        panel_2.setBounds(184, 99, 610, 437);
         panel_2.setBackground(BLACKBLUE);
         registration.add(panel_2);
         panel_2.setLayout(null);
                 
                 lblNewLabel_1 = new JLabel("Sign up");
-                lblNewLabel_1.setBounds(252, 330, 76, 25);
+                lblNewLabel_1.setBounds(252, 384, 76, 25);
                 panel_2.add(lblNewLabel_1);
                 lblNewLabel_1.setIcon(registrateW);
                 lblNewLabel_1.setForeground(Color.WHITE);
                 
                 JSeparator separator_4 = new JSeparator();
-                separator_4.setBounds(54, 295, 274, 12);
+                separator_4.setBounds(54, 290, 274, 12);
                 panel_2.add(separator_4);
                 separator_4.setForeground(Color.CYAN);
                 
@@ -878,7 +863,7 @@ public class ClientGUI extends JFrame implements Runnable{
                  lblEmail.setFont(new Font("Tahoma", Font.PLAIN, 13));
                  
                  JSeparator separator_2 = new JSeparator();
-                 separator_2.setBounds(51, 223, 277, 12);
+                 separator_2.setBounds(51, 216, 277, 12);
                  panel_2.add(separator_2);
                  separator_2.setForeground(Color.CYAN);
                  
@@ -900,7 +885,7 @@ public class ClientGUI extends JFrame implements Runnable{
                  lblRepeatPassword.setFont(new Font("Tahoma", Font.PLAIN, 13));
                  
                  JSeparator separator_1 = new JSeparator();
-                 separator_1.setBounds(54, 151, 274, 12);
+                 separator_1.setBounds(54, 146, 274, 12);
                  panel_2.add(separator_1);
                  separator_1.setForeground(Color.CYAN);
                  
@@ -944,37 +929,94 @@ public class ClientGUI extends JFrame implements Runnable{
                  lblNewLabel_2.setIcon(user);
                  
                  lblNewLabel_9 = new JLabel("");
-                 lblNewLabel_9.setBounds(340, 49, 29, 34);
+                 lblNewLabel_9.setBounds(376, 49, 29, 34);
                  panel_2.add(lblNewLabel_9);
                  lblNewLabel_9.setIcon(ok);
                  
                  JLabel label_8 = new JLabel("");
                  label_8.setIcon(ok);
-                 label_8.setBounds(340, 186, 29, 34);
+                 label_8.setBounds(376, 186, 29, 34);
                  panel_2.add(label_8);
                  
                  label_16 = new JLabel("");
-                 label_16.setBounds(340, 259, 29, 34);
+                 label_16.setBounds(376, 259, 29, 34);
+                 label_16.setIcon(ok);
                  panel_2.add(label_16);
                  
-                 lblUsernameDoesntAvaiable = new JLabel("Username not avaiable");
-                 lblUsernameDoesntAvaiable.setBounds(545, 165, 171, 25);
-                 registration.add(lblUsernameDoesntAvaiable);
-                 lblUsernameDoesntAvaiable.setIcon(notOk);
-                 lblUsernameDoesntAvaiable.setForeground(Color.RED);
-                 lblUsernameDoesntAvaiable.setFont(new Font("Tahoma", Font.PLAIN, 13));
-                 lblPasswordDoesntCorrespond = new JLabel("Password does not correspond");
-                 lblPasswordDoesntCorrespond.setBounds(545, 298, 228, 35);
-                 registration.add(lblPasswordDoesntCorrespond);
-                 lblPasswordDoesntCorrespond.setIcon(notOk);
-                 lblPasswordDoesntCorrespond.setForeground(Color.RED);
-                 
                  lblEmailDoesnExists = new JLabel("Email does not exists or match");
-                 lblEmailDoesnExists.setBounds(545, 369, 228, 35);
-                 registration.add(lblEmailDoesnExists);
+                 lblEmailDoesnExists.setBounds(376, 259, 219, 35);
+                 panel_2.add(lblEmailDoesnExists);
                  lblEmailDoesnExists.setFont(new Font("Tahoma", Font.PLAIN, 13));
                  lblEmailDoesnExists.setIcon(notOk);
                  lblEmailDoesnExists.setForeground(Color.RED);
+                 lblPasswordDoesntCorrespond = new JLabel("Password does not correspond");
+                 lblPasswordDoesntCorrespond.setBounds(376, 186, 235, 35);
+                 panel_2.add(lblPasswordDoesntCorrespond);
+                 lblPasswordDoesntCorrespond.setIcon(notOk);
+                 lblPasswordDoesntCorrespond.setForeground(Color.RED);
+                 
+                 JLabel lblNewLabel_21 = new JLabel("Server IP address");
+                 lblNewLabel_21.setFont(new Font("Tahoma", Font.PLAIN, 13));
+                 lblNewLabel_21.setForeground(Color.WHITE);
+                 lblNewLabel_21.setVisible(false);
+                 lblNewLabel_21.setBounds(54, 307, 106, 22);
+                 panel_2.add(lblNewLabel_21);
+                 
+                 txtServerIpAddress = new JTextField();
+                 txtServerIpAddress.setText("Server IP address");
+                 txtServerIpAddress.setColumns(10);
+                 txtServerIpAddress.setBounds(51, 328, 277, 34);
+                 panel_2.add(txtServerIpAddress);
+                 txtServerIpAddress.addMouseListener(new MouseAdapter() {
+                   	@Override
+                   	public void mouseEntered(MouseEvent e) {
+                   		if(txtServerIpAddress.getText().equals("Server IP address")) {
+                   			lblNewLabel_21.setVisible(true);
+                   			txtServerIpAddress.setText(null);
+                   		}
+                   	}
+                   });
+                 
+                 separator_12 = new JSeparator();
+                 separator_12.setForeground(Color.CYAN);
+                 separator_12.setBounds(54, 360, 274, 12);
+                 panel_2.add(separator_12);
+                 
+                 label_14 = new JLabel();
+                 label_14.setBounds(20, 328, 25, 36);
+                 panel_2.add(label_14);
+                 
+                 label_18 = new JLabel("");
+                 label_18.setForeground(Color.WHITE);
+                 label_18.setBounds(20, 328, 33, 30);
+                 label_18.setIcon(server);
+                 panel_2.add(label_18);
+                 
+                 label_28 = new JLabel("");
+                 label_28.setBounds(376, 328, 29, 34);
+                 label_28.setIcon(ok);
+                 panel_2.add(label_28);
+                 
+                 label_29 = new JLabel("Server not found");
+                 label_29.setForeground(Color.RED);
+                 label_29.setFont(new Font("Tahoma", Font.PLAIN, 13));
+                 label_29.setBounds(376, 328, 200, 35);
+                 label_29.setIcon(notOk);
+                 panel_2.add(label_29);
+                 
+                 lblUsernameDoesntAvaiable = new JLabel("Username not avaiable");
+                 lblUsernameDoesntAvaiable.setBounds(376, 54, 183, 25);
+                 panel_2.add(lblUsernameDoesntAvaiable);
+                 lblUsernameDoesntAvaiable.setIcon(notOk);
+                 lblUsernameDoesntAvaiable.setForeground(Color.RED);
+                 lblUsernameDoesntAvaiable.setFont(new Font("Tahoma", Font.PLAIN, 13));
+                 
+                 JPanel panel_1 = new JPanel();
+                 panel_1.setBorder(new MatteBorder(1, 1, 1, 1, (Color) Color.GRAY));
+                 panel_1.setBackground(BLACKBLUE);
+                 panel_1.setBounds(0, 18, 358, 402);
+                 panel_2.add(panel_1);
+                 
                  lblPasswordDoesntCorrespond.setVisible(false);
                  lblUsername.setVisible(false);
                  textField_2.addMouseListener(new MouseAdapter() {
@@ -1117,25 +1159,16 @@ public class ClientGUI extends JFrame implements Runnable{
         txtEmail_1.setBounds(215, 180, 277, 36);
         forgot.add(txtEmail_1);
         
-        JLabel lblNewLabel_8 = new JLabel("Insert the email of your account, then we will send to your email a message containing the recovery code.");
+        JLabel lblNewLabel_8 = new JLabel("Insert the email of your account and the respective Server IP Address");
         lblNewLabel_8.setFont(new Font("Tahoma", Font.PLAIN, 13));
         lblNewLabel_8.setForeground(Color.WHITE);
         lblNewLabel_8.setBounds(69, 132, 666, 16);
         forgot.add(lblNewLabel_8);
         
-        txtRecoveryCode = new JTextField();
-        txtRecoveryCode.setText("Recovery code");
-        txtRecoveryCode.setHorizontalAlignment(SwingConstants.LEFT);
-        txtRecoveryCode.setForeground(Color.BLACK);
-        txtRecoveryCode.setFont(new Font("Tahoma", Font.PLAIN, 13));
-        txtRecoveryCode.setBackground(Color.WHITE);
-        txtRecoveryCode.setBounds(215, 296, 277, 36);
-        forgot.add(txtRecoveryCode);
-        
-        JLabel lblInsertTheRecovery = new JLabel("Insert the recovery code, then you can set the new password.");
+        JLabel lblInsertTheRecovery = new JLabel("Set the new password.");
         lblInsertTheRecovery.setFont(new Font("Tahoma", Font.PLAIN, 13));
         lblInsertTheRecovery.setForeground(Color.WHITE);
-        lblInsertTheRecovery.setBounds(69, 247, 417, 16);
+        lblInsertTheRecovery.setBounds(69, 294, 150, 16);
         forgot.add(lblInsertTheRecovery);
         
         txtPassword = new JPasswordField();
@@ -1144,7 +1177,7 @@ public class ClientGUI extends JFrame implements Runnable{
         txtPassword.setForeground(Color.BLACK);
         txtPassword.setFont(new Font("Tahoma", Font.PLAIN, 13));
         txtPassword.setBackground(Color.WHITE);
-        txtPassword.setBounds(215, 369, 277, 36);
+        txtPassword.setBounds(215, 337, 277, 36);
         forgot.add(txtPassword);
         
         txtRepeatPassword = new JPasswordField();
@@ -1153,7 +1186,7 @@ public class ClientGUI extends JFrame implements Runnable{
         txtRepeatPassword.setForeground(Color.BLACK);
         txtRepeatPassword.setFont(new Font("Tahoma", Font.PLAIN, 13));
         txtRepeatPassword.setBackground(Color.WHITE);
-        txtRepeatPassword.setBounds(215, 438, 277, 36);
+        txtRepeatPassword.setBounds(215, 414, 277, 36);
         forgot.add(txtRepeatPassword);
         
         JLabel lblEmail_2 = new JLabel("Email");
@@ -1171,25 +1204,10 @@ public class ClientGUI extends JFrame implements Runnable{
         	}
         });
         
-        JLabel lblRecoveryCode = new JLabel("Recovery code");
-        lblRecoveryCode.setForeground(Color.WHITE);
-        lblRecoveryCode.setFont(new Font("Tahoma", Font.PLAIN, 13));
-        lblRecoveryCode.setBounds(215, 284, 88, 16);
-        forgot.add(lblRecoveryCode);
-        lblRecoveryCode.setVisible(false);
-        txtRecoveryCode.addMouseListener(new MouseAdapter() {
-        	@Override
-        	public void mouseEntered(MouseEvent e) {
-        		if(txtRecoveryCode.getText().equals("Recovery code"))
-        			txtRecoveryCode.setText(null);
-        		lblRecoveryCode.setVisible(true);
-        	}
-        });
-        
         JLabel lblPassword_1 = new JLabel("New password");
         lblPassword_1.setForeground(Color.WHITE);
         lblPassword_1.setFont(new Font("Tahoma", Font.PLAIN, 13));
-        lblPassword_1.setBounds(215, 357, 88, 16);
+        lblPassword_1.setBounds(215, 322, 88, 16);
         forgot.add(lblPassword_1);
         lblPassword_1.setVisible(false);
         txtPassword.addMouseListener(new MouseAdapter() {
@@ -1204,7 +1222,7 @@ public class ClientGUI extends JFrame implements Runnable{
         JLabel lblRepeatPassword_1 = new JLabel("Repeat password");
         lblRepeatPassword_1.setForeground(Color.WHITE);
         lblRepeatPassword_1.setFont(new Font("Tahoma", Font.PLAIN, 13));
-        lblRepeatPassword_1.setBounds(215, 425, 106, 16);
+        lblRepeatPassword_1.setBounds(215, 397, 106, 16);
         forgot.add(lblRepeatPassword_1);
         lblRepeatPassword_1.setVisible(false);
         txtRepeatPassword.addMouseListener(new MouseAdapter() {
@@ -1240,27 +1258,22 @@ public class ClientGUI extends JFrame implements Runnable{
         });
         label_12.setIcon(loginW);
         label_12.setForeground(Color.WHITE);
-        label_12.setBounds(69, 516, 97, 32);
+        label_12.setBounds(672, 50, 97, 32);
         forgot.add(label_12);
         
         JSeparator separator_8 = new JSeparator();
         separator_8.setForeground(Color.CYAN);
-        separator_8.setBounds(215, 212, 277, 12);
+        separator_8.setBounds(215, 215, 277, 12);
         forgot.add(separator_8);
-        
-        JSeparator separator_9 = new JSeparator();
-        separator_9.setForeground(Color.CYAN);
-        separator_9.setBounds(215, 327, 277, 12);
-        forgot.add(separator_9);
         
         JSeparator separator_10 = new JSeparator();
         separator_10.setForeground(Color.CYAN);
-        separator_10.setBounds(215, 400, 277, 12);
+        separator_10.setBounds(215, 373, 277, 12);
         forgot.add(separator_10);
         
         JSeparator separator_11 = new JSeparator();
         separator_11.setForeground(Color.CYAN);
-        separator_11.setBounds(215, 470, 277, 12);
+        separator_11.setBounds(215, 450, 277, 12);
         forgot.add(separator_11);
         
         JLabel label_13 = new JLabel("");
@@ -1275,28 +1288,16 @@ public class ClientGUI extends JFrame implements Runnable{
         lblEmailDoesNot.setBounds(504, 181, 188, 34);
         forgot.add(lblEmailDoesNot);
         
-        JLabel label_14 = new JLabel("");
-        label_14.setIcon(ok);
-        label_14.setBounds(504, 296, 29, 34);
-        forgot.add(label_14);
-        
-        JLabel lblTheRecoveryDoes = new JLabel("The recovery code does not correspond");
-        lblTheRecoveryDoes.setIcon(notOk);
-        lblTheRecoveryDoes.setForeground(Color.RED);
-        lblTheRecoveryDoes.setFont(new Font("Tahoma", Font.PLAIN, 13));
-        lblTheRecoveryDoes.setBounds(504, 297, 266, 34);
-        forgot.add(lblTheRecoveryDoes);
-        
         JLabel label_15 = new JLabel("");
         label_15.setIcon(ok);
-        label_15.setBounds(504, 438, 29, 34);
+        label_15.setBounds(504, 416, 29, 34);
         forgot.add(label_15);
         
         JLabel lblPasswordsDoNot = new JLabel("Passwords do not correspond");
         lblPasswordsDoNot.setIcon(notOk);
         lblPasswordsDoNot.setForeground(Color.RED);
         lblPasswordsDoNot.setFont(new Font("Tahoma", Font.PLAIN, 13));
-        lblPasswordsDoNot.setBounds(504, 439, 198, 34);
+        lblPasswordsDoNot.setBounds(504, 415, 198, 34);
         forgot.add(lblPasswordsDoNot);
         
         label_17 = new JLabel("\n");
@@ -1305,30 +1306,82 @@ public class ClientGUI extends JFrame implements Runnable{
         label_17.setBounds(184, 180, 33, 30);
         forgot.add(label_17);
         
-        label_18 = new JLabel("\n");
-        label_18.setIcon(code);
-        label_18.setForeground(Color.WHITE);
-        label_18.setBounds(184, 296, 33, 30);
-        forgot.add(label_18);
-        
         label_19 = new JLabel("\n");
         label_19.setIcon(lock);
         label_19.setForeground(Color.WHITE);
-        label_19.setBounds(184, 369, 33, 30);
+        label_19.setBounds(184, 417, 33, 30);
         forgot.add(label_19);
         
         label_20 = new JLabel("\n");
         label_20.setIcon(lock);
         label_20.setForeground(Color.WHITE);
-        label_20.setBounds(184, 438, 33, 30);
+        label_20.setBounds(186, 340, 33, 30);
         forgot.add(label_20);
         
         lblSubmit = new JLabel("Submit");
         lblSubmit.setIcon(registrateW);
         lblSubmit.setFont(new Font("Tahoma", Font.PLAIN, 13));
         lblSubmit.setForeground(Color.WHITE);
-        lblSubmit.setBounds(419, 486, 73, 32);
+        lblSubmit.setBounds(419, 462, 73, 32);
         forgot.add(lblSubmit);
+        
+        lblNewLabel_22 = new JLabel("After the submit we will send you to your email a recovery code which you have to insert in a appropriate box.");
+        lblNewLabel_22.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        lblNewLabel_22.setForeground(Color.WHITE);
+        lblNewLabel_22.setBounds(69, 516, 656, 16);
+        forgot.add(lblNewLabel_22);
+        
+        txtServerIpAddress_1 = new JTextField();
+        txtServerIpAddress_1.setText("Server IP Address");
+        txtServerIpAddress_1.setHorizontalAlignment(SwingConstants.LEFT);
+        txtServerIpAddress_1.setForeground(Color.BLACK);
+        txtServerIpAddress_1.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        txtServerIpAddress_1.setBackground(Color.WHITE);
+        txtServerIpAddress_1.setBounds(215, 246, 277, 36);
+        forgot.add(txtServerIpAddress_1);
+        
+        lblServerIpAddress_4 = new JLabel("Server IP Address");
+        lblServerIpAddress_4.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        lblServerIpAddress_4.setForeground(Color.WHITE);
+        lblServerIpAddress_4.setBounds(215, 233, 124, 16);
+        lblServerIpAddress_4.setVisible(false);
+        forgot.add(lblServerIpAddress_4);
+    
+        txtServerIpAddress_1.addMouseListener(new MouseAdapter() {
+        	@Override
+        	public void mouseEntered(MouseEvent e) {
+        		if(txtServerIpAddress_1.getText().equals("Server IP Address")) 
+        		{
+        			lblServerIpAddress_4.setVisible(true);
+        			txtServerIpAddress_1.setText(null);
+        		}
+        			
+        	}
+        });
+        
+        lblServerNotFound = new JLabel("Server not found");
+        lblServerNotFound.setForeground(Color.RED);
+        lblServerNotFound.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        lblServerNotFound.setBounds(504, 247, 188, 34);
+        lblServerNotFound.setIcon(notOk);
+        forgot.add(lblServerNotFound);
+        
+        label_31 = new JLabel("");
+        label_31.setBounds(504, 246, 29, 34);
+        label_31.setIcon(ok);
+        forgot.add(label_31);
+        
+        label_30 = new JLabel("\n");
+        label_30.setForeground(Color.WHITE);
+        label_30.setBounds(184, 252, 33, 30);
+        label_30.setIcon(server);
+        forgot.add(label_30);
+        
+        JSeparator separator_9 = new JSeparator();
+        separator_9.setForeground(Color.CYAN);
+        separator_9.setBounds(215, 281, 277, 12);
+        forgot.add(separator_9);
+        
         lblSubmit.addMouseListener(new MouseAdapter() {
         	@Override
         	public void mouseEntered(MouseEvent e) {
@@ -1338,6 +1391,10 @@ public class ClientGUI extends JFrame implements Runnable{
         	public void mouseExited(MouseEvent e) {
         		lblSubmit.setIcon(registrateW);
         		lblSubmit.setForeground(Color.WHITE);
+        	}
+        	@Override
+        	public void mouseClicked(MouseEvent e) {
+        		recovery_submitMousePressed(e);
         	}
         });
         
@@ -2010,7 +2067,7 @@ public class ClientGUI extends JFrame implements Runnable{
         	}
         });
         
-      //--------------------------RecoveryCode form-----------------
+//--------------------------RecoveryCode form-----------------
         jPanel1.add(RecoveryCode, "card8");
         RecoveryCode.setLayout(null);
         RecoveryCode.setBackground(BLACKBLUE);
@@ -2071,7 +2128,7 @@ public class ClientGUI extends JFrame implements Runnable{
         lblNewLabel_23.setBounds(137, 77, 146, 40);
         lblNewLabel_23.setIcon(err);
         panel_8.add(lblNewLabel_23);
-              
+        
         pack(); 
     }
 
@@ -2125,6 +2182,14 @@ public class ClientGUI extends JFrame implements Runnable{
     		forgot.setVisible(true);
     }
     
+    private void recovery_submitMousePressed(MouseEvent evt) {
+		loader.setVisible(false);
+		registration.setVisible(false);
+		login.setVisible(false);
+		forgot.setVisible(false);
+		RecoveryCode.setVisible(true);
+    }
+    
     private void lbl_closeMousePressed(java.awt.event.MouseEvent evt) {
         ShutDown event=new ShutDown();
         event.setErrExit(false);
@@ -2133,20 +2198,36 @@ public class ClientGUI extends JFrame implements Runnable{
     }
 
     int xy, xx;
+    private JTextField txtServerIpAddress;
+    private JSeparator separator_12;
+    private JLabel lblNewLabel_22;
+    private JLabel label_14;
+    private JLabel lblRecoveryCode;
+    private JTextField textField_1;
+    private JLabel lblSubmit_1;
+    private JLabel lblNewLabel_23;
+    private JTextField textField_6;
+    private JLabel label_4;
+    private JLabel label_18;
+    private JLabel label_28;
+    private JLabel label_29;
+    private JTextField txtServerIpAddress_1;
+    private JLabel lblServerIpAddress_4;
+    private JLabel lblServerNotFound;
+    private JLabel label_31;
+    private JLabel label_30;
+    
     private void loginMouseDragged(java.awt.event.MouseEvent evt) {
-        // TODO add your handling code here:
         int x = evt.getXOnScreen();
         int y = evt.getYOnScreen();
         this.setLocation(x - xx, y - xy);
-
     }
 
     private void loginMousePressed(java.awt.event.MouseEvent evt) {
-        // TODO add your handling code here:
-
         xx = evt.getX();
         xy = evt.getY();
     }
+    
     /**public void updatePanelSize() { 
 
         GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
