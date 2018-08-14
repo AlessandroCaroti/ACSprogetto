@@ -6,11 +6,13 @@ import utility.ServerInfoProvider;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Scanner;
 
-public class Host_2 extends Thread {
+public class Host_2 {
 
     private Server server;
     private boolean started;
@@ -26,9 +28,10 @@ public class Host_2 extends Thread {
     final private String cmdList = "***********************************************\nCOMMANDS LIST:\n\n" +
             "\t\t?/help\n" +
             "\t\tstart [server/infoProvider]\n" +
-            "\t\tstop [server/infoProvider]\n" +
+            "\t\tstop [server/infoProvider/gui]\n" +
             "\t\tshutdown\n" +
-            "\t\tshow [info/topic]\n" +
+            "\t\tinfo\n" +
+            "\t\tshow topic\n" +
             "\t\tpedantic\n" +
             "***********************************************";
 
@@ -44,7 +47,7 @@ public class Host_2 extends Thread {
 
         try {
             Host_2 h = new Host_2(Boolean.parseBoolean(args[0]));
-            h.start();
+            h.commandExecutorLoop();
         } catch (Exception e) {
 
             e.getClass().getSimpleName();
@@ -66,18 +69,17 @@ public class Host_2 extends Thread {
         //Creazione della gui
         if (useGui) {
             redirectStdIO();
-            gui = initGui(serverStat);
+            gui = startGui(serverStat);
         }
 
         //Creazione del server
         server = new Server(serverStat);
+
+        initGui();
+        //todo creazione di sClient
     }
 
-    @Override
-    public void run() {
-        commandExecutorLoop();
-        System.exit(0);
-    }
+
 
     private void commandExecutorLoop() {
         Scanner sc = new Scanner(System.in);
@@ -85,7 +87,7 @@ public class Host_2 extends Thread {
         try {
             while (!stopAll) {
                 line = sc.nextLine();
-                //todo rimmuovere stampa di debug
+                //todo rimmuovere la stampa di debug
                 System.err.println("-[DEBUG-STAMP] Read from System.in: \'"+line+"\'");
                 switch (line) {
                     case "?":
@@ -106,6 +108,9 @@ public class Host_2 extends Thread {
                     case "stop infoProvider":
                         stopInfoProvider();
                         break;
+                    case "stop gui":
+                        stopGui();
+                        break;
                     case "shutdown":
                         shutdownServer();
                         break;
@@ -119,6 +124,10 @@ public class Host_2 extends Thread {
                         showInfo();
                         break;
                     case "show topic":
+                        showTopic(server.getTopicList());
+                        break;
+                    case "FATAL_ERROR":
+                        fatalError_occurred(sc);
                         break;
                     default:
                         infoStamp(line + ": command not found");
@@ -157,7 +166,7 @@ public class Host_2 extends Thread {
 
     }
 
-    private ServerGuiResizable initGui(ServerStatistic serverStat) {
+    private ServerGuiResizable startGui(ServerStatistic serverStat) {
         if (serverStat == null)
             throw new NullPointerException();
         try {
@@ -179,6 +188,12 @@ public class Host_2 extends Thread {
             errorStamp(e, "Impossible to create the graphic user interface!");
         }
         return serverStat.getGui();
+    }
+
+    private void initGui(){
+        if(gui == null)
+            return;
+        gui.setServerName();
     }
 
 
@@ -215,7 +230,7 @@ public class Host_2 extends Thread {
         //chiude il server e tutto ciò a cui ne è associato (GUI, infoProvider)
         infoStamp("shutdown: COMANDO NON ANCORA FINITO DI ESSERE IMPLEMNTATO");
 
-        /*
+
         stopInfoProvider();
 //        stop all sClient
         try {
@@ -226,7 +241,7 @@ public class Host_2 extends Thread {
         stopServer();
         server = null;
         stopAll = true;
-        */
+
     }
 
 
@@ -236,21 +251,29 @@ public class Host_2 extends Thread {
         infoStamp(serverStat.getGeneralServerStat() + "\n" + statusGui + "\n" + statusInfoProvider);
     }
 
-
-
-    private boolean redirectStdIO() {
-
-        try {
-
-            toStdIn    = StreamRedirector.redirectStdIn();
-            fromStdOut = StreamRedirector.redirectStdOut();
-            fromStdErr = StreamRedirector.redirectStdErr();
-        } catch (IOException e) {
-            errorStamp(e, "Couldn't redirect STDIO to this console.");
-            return false;
+    private void showTopic(String[] topicList) {
+        if (topicList == null || topicList.length == 0) {
+            System.out.println("No topics on the server");
+            return;
         }
-        //infoStamp("StdIn ,StdOut, StdErr redirect correcty.");
-        return true;
+        System.out.println("---------------------------------\nTopic list:");
+        for (String topic : topicList)
+            System.out.println("\t" + topic);
+        System.out.println("---------------------------------");
+    }
+
+    private void fatalError_occurred(Scanner sc) {
+        System.err.println("A fatal error was caught in " + sc.nextLine());
+        while (sc.hasNextLine())
+            System.err.println(sc.nextLine());
+        System.exit(1);
+    }
+
+
+    private void redirectStdIO() throws IOException {
+        toStdIn    = StreamRedirector.redirectStdIn();
+        fromStdOut = StreamRedirector.redirectStdOut();
+        fromStdErr = StreamRedirector.redirectStdErr();
     }
 
     private boolean resetStdIO() {
