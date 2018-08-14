@@ -30,7 +30,7 @@ public class ClientEngine implements Callable<Integer> {
             current=guiToClientEngine.poll();
             if(current instanceof ClientEvent){
                 switch(((ClientEvent) current).getType()){
-                    case SWITCHOFF:
+                    case SHUTDOWN:
                         uscita=true;
                         break;
 
@@ -43,7 +43,7 @@ public class ClientEngine implements Callable<Integer> {
                         break;
                     case LOGIN:
                         try {
-                            client = new Client(((AccountLoginWindow)current).getUsername(), ((AccountLoginWindow)current).getPassword(),((AccountLoginWindow)current).getEmail());
+                            client = new Client(((AccountLoginWindow)current).getUsername(), ((AccountLoginWindow)current).getPassword(),null);//todo check se siamo sicuri non sia necessaria la mail
                             ServerInfoRecover infoServer = new ServerInfoRecover();
                             String[] a = infoServer.getServerInfo(
                                     InetAddress.getByName(((AnonymousLoginWindow)current).getServerAddress())
@@ -54,7 +54,7 @@ public class ClientEngine implements Callable<Integer> {
                                 clientEngineToGUI.add(new ForumWindow());//todo settare la roba da passare
                             }else{
                                 System.out.println("NON recuperato");
-                                ((AccountLoginWindow)current).setErr(true);
+                                ((AnonymousLoginWindow)current).setErr(true);
                                 clientEngineToGUI.add(current);
                                 current=null;
                             }
@@ -64,10 +64,10 @@ public class ClientEngine implements Callable<Integer> {
                         break;
                     case NEWACCOUNT:
                         try {
-                            client = new Client(((AccountLoginWindow)current).getUsername(), ((AccountLoginWindow)current).getPassword(),((AccountLoginWindow)current).getEmail());
+                            client = new Client(((NewAccountWindow)current).getUsername(), ((NewAccountWindow)current).getPassword(),((NewAccountWindow)current).getEmail());
                             ServerInfoRecover infoServer = new ServerInfoRecover();
                             String[] a = infoServer.getServerInfo(
-                                    InetAddress.getByName(((AnonymousLoginWindow)current).getServerAddress())
+                                    InetAddress.getByName(((NewAccountWindow)current).getServerAddress())
                             );
                             client.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
                             if(((Client) client).register()){
@@ -75,7 +75,10 @@ public class ClientEngine implements Callable<Integer> {
                                 clientEngineToGUI.add(new ForumWindow());//todo settare la roba da passare
                             }else{
                                 System.out.println("NON creato");
-                                /*todo come gestisco l'errore nella schermata?*/
+                                ((NewAccountWindow)current).setErr(true);
+                                clientEngineToGUI.add(current);
+                                current=null;
+
                             }
                         }catch(Exception exc){
                             //todo
@@ -95,7 +98,9 @@ public class ClientEngine implements Callable<Integer> {
                                 System.out.println("REGISTRATO");
                             } else {
                                 System.out.println("NON REGISTRATO");
-                                /*todo come gestisco l'errore nella schermata?*/
+                                ((AnonymousLoginWindow)current).setErr(true);
+                                clientEngineToGUI.add(current);
+                                current=null;
                             }
                         }catch(Exception exc){
                             //todo
@@ -106,7 +111,7 @@ public class ClientEngine implements Callable<Integer> {
                             client = new AnonymousClient();
                             ServerInfoRecover infoServer = new ServerInfoRecover();
                             String[] a = infoServer.getServerInfo(
-                                    InetAddress.getByName(((AnonymousLoginWindow)current).getServerAddress())
+                                    InetAddress.getByName(((ForgotPasswordWindow)current).getServerAddress())
                             );
                             client.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
                             if(client.recoverPassword(((ForgotPasswordWindow)current).getEmail(),((ForgotPasswordWindow)current).getNewPassword(),((ForgotPasswordWindow)current).getRepeatPassword()))
@@ -115,7 +120,9 @@ public class ClientEngine implements Callable<Integer> {
                                 System.out.println("RECUPERATA");
                             } else {
                                 System.out.println("NON RECUPERATA");
-                                /*todo come gestisco l'errore nella schermata?*/
+                                ((ForgotPasswordWindow)current).setErr(true);
+                                clientEngineToGUI.add(current);
+                                current=null;
                             }
                         }catch(Exception exc){
                             //todo

@@ -8,6 +8,9 @@ public class ForgotPasswordWindow extends Window {
     private String newPassword;
     private String repeatPassword;
     private String email;
+    private String serverAddress;
+    private boolean err;
+
     public ForgotPasswordWindow(){
         this.setWindowType(FORGOTPASSWORD);
     }
@@ -35,5 +38,21 @@ public class ForgotPasswordWindow extends Window {
 
     public String getEmail(){
         return email;
+    }
+
+    public boolean isErr() {
+        return err;
+    }
+
+    public void setErr(boolean err) {
+        this.err = err;
+    }
+
+    public String getServerAddress() {
+        return serverAddress;
+    }
+
+    public void setServerAddress(String serverAddress) {
+        this.serverAddress = serverAddress;
     }
 }
