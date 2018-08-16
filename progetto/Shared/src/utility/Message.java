@@ -75,4 +75,14 @@ public class Message implements Serializable
                 "Title: "    + title           +"\n"+
                 text;
     }
+
+    @Override
+    public boolean equals(Object obj){
+        if(this == obj)
+            return true;
+        if(!(obj instanceof Message))
+            return false;
+        Message anotherMessage = (Message)obj;
+        return date.equals(anotherMessage.date) && author.equals(anotherMessage.author) && title.equals(anotherMessage.title) && topic.equals(anotherMessage.topic);
+    }
 }
