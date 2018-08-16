@@ -25,7 +25,18 @@ public class clientTest_3 {
             }else{
                 System.out.println("NON REGISTRATO");
             }
-            Thread.sleep(5000);
+
+
+            client.publish("PIPPO", "A spasso","in cerca di coca");
+            System.out.println("SLEEP 9 sec.");
+            Thread.sleep(9000);
+            client.publish("PIPPO", "A casa","con la farina");
+            Thread.sleep(9000);
+            System.out.println("SLEEP 9 sec.");
+            client.publish("PLUTO", "A casa di pippo", "che si diverte");
+            Thread.sleep(10000);
+
+
             if(client.disconnect())
                 System.out.println("DISCONNESSO");
             else {
