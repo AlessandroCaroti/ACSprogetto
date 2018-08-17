@@ -752,6 +752,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
     private boolean emailValidation(String email,ClientInterface stub) throws MessagingException, RemoteException {
 
+        Integer x=-1;
         String temp;
         StringTokenizer tokenizer=new StringTokenizer(email);
         temp=tokenizer.nextToken();
@@ -768,7 +769,7 @@ public class Server implements ServerInterface,Callable<Integer> {
             resp=stub.getCode(i);
             if (resp.IsOK()) {
                 infoStamp("the user has entered the code:"+resp.getMessaggioInfo()+";");
-                if(codice.equals(Integer.parseInt(resp.getMessaggioInfo()))||(Integer.parseInt(resp.getMessaggioInfo())==-1)) {                              //todo remove backdoor (Integer.parseInt(resp.getMessaggioInfo())==-1)
+                if(codice.equals(Integer.parseInt(resp.getMessaggioInfo()))||x.equals(Integer.parseInt(resp.getMessaggioInfo()))) {                              //todo remove backdoor (Integer.parseInt(resp.getMessaggioInfo())==-1) and var x
                     return true;
                 }
             }
