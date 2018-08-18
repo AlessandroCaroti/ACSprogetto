@@ -6,7 +6,6 @@ import javax.swing.JPasswordField;
 import keeptoo.KGradientPanel;
 import java.awt.Frame;
 import java.awt.Toolkit;
-import java.awt.Window;
 import java.awt.event.MouseEvent;
 import java.util.TimerTask;
 import java.util.Objects;
