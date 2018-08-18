@@ -38,7 +38,7 @@ public class ClientHost {
 
     //se viene utilizzato il terminale
     private TerminalInterface terminalInterface;
-    private ExecutorService userInterfaceThread;
+    private ExecutorService terminalInterfaceThread;
 
     //interfaccia grafica
     private ClientGUI userInterface;
@@ -56,7 +56,7 @@ public class ClientHost {
 
         }else{
             terminalInterface=new TerminalInterface(clientEngineToGUI,guiToClientEngine);
-            userInterfaceThread = Executors.newSingleThreadExecutor();
+            terminalInterfaceThread = Executors.newSingleThreadExecutor();
         }
 
     }
@@ -70,7 +70,7 @@ public class ClientHost {
 
     public static void main(String[] args) {
 
-        Future<Integer> exitCodeClient, exitCodeUserInterface;
+        Future<Integer> exitCodeClient, exitCodeTerminalInterface;
         int exitCode;
         if (args.length < 1) {
             System.err.println("args: userinterface(true/false) ");
@@ -81,10 +81,12 @@ public class ClientHost {
         try {
 
             ClientHost host = new ClientHost(Boolean.parseBoolean(args[0]));
-
-
             exitCodeClient = host.clientThread.submit(host.clientEngine);
-            EventQueue.invokeLater(host.userInterface);
+            if(host.guiActivated) {
+                EventQueue.invokeLater(host.userInterface);
+            }else{
+                exitCodeTerminalInterface=host.terminalInterfaceThread.submit(host.terminalInterface);
+            }
 
 
             while (true) {
@@ -128,7 +130,7 @@ public class ClientHost {
                 try {
                     switch (exitCodeClient.get(100, TimeUnit.MILLISECONDS)) {
                         case EXIT://chiudo tutto
-                            host.userInterfaceThread.awaitTermination(10, TimeUnit.SECONDS);
+                            //host.userInterfaceThread.awaitTermination(10, TimeUnit.SECONDS); todo check
                             return;
                         case ERROR://errore restarting...
                             host.clientThread.submit((host.clientEngine=new ClientEngine(host.clientEngineToGUI,host.guiToClientEngine)));

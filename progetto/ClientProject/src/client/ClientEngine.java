@@ -39,7 +39,7 @@ public class ClientEngine implements Callable<Integer> {
             if(current instanceof Window){
                 switch (((Window) current).getWindowType()){
                     case FORUM:
-
+                        //todo
                         break;
                     case LOGIN:
                         try {
