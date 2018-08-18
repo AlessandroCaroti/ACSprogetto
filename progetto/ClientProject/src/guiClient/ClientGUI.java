@@ -1,15 +1,10 @@
 package guiClient;
 
-import java.awt.EventQueue;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import keeptoo.KGradientPanel;
-
 import java.awt.Frame;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.MouseEvent;
@@ -19,36 +14,21 @@ import java.util.Timer;
 import javax.swing.JTextField;
 import java.awt.Color;
 import java.awt.Dimension;
-
 import javax.swing.SwingConstants;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.GroupLayout;
 import javax.swing.JSeparator;
 import javax.swing.JLabel;
 import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-
 import java.awt.event.MouseAdapter;
 import java.awt.Font;
 import javax.swing.border.MatteBorder;
-import javax.swing.JTabbedPane;
-import javax.swing.JToolBar;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JScrollBar;
 import javax.swing.JEditorPane;
-import javax.swing.JButton;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 import javax.swing.JTextArea;
 import java.awt.CardLayout;
 import java.util.concurrent.ConcurrentLinkedQueue;
-
 import Events.*;
-import client.AnonymousClient;
-import client.Client;
-
-import static client.WindowType.*;
 
 
 public class ClientGUI extends JFrame {
@@ -214,8 +194,8 @@ public class ClientGUI extends JFrame {
 	                        break;
 	                }
 	            }
-	            if(current instanceof Window){
-	                switch (((Window) current).getWindowType()){
+	            if(current instanceof Events.Window){
+	                switch (((Events.Window) current).getWindowType()){
 	                    case FORUM:
 
 	                        break;
@@ -2143,7 +2123,6 @@ public class ClientGUI extends JFrame {
 		loader.setVisible(true);
 		
 		AccountLoginWindow event=new AccountLoginWindow();
-		event.setEmail(txtEmail.getText());
 		event.setPassword(textField.getText());
 		event.setServerAddress(txtServerIpAdress.getText());
 		event.setUsername(txtusername.getText());
