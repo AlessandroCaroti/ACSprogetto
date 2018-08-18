@@ -42,9 +42,13 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.JTextArea;
 import java.awt.CardLayout;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import Events.*;
 import client.AnonymousClient;
 import client.Client;
+
+import static client.WindowType.*;
 
 
 public class ClientGUI extends JFrame {
