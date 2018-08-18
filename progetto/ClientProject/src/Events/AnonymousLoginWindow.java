@@ -5,7 +5,7 @@ import static client.WindowType.ANONYMOUSLOGIN;
 public class AnonymousLoginWindow extends Window {
 
     private String serverAddress;
-    private String port;
+    private String port;//todo controllare... non dovrebbe essere necessario questo campo... io lo lascio che non fa male
     private boolean err;
 
     public AnonymousLoginWindow(){
