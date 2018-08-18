@@ -17,38 +17,61 @@
  **/
 package client;
 
-import utility.gui.GuiInterface;
-
 import java.awt.EventQueue;
 import java.util.concurrent.*;
 import Events.*;
 import guiClient.ClientGUI;
 
 public class ClientHost {
-    private ExecutorService userInterfaceThread;
-    private ExecutorService clientThread;
-
-
-    private ClientGUI userInterface;
-    private boolean guiActivated;
-    private ClientEngine clientEngine;
+    private static final int ERROR=1;
+    private static final int EXIT=0;
 
     private ConcurrentLinkedQueue<Event> clientEngineToGUI=new ConcurrentLinkedQueue<>();
     private ConcurrentLinkedQueue<Event> guiToClientEngine= new ConcurrentLinkedQueue<>();
+    private boolean guiActivated;
+
+
+
+    //Engine
+    private ExecutorService clientThread;
+    private ClientEngine clientEngine;
+
+    //se viene utilizzato il terminale
+    private TerminalInterface terminalInterface;
+    private ExecutorService userInterfaceThread;
+
+    //interfaccia grafica
+    private ClientGUI userInterface;
+
+
+
 
     private ClientHost(boolean usingUserInterface) {
         this.guiActivated=usingUserInterface;
-        userInterface = new ClientGUI(clientEngineToGUI,guiToClientEngine);
         clientEngine=new ClientEngine(clientEngineToGUI,guiToClientEngine);
-        userInterfaceThread = Executors.newSingleThreadExecutor();
         clientThread = Executors.newSingleThreadExecutor();
+
+        if(guiActivated) {
+            userInterface = new ClientGUI(clientEngineToGUI, guiToClientEngine);
+
+        }else{
+            terminalInterface=new TerminalInterface(clientEngineToGUI,guiToClientEngine);
+            userInterfaceThread = Executors.newSingleThreadExecutor();
+        }
+
     }
+
+
+
+
+
+
 
 
     public static void main(String[] args) {
 
         Future<Integer> exitCodeClient, exitCodeUserInterface;
-        int exitcode;
+        int exitCode;
         if (args.length < 1) {
             System.err.println("args: userinterface(true/false) ");
             return;
@@ -61,50 +84,59 @@ public class ClientHost {
 
 
             exitCodeClient = host.clientThread.submit(host.clientEngine);
-            //exitCodeUserInterface = host.userInterfaceThread.submit(host.userInterface);
+            EventQueue.invokeLater(host.userInterface);
 
 
             while (true) {
 
-                /*
-                 * USERINTERFACE
-                 *
-                 *
-                 *
-                 */
-                try {
-                    //exitcode = exitCodeUserInterface.get(100, TimeUnit.MILLISECONDS);
-                    switch (exitcode) {
-                        case 0://chiudo tutto
-                            host.clientThread.awaitTermination(10, TimeUnit.SECONDS);
-                            return;
-                        case 1://errore restarting...
-                            EventQueue.invokeLater((host.userInterface=new ClientGUI(host.clientEngineToGUI,host.guiToClientEngine)));
-                            break;
-                    }
-                } catch (ExecutionException | InterruptedException e) {
-                    e.printStackTrace(System.err);
-                } catch (TimeoutException e) {/*tutto normale*/}
+                if(host.guiActivated) {
+                    /**
+                     * GRAPHICAL INTERFACE
+                     *
+                     *
+                     *
+                     **/
+                    try {
+                        //exitcode = exitCodeUserInterface.get(100, TimeUnit.MILLISECONDS);
+                        switch (exitCode) {
+                            case EXIT://chiudo tutto
+                                host.clientThread.awaitTermination(10, TimeUnit.SECONDS);
+                                return;
+                            case ERROR://errore restarting...
+                                EventQueue.invokeLater((host.userInterface = new ClientGUI(host.clientEngineToGUI, host.guiToClientEngine)));
+                                break;
+                        }
+                    } catch (ExecutionException | InterruptedException e) {
+                        e.printStackTrace(System.err);
+                    } catch (TimeoutException e) {/*tutto normale*/}
+                }else {
 
-                /*
+                    /**
+                     * TERMINAL INTERFACE
+                     *
+                     *
+                     **/
+                    //todo
+                }
+
+                /**
                  * CLIENT/ANONYMOUSCLIENT
                  *
                  *
                  *
-                 */
+                 **/
                 try {
-                    exitcode = exitCodeClient.get(100, TimeUnit.MILLISECONDS);
-                    switch (exitcode) {
-                        case 0://chiudo tutto
+                    switch (exitCodeClient.get(100, TimeUnit.MILLISECONDS)) {
+                        case EXIT://chiudo tutto
                             host.userInterfaceThread.awaitTermination(10, TimeUnit.SECONDS);
                             return;
-                        case 1://errore restarting...
+                        case ERROR://errore restarting...
                             host.clientThread.submit((host.clientEngine=new ClientEngine(host.clientEngineToGUI,host.guiToClientEngine)));
                             break;
                     }
                 } catch (ExecutionException | InterruptedException e) {
                     e.printStackTrace(System.err);
-                } catch (TimeoutException e) {/*tutto normale*/}
+                } catch (TimeoutException e) {/*tutto normale.Questa exc viene lanciata se il thread sta ancora lavorando*/}
 
             }
 

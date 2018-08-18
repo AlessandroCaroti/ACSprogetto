@@ -30,7 +30,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import Events.*;
 
 
-public class ClientGUI extends JFrame {
+public class ClientGUI extends JFrame implements Runnable {
 	
 	// Variables declaration
     private javax.swing.JLabel btn_login;
@@ -180,6 +180,12 @@ public class ClientGUI extends JFrame {
 	}**/
 	
 	public void run() {
+
+	    //INIT
+
+
+
+	    //START
 		try {
 			Event current;
 	        boolean uscita=false;
@@ -229,10 +235,11 @@ public class ClientGUI extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	/**public ClientGUI() {
-		
+	public ClientGUI(ConcurrentLinkedQueue<Event> clientEngineToGUI,ConcurrentLinkedQueue<Event> guiToClient) {
+		this.clientEngineToGui=clientEngineToGUI;
+		this.guiToClient=guiToClient;
 		initComponents();	
-	}**/
+	}
 	
 	private void initComponents() {
 
