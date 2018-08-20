@@ -11,8 +11,8 @@ public class AnonymousClientExtended extends AnonymousClient {
     private Server server;
 
 
-    public AnonymousClientExtended(String my_public_key, String my_private_key,Server server)throws NullPointerException,RemoteException{
-        super(my_public_key,my_private_key);
+    public AnonymousClientExtended(Server server)throws NullPointerException,RemoteException{
+        super();
         this.server=requireNonNull(server);
         this.className="ANONYMOUS_CLIENT_EXTENDED";
     }
@@ -31,17 +31,22 @@ public class AnonymousClientExtended extends AnonymousClient {
         }
         return rc;
     }
-
+/*
     @Override
     public ResponseCode newTopicNotification(String topicName){
 
-        ResponseCode resp=super.newTopicNotification(topicName);
+        super.newTopicNotification(topicName);
         if(resp.IsOK()){
             server.addTopic(topicName);
         }
         return resp;
     }
-
+*/
+    @Override
+    public void newTopicNotification(String topicName){
+        super.newTopicNotification(topicName);
+        server.addTopic(topicName);
+    }
 
     void infoStamp(String msg){
         System.out.println("["+className+"-INFO]: " + msg);
