@@ -27,8 +27,12 @@ public class ClientEngine implements Callable<Integer> {
         Event current;
         boolean uscita=false;
         do{
-
-            current=guiToClientEngine.poll();
+            try {
+                current = guiToClientEngine.take();
+            }catch(InterruptedException e){
+                e.printStackTrace();
+                return 1;//ritorna con errore!
+            }
             if(current instanceof ClientEvent){
                 switch(((ClientEvent) current).getType()){
                     case SHUTDOWN:
