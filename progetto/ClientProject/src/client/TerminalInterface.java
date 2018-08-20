@@ -32,7 +32,13 @@ public class TerminalInterface implements Callable<Integer> {
                 }
                 this.guiToClientEngine.offer(current);
             }
-            current=this.clientEngineToGui.
+            current=this.clientEngineToGui.poll();
+            if(current!=null){
+                //per l'interfaccia da terminale non mi interessa che finestra aprire ...
+                //Quindi semplicemente svuoto la coda riempita da clientEngine..
+                //Per la gui invece bisognerà gestire l'apertura delle finestre gli errori eccetera.
+                current=null;
+            }
 
         }
         return 0;
