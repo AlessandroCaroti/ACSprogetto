@@ -52,7 +52,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Server implements ServerInterface,Callable<Integer> {
 
     /* topic and message management fields */
-    //todo se qualcuno trova un nome migliore cambitelo quello che ci ho messo fa schifo
     private ConcurrentSkipListMap<String,ConcurrentLinkedQueue<Integer>> topicClientList;                 // topic -> lista idAccount
     private ConcurrentLinkedQueue<String> topicList;        //utilizzata per tenere traccia di tutti i topic e da utilizzare in getTopicList()
 
@@ -74,7 +73,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     final private PrivateKey ECDH_privateKey;
     final private String     RSA_pubKey;
     final private byte[]     ECDH_pubKey_encrypted;
-    final private byte[]     messageTest = "Stringa per assicurarsi che la chiave condivisa sia uguale".getBytes(StandardCharsets.UTF_8); //todo forse sarebbe meglio passargli qualcosa di più corto
+    final private byte[]     messageTest = "testStringForSecretKey".getBytes(StandardCharsets.UTF_8);
 
     /* rmi fields */
     private Registry registry;
@@ -106,7 +105,6 @@ public class Server implements ServerInterface,Callable<Integer> {
     public Server(ServerStatistic serverStat) throws Exception {
         infoStamp("Creating server ...");
 
-        //TODO             creare un nome per il server utilizzato per il registro
         String tmp_name;
         try{
             tmp_name   = "Server_" + this.getMyIp();
@@ -288,7 +286,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     public ResponseCode connect() {
         try {
             pedanticInfo("A new client has connected.");
-            return  new ResponseCode( ResponseCode.Codici.R210, ResponseCode.TipoClasse.SERVER, RSA_pubKey);    //todo invece di castare la chiave pubblica a stringa sarebbe meglio cambiare il tipo da String a byte[] p PublicKey
+            return  new ResponseCode( ResponseCode.Codici.R210, ResponseCode.TipoClasse.SERVER, RSA_pubKey);
         } catch (Exception e){
             errorStamp(e);
         }
