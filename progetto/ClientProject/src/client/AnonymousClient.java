@@ -15,6 +15,8 @@ import java.rmi.server.UnicastRemoteObject;
 import java.security.PublicKey;
 import java.util.Iterator;
 import java.util.TreeSet;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import static utility.ResponseCode.Codici.R200;
 import static utility.ResponseCode.Codici.R670;
@@ -46,6 +48,8 @@ public class AnonymousClient implements ClientInterface {
     /* remote registry fields */
     protected String registryHost;                    //host for the remote registry
     protected int registryPort;                       //port on which the registry accepts requests
+
+    final protected Executor messageManager = Executors.newSingleThreadExecutor();
 
 
 
@@ -310,9 +314,13 @@ public class AnonymousClient implements ClientInterface {
         if(m==null) {
             rc=new ResponseCode(ResponseCode.Codici.R500, ResponseCode.TipoClasse.CLIENT, "(-) WARNING Il client ha ricevuto un messaggio vuoto");
         }else {
-            pedanticInfo("Received new message\n" + m.toString());
             rc = new ResponseCode(R200, ResponseCode.TipoClasse.CLIENT,
                     "(+) OK il client ha ricevuto il messaggio");
+
+            messageManager.execute(() -> {
+                //TODO gestione della visualizazione del messaggio
+                pedanticInfo("Received new message\n" + m.toString());
+            });
         }
         return rc;
     }

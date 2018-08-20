@@ -25,8 +25,6 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
-import utility.Message;
-import utility.ResponseCode;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -34,7 +32,9 @@ import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
+import static utility.ResponseCode.Codici.R200;
 import static utility.ResponseCode.Codici.R220;
 
 
@@ -50,6 +50,9 @@ public class Client extends AnonymousClient {
     private KeyPair ECDH_kayPair;       //todo cercare di renderla final
     private PublicKey serverPublicKey_RSA;
     private SecretKeySpec secretAesKey;
+
+    private ConcurrentLinkedQueue<Message> messagesSendAndNotReceived = new ConcurrentLinkedQueue<>();
+
 
 
     // ************************************************************************************************************
@@ -153,12 +156,15 @@ public class Client extends AnonymousClient {
     public boolean publish( String topic, String title, String text){
         if(connected()) {
             try {
-                Message msg = createMessage(topic, title, text);
+                //Message msg = createMessage(topic, title, text);
+                Message msg = new Message(title, this.username, text, topic);
                 ResponseCode response;
+
                 response=server_stub.publish(this.cookie, msg);
                 if(response.IsOK())
                 {
                     topicsSubscribed.add(topic);
+                    messagesSendAndNotReceived.add(msg);
                     infoStamp("Message published.");
                     return true;
                 }
@@ -201,6 +207,44 @@ public class Client extends AnonymousClient {
     /*****************************************************************************************************************
      * REMOTE METHOD *************************************************************************************************
      ****************************************************************************************************************/
+
+    @Override
+    //TODO al server non importa del messaggio di risposta quindi si potrebbe mettere che ritorni void
+    public ResponseCode notify(Message m) {
+        ResponseCode rc;
+        if (m == null) {
+            System.err.println("[DEBUG-STUMP] il messaggio ricevuto è nullo");
+            rc = new ResponseCode(ResponseCode.Codici.R500, ResponseCode.TipoClasse.CLIENT, "(-) WARNING Il client ha ricevuto un messaggio vuoto");
+        } else {
+
+            rc = new ResponseCode(R200, ResponseCode.TipoClasse.CLIENT,
+                    "(+) OK il client ha ricevuto il messaggio");
+
+            messageManager.execute(() -> {
+                Message mm;
+                if (m.getAuthor().equals(this.username)) {  //messagio ignorato
+                    try {   //yield per permettere al thread della publish di inserire il messaggio nella lista dei messaggi inviati e non ricevuti
+                        Thread.sleep(0);
+                    } catch (InterruptedException ignored) { }
+                    while (true) {      //while loop per lo stesso motivo del commento precedente
+                        mm = messagesSendAndNotReceived.poll();
+                        if (mm == null)
+                            continue;
+                        if (mm.equals(m)) { //Rimozione del messaggio ricevuto da messagesSendAndNotReceived
+                            System.err.println("**messaggio ignorato**");
+                            return;
+                        }
+                        messagesSendAndNotReceived.add(mm);
+                    }
+                }
+
+                //TODO gestione della visualizazione del messaggio
+                pedanticInfo("Received new message\n" + m.toString());
+            });
+        }
+
+        return rc;
+    }
 
     /** Metodo che produce una chiave segreta utilizzando il protocollo Diffie–Hellman
      *  con la variante che utilizza le curve ellittiche (Elliptic-curve Diffie–Hellman)
@@ -277,6 +321,7 @@ public class Client extends AnonymousClient {
             return null;
         }
     }
+
     private Message createMessage(String topic, String title, String text){
         Message msg = null;
         try {
