@@ -26,7 +26,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JEditorPane;
 import javax.swing.JTextArea;
 import java.awt.CardLayout;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
 import Events.*;
 
 
@@ -150,8 +151,8 @@ public class ClientGUI extends JFrame implements Runnable {
     private ImageIcon err;
 	private JTextField txtusername;
 	
-    private ConcurrentLinkedQueue<Event> clientEngineToGui;
-    private ConcurrentLinkedQueue<Event> guiToClient;
+    private LinkedBlockingQueue<Event> clientEngineToGui;
+    private LinkedBlockingQueue<Event> guiToClient;
 	private JTextField textField_1;
 	private JLabel lblSubmit_1;
 	private JLabel lblNewLabel_23;
@@ -235,7 +236,7 @@ public class ClientGUI extends JFrame implements Runnable {
 	/**
 	 * Create the frame.
 	 */
-	public ClientGUI(ConcurrentLinkedQueue<Event> clientEngineToGUI,ConcurrentLinkedQueue<Event> guiToClient) {
+	public ClientGUI(LinkedBlockingQueue<Event> clientEngineToGUI,LinkedBlockingQueue<Event> guiToClient) {
 		this.clientEngineToGui=clientEngineToGUI;
 		this.guiToClient=guiToClient;
 		initComponents();	
