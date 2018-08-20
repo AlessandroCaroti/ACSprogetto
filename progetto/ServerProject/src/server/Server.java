@@ -53,7 +53,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
     /* topic and message management fields */
     //todo se qualcuno trova un nome migliore cambitelo quello che ci ho messo fa schifo
-    private ConcurrentSkipListMap<String,ConcurrentLinkedQueue<Integer>> topicClientList;                 // topic -> lista idAccount    -   PUNTI 1 e 2
+    private ConcurrentSkipListMap<String,ConcurrentLinkedQueue<Integer>> topicClientList;                 // topic -> lista idAccount
     private ConcurrentLinkedQueue<String> topicList;        //utilizzata per tenere traccia di tutti i topic e da utilizzare in getTopicList()
 
     /* clients management fields */
