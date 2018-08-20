@@ -20,6 +20,7 @@ package client;
 import java.awt.EventQueue;
 import java.util.concurrent.*;
 import Events.*;
+import org.omg.PortableInterceptor.SUCCESSFUL;
 //import guiClient.ClientGUI;
 
 public class ClientHost {
@@ -115,8 +116,10 @@ public class ClientHost {
                     try {
                         switch ( exitCodeTerminalInterface.get(100, TimeUnit.MILLISECONDS)) {
                             case EXIT://chiudo tutto
+                                System.out.println("chiudo");
                                 host.clientThread.awaitTermination(10, TimeUnit.SECONDS);
-                                return;
+                                System.exit(0);
+                                break;
                             case ERROR://errore restarting...
                                 exitCodeTerminalInterface=host.terminalInterfaceThread.submit(host.terminalInterface= new TerminalInterface(host.clientEngineToGUI,host.guiToClientEngine));
                                 break;
@@ -136,7 +139,8 @@ public class ClientHost {
                     switch (exitCodeClient.get(100, TimeUnit.MILLISECONDS)) {
                         case EXIT://chiudo tutto
                             //host.userInterfaceThread.awaitTermination(10, TimeUnit.SECONDS); todo check
-                            return;
+                            System.exit(0);
+                            break;
                         case ERROR://errore restarting...
                             host.clientThread.submit((host.clientEngine=new ClientEngine(host.clientEngineToGUI,host.guiToClientEngine)));
                             break;
