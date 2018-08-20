@@ -28,6 +28,8 @@ import static java.util.Objects.requireNonNull;
 
 public class EmailHandlerTLS implements EmailController {
 
+    private final boolean pedantic = false;
+
     private final String username;
     private final String password;
     private final Session session;
@@ -98,11 +100,11 @@ public class EmailHandlerTLS implements EmailController {
     public  void sendMessage(Message message)throws IllegalStateException,NullPointerException {
 
         if (message == null) {
-            throw new NullPointerException("Error:message == null");
+            throw new NullPointerException("Error: message == null.");
         }
         this.messagesList.add(message);
         synchronized (messagesList) {
-            infoStamp("waking up the email demon.");
+            pedanticInfo("Waking up the email demon.");
             this.messagesList.notify();
         }
     }
@@ -129,13 +131,13 @@ public class EmailHandlerTLS implements EmailController {
                 try {
                     while((toBeSent=emailHandlerClass.messagesList.poll())==null) {
                         synchronized(emailHandlerClass.messagesList) {
-                            infoStamp("Email daemon's going to sleep.");
+                            pedanticInfo("Email daemon's going to sleep.");
                             emailHandlerClass.messagesList.wait();
                         }
                     }
-                    infoStamp("trying to send message.");
+                    pedanticInfo("Trying to send message ...");
                     Transport.send(toBeSent);
-                    infoStamp("message sent!");
+                    pedanticInfo("... message sent!");  //todo da cntrollare, non viene mai stampata la scritta
                 }
                 catch (InterruptedException |MessagingException e) {
                     if(e instanceof InterruptedException) {
@@ -172,5 +174,11 @@ public class EmailHandlerTLS implements EmailController {
     }
     private void infoStamp(String msg){
         System.out.println("[EMAILHANDLER-INFO]: " + msg);
+    }
+
+    private void pedanticInfo(String msg){
+        if(pedantic){
+            infoStamp(msg);
+        }
     }
 }

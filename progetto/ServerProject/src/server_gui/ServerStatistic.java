@@ -110,7 +110,7 @@ public class ServerStatistic {
     public String getGeneralServerStat() {
         return  "ServerName: "        + getServerName()   +
                 "\nRegistry addres: " + getRegIp()        +
-                "\nRegistry port:"    + getRegPort()      +
+                "\nRegistry port: "   + getRegPort()      +
                 "\nServer ready: "    + getServerReady()  +
                 "\nClient online: "   + getClientNumber() +
                 "\nTopic number: "    + getTopicNumber()  +
