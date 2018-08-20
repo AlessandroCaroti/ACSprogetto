@@ -6,15 +6,15 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class TerminalInterface implements Callable<Integer> {
-    private ConcurrentLinkedQueue<Event> clientEngineToGui;
-    private ConcurrentLinkedQueue<Event> guiToClientEngine;
+    private LinkedBlockingQueue<Event> clientEngineToGui;
+    private LinkedBlockingQueue<Event> guiToClientEngine;
     private BufferedReader bufferedReader=new BufferedReader(new InputStreamReader(System.in));
 
 
-    public TerminalInterface(ConcurrentLinkedQueue<Event> clientEngineToGUI,ConcurrentLinkedQueue<Event> guiToClientEngine) {
+    public TerminalInterface(LinkedBlockingQueue<Event> clientEngineToGUI,LinkedBlockingQueue<Event> guiToClientEngine) {
         this.clientEngineToGui=clientEngineToGUI;
         this.guiToClientEngine=guiToClientEngine;
     }
@@ -27,11 +27,12 @@ public class TerminalInterface implements Callable<Integer> {
         while(!uscita){
             current=this.parseCommand();
             if(current!=null){
-                this.guiToClientEngine.offer(current);
                 if(current instanceof ShutDown){
                     uscita=true;
                 }
+                this.guiToClientEngine.offer(current);
             }
+            current=this.clientEngineToGui.
 
         }
         return 0;

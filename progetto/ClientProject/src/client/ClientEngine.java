@@ -5,17 +5,18 @@ import utility.ServerInfoRecover;
 
 import java.net.InetAddress;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
 import static java.util.Objects.requireNonNull;
 
 
 public class ClientEngine implements Callable<Integer> {
 
-    private ConcurrentLinkedQueue<Event> clientEngineToGUI;
-    private ConcurrentLinkedQueue<Event> guiToClientEngine;
+    private LinkedBlockingQueue<Event> clientEngineToGUI;
+    private LinkedBlockingQueue<Event> guiToClientEngine;
     private AnonymousClient client;
 
-    public ClientEngine(ConcurrentLinkedQueue<Event>clientEngineToGUI, ConcurrentLinkedQueue<Event> guiToClientEngine){
+    public ClientEngine(LinkedBlockingQueue<Event>clientEngineToGUI, LinkedBlockingQueue<Event> guiToClientEngine){
         this.clientEngineToGUI=requireNonNull(clientEngineToGUI);
         this.guiToClientEngine=requireNonNull(guiToClientEngine);
     }

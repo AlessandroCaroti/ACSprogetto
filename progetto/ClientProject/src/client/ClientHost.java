@@ -26,8 +26,8 @@ public class ClientHost {
     private static final int ERROR=1;
     private static final int EXIT=0;
 
-    private ConcurrentLinkedQueue<Event> clientEngineToGUI=new ConcurrentLinkedQueue<>();
-    private ConcurrentLinkedQueue<Event> guiToClientEngine= new ConcurrentLinkedQueue<>();
+    private LinkedBlockingQueue<Event> clientEngineToGUI=new LinkedBlockingQueue<>();
+    private LinkedBlockingQueue<Event> guiToClientEngine= new LinkedBlockingQueue<>();
     private boolean guiActivated;
 
 
