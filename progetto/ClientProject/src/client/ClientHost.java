@@ -20,7 +20,7 @@ package client;
 import java.awt.EventQueue;
 import java.util.concurrent.*;
 import Events.*;
-import guiClient.ClientGUI;
+//import guiClient.ClientGUI;
 
 public class ClientHost {
     private static final int ERROR=1;
@@ -41,7 +41,7 @@ public class ClientHost {
     private ExecutorService terminalInterfaceThread;
 
     //interfaccia grafica
-    private ClientGUI userInterface;
+    //private ClientGUI userInterface;
 
 
 
@@ -52,7 +52,7 @@ public class ClientHost {
         clientThread = Executors.newSingleThreadExecutor();
 
         if(guiActivated) {
-            userInterface = new ClientGUI(clientEngineToGUI, guiToClientEngine);
+            //userInterface = new ClientGUI(clientEngineToGUI, guiToClientEngine);
 
         }else{
             terminalInterface=new TerminalInterface(clientEngineToGUI,guiToClientEngine);
@@ -82,7 +82,7 @@ public class ClientHost {
             ClientHost host = new ClientHost(Boolean.parseBoolean(args[0]));
             exitCodeClient = host.clientThread.submit(host.clientEngine);
             if(host.guiActivated) {
-                EventQueue.invokeLater(host.userInterface);
+                //EventQueue.invokeLater(host.userInterface);
             }else{
                 exitCodeTerminalInterface=host.terminalInterfaceThread.submit(host.terminalInterface);
             }
