@@ -117,7 +117,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
 
         topicList = new ConcurrentLinkedQueue<>();
-        topicClientList=new ConcurrentSkipListMap<>();
+        topicClientList = new ConcurrentSkipListMap<>();
 
         //Caricamento delle impostazioni del server memorizate su file
         pedanticInfo("Working Directory = " + System.getProperty("user.dir"));
@@ -151,7 +151,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
 
         this.serverStat = Objects.requireNonNull(serverStat);
-        this.serverStat.setServerInfo(this.serverName, topicList);
+        this.serverStat.setServerInfo(this.serverName, topicList, AddressIp.getPublicIp(), regPort);
         infoStamp("***** SERVER CREATED! *****");
     }
 
@@ -225,7 +225,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
             //Load the server stub on the Registry
             r.rebind(serverName, stub);
-            infoStamp("Server stub loaded on registry associate with the  the name \'"+serverName+"\' .");
+            infoStamp("Server stub loaded on registry associate with the  the name \'"+serverName+"\'.");
 
         }catch (RemoteException e){
             errorStamp(e);

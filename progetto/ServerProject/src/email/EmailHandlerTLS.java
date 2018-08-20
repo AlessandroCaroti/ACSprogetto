@@ -44,7 +44,7 @@ public class EmailHandlerTLS implements EmailController {
         this.messagesList=new ArrayBlockingQueue<>(handlerMaxCapacity);
         this.username=requireNonNull(myEmail);
         this.password=requireNonNull(myPassword);
-        infoStamp("connecting to:"+this.username+"; password:"+this.password+";  smtpPort:"+Integer.toString(smtpPort)+";  smtpProvider:"+smtpProvider+";");
+        infoStamp("Connecting to:"+this.username+"; password:"+this.password+";  smtpPort:"+Integer.toString(smtpPort)+";  smtpProvider:"+smtpProvider+";");
 
         Properties props=new Properties();
         props.put("mail.smtp.auth", "true");
@@ -129,7 +129,7 @@ public class EmailHandlerTLS implements EmailController {
                 try {
                     while((toBeSent=emailHandlerClass.messagesList.poll())==null) {
                         synchronized(emailHandlerClass.messagesList) {
-                            infoStamp("email daemon's going to sleep.");
+                            infoStamp("Email daemon's going to sleep.");
                             emailHandlerClass.messagesList.wait();
                         }
                     }
