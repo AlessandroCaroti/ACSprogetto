@@ -7,7 +7,7 @@ public class clientTest_3 {
     public static void main(String[] args) {
         try {
             int k = (int)(Math.random()*10000);
-            Client client = new Client("user_"+ k, "password", "email"+k);
+            Client client = new Client("user_"+ k, "password", "email_"+k);
             try {
                 ServerInfoRecover infoServer = new ServerInfoRecover();
                 String[] a = infoServer.getServerInfo();
