@@ -37,18 +37,14 @@ public class SClient implements Callable<Integer> {
     private List<ServerInfo> serverList;
 
 
-    private String myPublicKey;
-    private String myPrivateKey;
     private boolean pedantic=true;
     private Server myServer;
 
-    public SClient(String myPublicKey, String myPrivateKey,List serverList,Server myServer)  {
-        if(myPublicKey==null||myPrivateKey==null||serverList==null )
+    public SClient(List serverList,Server myServer)  {
+        if(serverList==null )
         {
             throw new NullPointerException("passing null argument to SClient constructor");
         }
-        this.myPublicKey=myPublicKey;
-        this.myPrivateKey=myPrivateKey;
         this.serverList=serverList;
         this.myServer=requireNonNull(myServer);
     }
@@ -117,7 +113,7 @@ public class SClient implements Callable<Integer> {
 
                 it.next();
                 try {
-                    clients.add(new AnonymousClientExtended(this.myPublicKey, this.myPrivateKey, this.myServer));
+                    clients.add(new AnonymousClientExtended(this.myServer));
                     String[] a = infoServer.getServerInfo(InetAddress.getByName(((ServerInfo) it).regHost));
                     clients.get(i).setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
                     i++;
