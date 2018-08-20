@@ -62,13 +62,7 @@ public class ClientHost {
     }
 
 
-
-
-
-
-
-
-    public static void main(String[] args) {
+    public static void main(String[] args){
 
         Future<Integer> exitCodeClient, exitCodeTerminalInterface=null;
         if (args.length < 1) {
