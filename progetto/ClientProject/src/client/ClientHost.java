@@ -28,7 +28,7 @@ public class ClientHost {
 
     private LinkedBlockingQueue<Event> clientEngineToGUI=new LinkedBlockingQueue<>();
     private LinkedBlockingQueue<Event> guiToClientEngine= new LinkedBlockingQueue<>();
-    private boolean guiActivated;
+    private  boolean guiActivated;
 
 
 
@@ -70,8 +70,7 @@ public class ClientHost {
 
     public static void main(String[] args) {
 
-        Future<Integer> exitCodeClient, exitCodeTerminalInterface;
-        int exitCode;
+        Future<Integer> exitCodeClient, exitCodeTerminalInterface=null;
         if (args.length < 1) {
             System.err.println("args: userinterface(true/false) ");
             return;
@@ -98,8 +97,8 @@ public class ClientHost {
                      *
                      *
                      **/
-                    try {
-                        //exitcode = exitCodeUserInterface.get(100, TimeUnit.MILLISECONDS);
+                    /*try {
+
                         switch (exitCode) {
                             case EXIT://chiudo tutto
                                 host.clientThread.awaitTermination(10, TimeUnit.SECONDS);
@@ -110,7 +109,8 @@ public class ClientHost {
                         }
                     } catch (ExecutionException | InterruptedException e) {
                         e.printStackTrace(System.err);
-                    } catch (TimeoutException e) {/*tutto normale*/}
+                    } catch (TimeoutException e) {/*tutto normale**/
+
                 }else {
 
                     /**
@@ -118,7 +118,18 @@ public class ClientHost {
                      *
                      *
                      **/
-                    //todo
+                    try {
+                        switch ( exitCodeTerminalInterface.get(100, TimeUnit.MILLISECONDS)) {
+                            case EXIT://chiudo tutto
+                                host.clientThread.awaitTermination(10, TimeUnit.SECONDS);
+                                return;
+                            case ERROR://errore restarting...
+                                exitCodeTerminalInterface=host.terminalInterfaceThread.submit(host.terminalInterface= new TerminalInterface(host.clientEngineToGUI,host.guiToClientEngine));
+                                break;
+                        }
+                    } catch (ExecutionException | InterruptedException e) {
+                        e.printStackTrace(System.err);
+                    } catch (TimeoutException e) {/*tutto normale*/}
                 }
 
                 /**
