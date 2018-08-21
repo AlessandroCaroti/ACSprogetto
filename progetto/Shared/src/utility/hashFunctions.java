@@ -40,8 +40,7 @@ public class hashFunctions {
      * @return l'hash della stringa passata
      * @throws NullPointerException se plainText è null
      */
-     static byte[] stringHash(String plainText) throws NullPointerException,NoSuchAlgorithmException
-    {
+     static byte[] stringHash(String plainText) throws NullPointerException {
         if(plainText==null)
             throw new NullPointerException("plainText == null");
         md_s256.update(plainText.getBytes());

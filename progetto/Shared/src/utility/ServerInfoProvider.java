@@ -30,7 +30,7 @@ public class ServerInfoProvider extends InfoProviderProtocol {
         timer = new Timer();
         byte[] buf        = "".getBytes(StandardCharsets.UTF_8);//AddressIp.getLocalAddres().getBytes("UTF-8");   //Stringa contenente l'indirizzo locale della macchina
         socket            = new DatagramSocket();
-        packet            = new DatagramPacket(buf, buf.length, group, brodcastPort);
+        packet            = new DatagramPacket(buf, buf.length, group, broadcastPort);
         serverSocket      = new ServerSocket(port, 5);
         serverInfoMessage = regHost + "\n" +
                 regPort + "\n" +
@@ -68,7 +68,7 @@ public class ServerInfoProvider extends InfoProviderProtocol {
                 @Override
                 public void run() { brodcastDatagram(); }
             }, 0L, (period * 1000));
-            infoStamp("Info Provider started. Sendig the server address in brodcast on "+ brodcastPort +" port, and listening on port "+port);
+            infoStamp("Info Provider started. Sendig the server address in brodcast on "+ broadcastPort +" port, and listening on port "+port);
         }catch (Exception e){
             errorStamp(e, "An error occurred during the start of the Info Provider.");
             stop = true;
