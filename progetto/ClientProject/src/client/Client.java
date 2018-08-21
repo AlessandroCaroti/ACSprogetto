@@ -44,7 +44,7 @@ public class Client extends AnonymousClient {
     /* client fields */
     private String plainPassword;
     private String email;
-
+    private String username;
     /* security fields */
     final private String curveName = "prime192v1";
     private KeyPair ECDH_kayPair;       //todo cercare di renderla final
@@ -67,10 +67,11 @@ public class Client extends AnonymousClient {
      */
     public Client(String username, String plainPassword, String email ) throws RemoteException
     {
-        super(username);
+        super();
         if(plainPassword==null||email==null)
             throw new NullPointerException();
         this.plainPassword=plainPassword;
+        this.username     = username;
         this.email=email;
         this.className="CLIENT";
         try {
@@ -182,6 +183,8 @@ public class Client extends AnonymousClient {
         return false;
     }
 
+
+
     public String getPlainPassword() {
         return plainPassword;
     }
@@ -201,6 +204,16 @@ public class Client extends AnonymousClient {
     public void setEmail(String email) {
         this.email = email;
     }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+    // *************************************************************************************************************
+    //PRIVATE METHOD
 
 
 

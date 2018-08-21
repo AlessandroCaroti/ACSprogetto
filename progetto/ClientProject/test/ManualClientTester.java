@@ -52,15 +52,15 @@ public class ManualClientTester {
                 case 2:
                     System.out.println("Inserisci username");
                     username=bufferRead.readLine();
-                    clients.add(currentClient=new AnonymousClient(username));
+                    clients.add(currentClient=new AnonymousClient());
                     break;
                 case 3:
                     for(int i=0;i<clients.size();i++){
                         it=clients.get(i);
                         if(it instanceof Client) {
-                            System.out.println("i:"+i+"  username:" + it.getUsername() + "  password"+((Client) it).getPlainPassword()+"   email:"+((Client)it).getEmail()+"  cookie:"+it.getCookie());
+                            System.out.println("i:"+i+"  username:" + ((Client)it).getUsername() + "  password"+((Client) it).getPlainPassword()+"   email:"+((Client)it).getEmail()+"  cookie:"+it.getCookie());
                         }else if(it !=null){
-                            System.out.println("i:"+i+"  username:" + it.getUsername() +"  cookie:"+it.getCookie());
+                            System.out.println("i:"+i+"  username:" +  ((Client)it).getUsername() +"  cookie:"+it.getCookie());
                         }
                     }
 
@@ -73,9 +73,9 @@ public class ManualClientTester {
                     if(currentClient==null){break;}
                     it=currentClient;
                     if(it instanceof Client)  {
-                        System.out.println("username:" + it.getUsername() + "  password"+((Client) it).getPlainPassword()+"   email:"+((Client)it).getEmail()+"  cookie:"+it.getCookie());
+                        System.out.println("username:" +  ((Client)it).getUsername() + "  password"+((Client) it).getPlainPassword()+"   email:"+((Client)it).getEmail()+"  cookie:"+it.getCookie());
                     }else{
-                        System.out.println("username:" + it.getUsername() +"  cookie:"+it.getCookie());
+                        System.out.println("username:" +  ((Client)it).getUsername() +"  cookie:"+it.getCookie());
                     }
                     break;
                 case 6:

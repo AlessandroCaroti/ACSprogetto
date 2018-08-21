@@ -37,6 +37,21 @@ public class ServerInfoRecover extends InfoProviderProtocol {
         return serverInfo.toArray(new String[0]);
     }
 
+    public String[] getServerInfo(InetAddress serverAddres) throws IOException {
+        ArrayList<String> serverInfo = new ArrayList<>();
+        String fromServer;
+        Socket s = new Socket(serverAddres, port);
+        BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
+        while ((fromServer = in.readLine()) != null) {
+            infoStamp("Receved: "+fromServer);
+            serverInfo.add(fromServer);
+        }
+        in.close();
+        s.close();
+        return serverInfo.toArray(new String[0]);
+    }
+
+
 
     //Funzione che crea un socket in ascolto di datagram da parte di un server nella rete locale
     private InetAddress findServerLocalAddress() throws IOException {
