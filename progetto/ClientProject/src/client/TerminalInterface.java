@@ -26,12 +26,10 @@ public class TerminalInterface implements Callable<Integer> {
         System.out.print(ASCIIART);
         while(!uscita){
             current=this.parseCommand();
-            if(current!=null){
-                if(current instanceof ShutDown){
-                    uscita=true;
-                }
-                this.guiToClientEngine.offer(current);
+            if(current instanceof ShutDown) {
+                uscita = true;
             }
+            this.guiToClientEngine.offer(current);
             current=this.clientEngineToGui.poll();
             if(current!=null){
                 //per l'interfaccia da terminale non mi interessa che finestra aprire ...
@@ -49,61 +47,62 @@ public class TerminalInterface implements Callable<Integer> {
 
     private Event parseCommand(){
         Event event=null;
-
-        try {
-            System.out.print(PROMPT);
-            String string = bufferedReader.readLine();
-            System.err.println("[DEBUG-INFO]:"+string+";\n");
-            StringTokenizer tokenizer=new StringTokenizer(string,"\n\t ");
-            if(tokenizer.hasMoreTokens()) {
-
-
-                switch (tokenizer.nextToken()) {
-                    case "login":
-                        event=new AccountLoginWindow();
-                        ((AccountLoginWindow) event).setServerAddress(tokenizer.nextToken());
-                        ((AccountLoginWindow) event).setUsername(tokenizer.nextToken());
-                        ((AccountLoginWindow) event).setPassword(tokenizer.nextToken());
-                        break;
-                    case "newaccount":
-                        event=new NewAccountWindow();
-                        ((NewAccountWindow) event).setServerAddress(tokenizer.nextToken());
-                        ((NewAccountWindow) event).setUsername(tokenizer.nextToken());
-                        ((NewAccountWindow) event).setPassword(tokenizer.nextToken());
-                        ((NewAccountWindow) event).setEmail(tokenizer.nextToken());
-                        break;
-                    case "anonymouslogin":
-                        event=new AnonymousLoginWindow();
-                        ((AnonymousLoginWindow) event).setServerAddress(tokenizer.nextToken());
-                        break;
-                    case "forgotpassword":
-                        event=new ForgotPasswordWindow();
-                        ((ForgotPasswordWindow) event).setNewPassword(tokenizer.nextToken());
-                        ((ForgotPasswordWindow) event).setRepeatPassword(tokenizer.nextToken());
-                        ((ForgotPasswordWindow) event).setEmail(tokenizer.nextToken());
-                        break;
-                    case "help":
-                        System.out.print(COMMANDS);
-                        break;
-                    case "shutdown":
-                        event=new ShutDown();
-                        break;
-                    case "forum":
-                        //todo
-                        break;
-                    case "disconnect":
-                        event=new Disconnect();
-                    default:
-                        System.out.println("Unknown command:\""+string+"\"");
-                        break;
+        boolean uscita=false;
+        do {
+            try {
+                System.out.print(PROMPT);
+                String string = bufferedReader.readLine();
+                System.err.println("[DEBUG-INFO]:" + string + ";\n");
+                StringTokenizer tokenizer = new StringTokenizer(string, "\n\t ");
+                if (tokenizer.hasMoreTokens()) {
 
 
+                    switch (tokenizer.nextToken()) {
+                        case "login":
+                            event = new AccountLoginWindow();
+                            ((AccountLoginWindow) event).setServerAddress(tokenizer.nextToken());
+                            ((AccountLoginWindow) event).setUsername(tokenizer.nextToken());
+                            ((AccountLoginWindow) event).setPassword(tokenizer.nextToken());
+                            break;
+                        case "newaccount":
+                            event = new NewAccountWindow();
+                            ((NewAccountWindow) event).setServerAddress(tokenizer.nextToken());
+                            ((NewAccountWindow) event).setUsername(tokenizer.nextToken());
+                            ((NewAccountWindow) event).setPassword(tokenizer.nextToken());
+                            ((NewAccountWindow) event).setEmail(tokenizer.nextToken());
+                            break;
+                        case "anonymouslogin":
+                            event = new AnonymousLoginWindow();
+                            ((AnonymousLoginWindow) event).setServerAddress(tokenizer.nextToken());
+                            break;
+                        case "forgotpassword":
+                            event = new ForgotPasswordWindow();
+                            ((ForgotPasswordWindow) event).setNewPassword(tokenizer.nextToken());
+                            ((ForgotPasswordWindow) event).setRepeatPassword(tokenizer.nextToken());
+                            ((ForgotPasswordWindow) event).setEmail(tokenizer.nextToken());
+                            break;
+                        case "help":
+                            System.out.print(COMMANDS);
+                            break;
+                        case "shutdown":
+                            event = new ShutDown();
+                            break;
+                        case "forum":
+                            //todo
+                            break;
+                        case "disconnect":
+                            event = new Disconnect();
+                        default:
+                            System.out.println("Unknown command:\"" + string + "\"");
+                            break;
+
+                    }
+                    uscita=true;
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        }catch (Exception e){
-            e.printStackTrace();
-            return null;
-        }
+        }while(!uscita);
         return event;
     }
 
