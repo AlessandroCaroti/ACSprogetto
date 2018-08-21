@@ -13,7 +13,6 @@ public class TerminalInterface implements Callable<Integer> {
     private LinkedBlockingQueue<Event> guiToClientEngine;
     private BufferedReader bufferedReader=new BufferedReader(new InputStreamReader(System.in));
 
-
     public TerminalInterface(LinkedBlockingQueue<Event> clientEngineToGUI,LinkedBlockingQueue<Event> guiToClientEngine) {
         this.clientEngineToGui=clientEngineToGUI;
         this.guiToClientEngine=guiToClientEngine;
@@ -47,11 +46,13 @@ public class TerminalInterface implements Callable<Integer> {
 
     private Event parseCommand(){
         Event event=null;
+        String string;
         boolean uscita=false;
         do {
             try {
+
                 System.out.print(PROMPT);
-                String string = bufferedReader.readLine();
+                string = bufferedReader.readLine();
                 System.err.println("[DEBUG-INFO]:" + string + ";\n");
                 StringTokenizer tokenizer = new StringTokenizer(string, "\n\t ");
                 if (tokenizer.hasMoreTokens()) {
@@ -92,12 +93,16 @@ public class TerminalInterface implements Callable<Integer> {
                             break;
                         case "disconnect":
                             event = new Disconnect();
+                            break;
                         default:
                             System.out.println("Unknown command:\"" + string + "\"");
+                            event=null;
                             break;
 
                     }
-                    uscita=true;
+                    if(event!=null){
+                        uscita=true;
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
