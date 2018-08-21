@@ -53,7 +53,8 @@ public class TerminalInterface implements Callable<Integer> {
         try {
             System.out.print(PROMPT);
             String string = bufferedReader.readLine();
-            StringTokenizer tokenizer=new StringTokenizer(new String(string),"\n\t ");
+            System.err.println("[DEBUG-INFO]:"+string+";\n");
+            StringTokenizer tokenizer=new StringTokenizer(string,"\n\t ");
             if(tokenizer.hasMoreTokens()) {
 
 
