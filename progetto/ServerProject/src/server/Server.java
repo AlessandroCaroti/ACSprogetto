@@ -328,7 +328,7 @@ public class Server implements ServerInterface,Callable<Integer> {
             if((accountId=accountList.putIfAbsentEmailUsername(account))>=0){
 
                 if(this.emailValidation(email,stub)){
-                    pedanticInfo("Registered new client, UserName: \'"+userName+"\' - Password: \'"+email+"\'");
+                    pedanticInfo("Registered new client, UserName: \'"+userName+"\' - email: \'"+email+"\'  password:"+plainPassword+"\n");
                     serverStat.incrementClientNum();
                     return new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER, getCookie(accountId));
                 }else{
