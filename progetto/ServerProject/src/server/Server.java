@@ -122,7 +122,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         //Caricamento delle impostazioni del server memorizate su file
         pedanticInfo("Working Directory = " + System.getProperty("user.dir"));
 
-        loadSetting("./src/server/config.serverSettings");
+        loadSetting("./progetto/ServerProject/src/server/config.serverSettings");
         infoStamp("Server settings imported.");
 
         //Creazione del gestore degli account
