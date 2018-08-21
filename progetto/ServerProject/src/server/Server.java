@@ -216,7 +216,7 @@ public class Server implements ServerInterface,Callable<Integer> {
                 infoStamp("New registry created on port "+regPort+".");
             } catch (RemoteException e) {
                 r = LocateRegistry.getRegistry(regPort);
-                infoStamp("Registry find on port \"+regPort+\".");
+                infoStamp("Registry find on port "+regPort+".");
             }
 
             //Making the Remote Object Available to Clients
