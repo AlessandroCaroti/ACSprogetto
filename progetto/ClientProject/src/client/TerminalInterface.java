@@ -105,7 +105,7 @@ public class TerminalInterface implements Callable<Integer> {
 
     /*patorjk.com*/
     private static final String ASCIIART=
-    "                 ___       ______     _______.                  \n" +
+            "                 ___       ______     _______.                  \n" +
             "                /   \\     /      |   /       |                  \n" +
             "               /  ^  \\   |  ,----'  |   (----`                  \n" +
             "              /  /_\\  \\  |  |        \\   \\                      \n" +
