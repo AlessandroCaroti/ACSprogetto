@@ -93,7 +93,6 @@ public class TerminalInterface implements Callable<Integer> {
                             break;
                         case "disconnect":
                             event = new Disconnect();
-                            break;
                         default:
                             System.out.println("Unknown command:\"" + string + "\"");
                             event=null;
