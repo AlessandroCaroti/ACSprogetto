@@ -2,6 +2,7 @@ package client;
 
 import interfaces.ClientInterface;
 import interfaces.ServerInterface;
+import utility.LogFormatManager;
 import utility.Message;
 import utility.ResponseCode;
 
@@ -50,6 +51,7 @@ public class AnonymousClient implements ClientInterface {
     protected int registryPort;                       //port on which the registry accepts requests
 
     final protected Executor messageManager = Executors.newSingleThreadExecutor();
+    final private LogFormatManager print = new LogFormatManager("ANONYMOUS_CLIENT", true);
 
 
 

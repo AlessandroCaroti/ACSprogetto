@@ -23,6 +23,10 @@ public class ServerInfoProvider extends InfoProviderProtocol {
 
     private Socket clientSocket;              //Sochet del client che si è connesso al ServerSocket
 
+    final private LogFormatManager print = new LogFormatManager("InfoProvider", true);
+
+
+
     public ServerInfoProvider(String regHost, int regPort, String serverName) throws IOException {
         if (!ready)
             throw new UnknownHostException();

@@ -13,6 +13,7 @@ import java.util.ArrayList;
 public class ServerInfoRecover extends InfoProviderProtocol {
 
     private byte[] buf = new byte[256];             //Buffer su cui viene salvato il messaggio ricevuto dal brodcast
+    final private LogFormatManager print = new LogFormatManager("InfoRecover", true);
 
 
     public ServerInfoRecover() throws IOException {

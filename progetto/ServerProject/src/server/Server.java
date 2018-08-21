@@ -89,6 +89,8 @@ public class Server implements ServerInterface,Callable<Integer> {
     private boolean graphicInterfaceReady;
     final private ServerStatistic serverStat;
 
+    final private LogFormatManager print = new LogFormatManager("SERVER", true);
+
 
 
     /*****************************************************************************************************************************/

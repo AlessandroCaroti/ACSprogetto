@@ -18,6 +18,8 @@
 package email;
 
 
+import utility.LogFormatManager;
+
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
@@ -35,6 +37,7 @@ public class EmailHandlerTLS implements EmailController {
     private final Session session;
     private final BlockingQueue<Message> messagesList;
     private ExecutorService emailHandlerThread=Executors.newSingleThreadScheduledExecutor();
+    private final LogFormatManager print = new LogFormatManager("EMAIL_HANDLER", true);
 
 
     /* ********************************************************

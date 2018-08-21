@@ -52,6 +52,7 @@ public class Client extends AnonymousClient {
     private SecretKeySpec secretAesKey;
 
     private ConcurrentLinkedQueue<Message> messagesSendAndNotReceived = new ConcurrentLinkedQueue<>();
+    final private LogFormatManager print = new LogFormatManager("ANONYMOUS_CLIENT", true);
 
 
 
