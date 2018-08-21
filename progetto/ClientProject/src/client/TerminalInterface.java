@@ -90,6 +90,8 @@ public class TerminalInterface implements Callable<Integer> {
                     case "forum":
                         //todo
                         break;
+                    case "disconnect":
+                        event=new Disconnect();
                     default:
                         break;
 
@@ -134,5 +136,6 @@ public class TerminalInterface implements Callable<Integer> {
             +"login <serverAddress> <username> <password>\n"
             +"newaccount <serverAddress> <username> <password> <email>\n"
             +"forgotpassword <newPassword> <repeatPassword> <email>\n"
-            +"help\n"+"shutdown\n";
+
+                    +"disconnect\n" +"help\n"+"shutdown\n";
 }

@@ -38,6 +38,11 @@ public class ClientEngine implements Callable<Integer> {
                     case SHUTDOWN:
                         uscita=true;
                         break;
+                    case DISCONNECT:
+                        if(client.disconnect()){
+                            System.out.println("DISCONNESSO");
+                        }else{System.out.println("NON DISCONNESSO");}
+                        break;
 
                 }
             }
