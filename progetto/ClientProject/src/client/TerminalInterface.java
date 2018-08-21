@@ -53,7 +53,7 @@ public class TerminalInterface implements Callable<Integer> {
         try {
             System.out.print(PROMPT);
             String string = bufferedReader.readLine();
-            StringTokenizer tokenizer=new StringTokenizer(string,"\n\t ");
+            StringTokenizer tokenizer=new StringTokenizer(new String(string),"\n\t ");
             if(tokenizer.hasMoreTokens()) {
 
 
@@ -93,6 +93,7 @@ public class TerminalInterface implements Callable<Integer> {
                     case "disconnect":
                         event=new Disconnect();
                     default:
+                        System.out.println("Unknown command:\""+string+"\"");
                         break;
 
 
