@@ -1,5 +1,6 @@
 package client;
 
 public enum ClientEventsType {
-    SHUTDOWN
+    SHUTDOWN,
+    DISCONNECT
 }
