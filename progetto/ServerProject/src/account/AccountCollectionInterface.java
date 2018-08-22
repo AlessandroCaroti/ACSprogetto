@@ -116,7 +116,7 @@ public interface AccountCollectionInterface {
      * @param email l'email da cercare
      * @param username l'username da cercare
      * @return una copia dell'account che ha email OR password uguale a quelle passate,se l'account non esiste torna null
-     * @throws NullPointerException se email OR username sono  null
+     * @throws NullPointerException se email AND username ==  null
      */
      Account isMember(String email,String username) throws IllegalArgumentException;
 
@@ -153,7 +153,7 @@ public interface AccountCollectionInterface {
 
      byte[] setPassword(String plainPassword,int accountId)throws NoSuchAlgorithmException;
 
-     String setUsername(String username,int acountId);
+     String setUsername(String username,int accountId);
 
      ClientInterface setStub(ClientInterface clientStub,int accountId);
 

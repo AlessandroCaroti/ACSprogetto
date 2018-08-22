@@ -52,8 +52,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Server implements ServerInterface,Callable<Integer> {
 
     /* topic and message management fields */
-    //todo se qualcuno trova un nome migliore cambitelo quello che ci ho messo fa schifo
-    private ConcurrentSkipListMap<String,ConcurrentLinkedQueue<Integer>> topicClientList;                 // topic -> lista idAccount    -   PUNTI 1 e 2
+    private ConcurrentSkipListMap<String,ConcurrentLinkedQueue<Integer>> topicClientList;                 // topic -> lista idAccount
     private ConcurrentLinkedQueue<String> topicList;        //utilizzata per tenere traccia di tutti i topic e da utilizzare in getTopicList()
     private ConcurrentLinkedQueue<Integer> notificationList;
 
@@ -75,7 +74,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     final private PrivateKey ECDH_privateKey;
     final private String     RSA_pubKey;
     final private byte[]     ECDH_pubKey_encrypted;
-    final private byte[]     messageTest = "Stringa per assicurarsi che la chiave condivisa sia uguale".getBytes(StandardCharsets.UTF_8); //todo forse sarebbe meglio passargli qualcosa di più corto
+    final private byte[]     messageTest = "testStringForSecretKey".getBytes(StandardCharsets.UTF_8);
 
     /* rmi fields */
     private Registry registry;
@@ -90,6 +89,8 @@ public class Server implements ServerInterface,Callable<Integer> {
     /* GUI fields */
     private boolean graphicInterfaceReady;
     final private ServerStatistic serverStat;
+
+    final private LogFormatManager print = new LogFormatManager("SERVER", true);
 
 
 
@@ -106,6 +107,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
     public Server(ServerStatistic serverStat) throws Exception {
         infoStamp("Creating server ...");
+
         String tmp_name;
         try{
             tmp_name   = "Server_" + this.getMyIp();
@@ -151,7 +153,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
 
         this.serverStat = Objects.requireNonNull(serverStat);
-        this.serverStat.setServerInfo(this.serverName, topicList);
+        this.serverStat.setServerInfo(this.serverName, topicList, AddressIp.getExternalAddres(), regPort);
         infoStamp("***** SERVER CREATED! *****");
     }
 
@@ -224,7 +226,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
             //Load the server stub on the Registry
             r.rebind(serverName, stub);
-            infoStamp("Server stub loaded on registry associate with the  the name \'"+serverName+"\' .");
+            infoStamp("Server stub loaded on registry associate with the  the name \'"+serverName+"\'.");
 
         }catch (RemoteException e){
             errorStamp(e);
@@ -287,7 +289,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     public ResponseCode connect() {
         try {
             pedanticInfo("A new client has connected.");
-            return  new ResponseCode( ResponseCode.Codici.R210, ResponseCode.TipoClasse.SERVER, RSA_pubKey);    //todo invece di castare la chiave pubblica a stringa sarebbe meglio cambiare il tipo da String a byte[] p PublicKey
+            return  new ResponseCode( ResponseCode.Codici.R210, ResponseCode.TipoClasse.SERVER, RSA_pubKey);
         } catch (Exception e){
             errorStamp(e);
         }
@@ -328,23 +330,23 @@ public class Server implements ServerInterface,Callable<Integer> {
             if((accountId=accountList.putIfAbsentEmailUsername(account))>=0){
 
                 if(this.emailValidation(email,stub)){
-                    pedanticInfo("Registered new client, UserName: \'"+userName+"\' - email: \'"+email+"\'  password:"+plainPassword+"\n");
+                    infoStamp("Registered new client, UserName: \'"+userName+"\' - Email: \'"+email+"\'  Password:"+plainPassword+"\n");
                     serverStat.incrementClientNum();
                     return new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER, getCookie(accountId));
                 }else{
-                    pedanticInfo("Client registration refused ,\'"+email+"\' has not been validated.");
+                    infoStamp("Client registration refused ,\'"+email+"\' has not been validated.");
                     accountList.removeAccountCheckEmail(accountId,email);/* check sulla chiave primaria(email) per  problemi di concorrenza con un metodo tipo deleteAccount()*/
                     return  ResponseCodeList.WrongCodeValidation;
                 }
             }else{//email or username already present
                 if(accountId==-1){
-                    pedanticInfo("Client registration refused, email \'"+email+"\' already used.");
+                    infoStamp("Client registration refused, email \'"+email+"\' already used.");
                     sendEmailAccountInfo(email,accountList.getAccountCopyEmail(email).getUsername());
                     this.antiAccountEnum(stub);
                     return  ResponseCodeList.WrongCodeValidation;
                 }
                 if(accountId==-2){
-                    pedanticInfo("Client registration refused, username \'"+userName+"\' already used.");
+                    infoStamp("Client registration refused, username \'"+userName+"\' already used.");
                     return ResponseCodeList.InvalidUsername;
                 }
             }
@@ -392,7 +394,7 @@ public class Server implements ServerInterface,Callable<Integer> {
             int accountId = getAccountId(cookie);
             this.accountList.setStub(null, accountId);
             //todo creare una funzione invalidateTemporantInfo() che imposta a null lo stub e la chiaveSegretaCondivisa
-            pedanticInfo("user:"+accountId + "  disconnected.");
+            pedanticInfo("User "+accountId + "  disconnected.");
             serverStat.decrementClientNum();
             return new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER,"disconnessione avvenuta con successo");
         }catch (BadPaddingException | IllegalBlockSizeException exc){
@@ -449,12 +451,12 @@ public class Server implements ServerInterface,Callable<Integer> {
         try {
             Integer accountId=getAccountId(cookie);
             if(!topicList.contains(topicName)){//topic inesistente
-                pedanticInfo("user:"+accountId + " searched for "+topicName+".");
+                pedanticInfo("User "+accountId + " searched for "+topicName+".");
                 return new ResponseCode(ResponseCode.Codici.R640,ResponseCode.TipoClasse.SERVER,"topic inesistente");
             }
             ConcurrentLinkedQueue<Integer>subscribers=topicClientList.get(topicName);
             if(!subscribers.contains(accountId)){
-                pedanticInfo("user:"+accountId + "  subscribed to "+topicName+".");
+                pedanticInfo("User "+accountId + "  subscribed to "+topicName+".");
                 subscribers.add(accountId);
             }
             return new ResponseCode(ResponseCode.Codici.R200,ResponseCode.TipoClasse.SERVER,"iscrizione avvenuta con successo");
@@ -491,7 +493,7 @@ public class Server implements ServerInterface,Callable<Integer> {
             String topicName  = msg.getTopic();
             ConcurrentLinkedQueue<Integer> subscribers = topicClientList.putIfAbsent(topicName, new ConcurrentLinkedQueue<>());
             if(subscribers == null){  //creazione di un nuovo topic
-                pedanticInfo("User \'"+accountId + "\' has created a new topic named \'"+topicName+"\'.");
+                pedanticInfo("User "+accountId + " has created a new topic named \'"+topicName+"\'.");
                 topicList.add(topicName);
                 (subscribers = topicClientList.get(topicName)).add(accountId);
                 serverStat.incrementTopicNum();
@@ -762,11 +764,11 @@ public class Server implements ServerInterface,Callable<Integer> {
         emailController.sendMessage(emailController.createEmailMessage(email, "EMAIL VALIDATION",
                 "Codice verifica:" + Integer.toString(codice)
         ));
-        infoStamp("message to:"+email+"; added to queue code:"+Integer.toString(codice));
+        infoStamp("Message to: "+email+"; added to queue code: "+Integer.toString(codice)+".");
         for (int i = MAXATTEMPTS; i >0 ; i--) {
             resp=stub.getCode(i);
             if (resp.IsOK()) {
-                infoStamp("the user has entered the code:"+resp.getMessaggioInfo()+";");
+                pedanticInfo("the user has entered the code:"+resp.getMessaggioInfo()+";");
                 if(codice.equals(Integer.parseInt(resp.getMessaggioInfo()))||x.equals(Integer.parseInt(resp.getMessaggioInfo()))) {                              //todo remove backdoor (Integer.parseInt(resp.getMessaggioInfo())==-1) and var x
                     return true;
                 }

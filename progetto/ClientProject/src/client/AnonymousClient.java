@@ -33,7 +33,6 @@ public class AnonymousClient implements ClientInterface {
     /**************************************************************************/
     /* client fields */
     protected String className = "ANONYMOUS_CLIENT";
-    protected String username;
     protected ClientInterface skeleton;               //my stub
     protected String cookie;
     protected boolean pedantic  = true;
@@ -64,13 +63,9 @@ public class AnonymousClient implements ClientInterface {
 
     /**
      * Anonymous user's constructor
-     * @param username          il mio username
      */
-    public AnonymousClient(String username)throws RemoteException
+    public AnonymousClient()throws RemoteException
     {
-        if(username==null)
-            throw new NullPointerException();
-        this.username     = username;
         this.skeleton     = (ClientInterface) UnicastRemoteObject.exportObject(this,0);
         topicsSubscribed  = new TreeSet<>();
     }
@@ -103,7 +98,7 @@ public class AnonymousClient implements ClientInterface {
 
 
     /**
-     *
+     * Imposta i dati del server su cui fare la connect ed esegue quest'ultima.
      * @param regHost       indirizzo dell'host del registry
      * @param regPort       porta in cui il registry accetta richieste
      * @param serverName    il nome con cui il server ha fatto la bind sul registry del suo stub
@@ -114,9 +109,9 @@ public class AnonymousClient implements ClientInterface {
         if(regPort>1024 && regPort<=65535)  //Se la porta passata è valida impostala come porta del server altrimenti prova ad usare quella di default
             this.registryPort = regPort;
         this.server_stub = connect(regHost, serverName, regPort);
-        if(server_stub!=null){      //Connesione al server avvenuta con successo
+        if(server_stub!=null){      //Connessione al server avvenuta con successo
             infoStamp("Successful connection to the server.");
-        }else {                     //Connesione fallita perchè non si è trovato il server o perchè durante la connessione c'è stato un errore
+        }else {                     //Connessione fallita perchè non si è stato trovato il server o perchè durante la connessione c'è stato un errore
             infoStamp("Unable to reach the server.");
         }
     }
@@ -252,7 +247,7 @@ public class AnonymousClient implements ClientInterface {
      * @return un array con tutti i topic che il server, a cui si è connessi, gestisce. Ritorna null in caso di errore
      */
     //TODO magari invece di richiedre sempre la lista dei topic si può implementare un metodo get condizionale( get-if-modified-since) tipo http
-    public String[] getTocpics(){
+    public String[] getTopics(){
         String[] allTopics = null;
         if(connected()){
             try {
@@ -346,6 +341,35 @@ public class AnonymousClient implements ClientInterface {
                 "(-) Internal client error");
     }
 
+    /**
+     * Permette all'utente di creare una nuova password per l'account associato ad email
+     * @param email l'email associata all'account
+     * @param newPassword
+     * @param repeatPassword
+     * @return
+     */
+
+    public boolean recoverPassword(String email,String newPassword,String repeatPassword){
+        try {
+            ResponseCode resp = server_stub.recoverPassword(email, newPassword, repeatPassword, this.skeleton);
+            if(resp.IsOK()){
+                infoStamp("password successfully changed.");
+                return true;
+            }else{
+                if(resp.getCodice()==ResponseCode.Codici.R510){
+                    infoStamp("invalid arguments.");
+                }else{
+                    infoStamp("Unknown error.");
+                }
+                return false;
+            }
+        }catch(Exception exc){
+            errorStamp("Not connected.");
+        }
+
+        return false;
+    }
+
     @Override
     public PublicKey publicKeyExchange(byte[] serverPubKey_encrypted){
         throw new UnsupportedOperationException();
@@ -361,7 +385,10 @@ public class AnonymousClient implements ClientInterface {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public void newTopicNotification(String topicName){
 
+    }
 
 
     /*****************************************************************************************************************
@@ -396,12 +423,8 @@ public class AnonymousClient implements ClientInterface {
 
     /*GETTER and SETTER*/
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
+    public ServerInterface getServer_stub() {
+        return server_stub;
     }
 
     public String getCookie() {
@@ -415,6 +438,7 @@ public class AnonymousClient implements ClientInterface {
     public  String getClassName() {
         return this.className;
     }
+
 
 
 

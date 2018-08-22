@@ -52,7 +52,9 @@ public class concurrencyTest {
                             currentClient.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
                             break;
                         case 2:
-                            clients.add(currentClient=new AnonymousClient());
+                            clients.add(currentClient=new AnonymousClient(
+                                    username + Integer.toString(rand.nextInt(300))
+                            ));
                             currentClient.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
                             break;
                         case 3:

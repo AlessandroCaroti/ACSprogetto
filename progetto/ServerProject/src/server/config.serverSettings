@@ -1,6 +1,5 @@
 #serverSettings
 maxaccountnumber=300
-maxbrokerconnection=300
 serveremail=acsgroup.unige@gmail.com
 emailpassword=Evvivaladroga@
 smtpPort=587
