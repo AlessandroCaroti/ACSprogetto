@@ -63,7 +63,6 @@ public class Server implements ServerInterface,Callable<Integer> {
 
     /* server settings fields */
     private Properties serverSettings = new Properties();                 //setting del server
-    private boolean pedantic = true;                                    //utile per il debugging per stampare ogni avvenimento      todo magari anche questo si può importare dal file di config
 
     /* security fields */
     private AES aesCipher;
@@ -90,7 +89,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     private boolean graphicInterfaceReady;
     final private ServerStatistic serverStat;
 
-    final private LogFormatManager print = new LogFormatManager("SERVER", true);
+    final private LogFormatManager print;
 
 
 
@@ -106,6 +105,12 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     public Server(ServerStatistic serverStat) throws Exception {
+        this(serverStat, false);
+    }
+
+    public Server(ServerStatistic serverStat, boolean pedantic) throws Exception {
+        print = new LogFormatManager("SERVER", pedantic);
+
         print.info("Creating server ...");
 
         String tmp_name;
@@ -116,10 +121,9 @@ public class Server implements ServerInterface,Callable<Integer> {
         }
         serverName = tmp_name;
 
-
-        topicList    = new ConcurrentLinkedQueue<>();
-        notificationList=new ConcurrentLinkedQueue<>();
-        topicClientList=new ConcurrentSkipListMap<>();
+        topicList        = new ConcurrentLinkedQueue<>();
+        notificationList = new ConcurrentLinkedQueue<>();
+        topicClientList  = new ConcurrentSkipListMap<>();
 
         //Caricamento delle impostazioni del server memorizate su file
         print.pedanticInfo("Working Directory = " + System.getProperty("user.dir"));
@@ -257,13 +261,6 @@ public class Server implements ServerInterface,Callable<Integer> {
         }
         registry = null;
         print.info("***** SERVER OFFLINE! *****");
-    }
-
-
-    //inverte lo stato del campo pedantic
-    public void togglePedantic(){
-        pedantic = !pedantic;
-        print.info("Pedantic status: " + pedantic + ".");
     }
 
     /*METOGI GETTER*/
