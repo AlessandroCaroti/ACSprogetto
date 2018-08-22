@@ -40,8 +40,7 @@ public class hashFunctions {
      * @return l'hash della stringa passata
      * @throws NullPointerException se plainText è null
      */
-     static byte[] stringHash(String plainText) throws NullPointerException,NoSuchAlgorithmException
-    {
+     static byte[] stringHash(String plainText) throws NullPointerException {
         if(plainText==null)
             throw new NullPointerException("plainText == null");
         md_s256.update(plainText.getBytes());
@@ -70,8 +69,7 @@ public class hashFunctions {
         return md.digest();
     }
 
-     static boolean compareHashandString(byte[] hash,String string) throws NullPointerException,NoSuchAlgorithmException
-    {
+     static boolean compareHashAndString(byte[] hash, String string) throws NullPointerException {
         byte[] hash2=stringHash(string);
         for(int i=0;i<hash.length;i++)
         {

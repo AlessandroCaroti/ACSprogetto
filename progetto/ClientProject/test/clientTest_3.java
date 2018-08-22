@@ -1,10 +1,13 @@
 import client.Client;
 import utility.ServerInfoRecover;
 
+import java.util.Random;
+
 public class clientTest_3 {
     public static void main(String[] args) {
         try {
-            Client client = new Client("user_2", "password", "email2");
+            int k = (int)(Math.random()*10000);
+            Client client = new Client("user_"+ k, "password", "email_"+k);
             try {
                 ServerInfoRecover infoServer = new ServerInfoRecover();
                 String[] a = infoServer.getServerInfo();
@@ -25,7 +28,18 @@ public class clientTest_3 {
             }else{
                 System.out.println("NON REGISTRATO");
             }
-            Thread.sleep(5000);
+            client.subscribe("PIPPO");
+            client.subscribe("PLUTO");
+
+            wait_();
+            client.publish("PIPPO", "A spasso","in cerca di coca");
+            wait_();
+            client.publish("PIPPO", "A casa","con la farina");
+            wait_();
+            client.publish("PLUTO", "A casa di pippo", "che si diverte");
+            Thread.sleep(1000);
+
+
             if(client.disconnect())
                 System.out.println("DISCONNESSO");
             else {
@@ -39,5 +53,11 @@ public class clientTest_3 {
             e.getMessage();
             e.printStackTrace();
         }
+    }
+
+    static private void wait_(){
+        System.out.println("\n***Press Enter to continue");
+        try{System.in.read();}
+        catch(Exception ignored){}
     }
 }

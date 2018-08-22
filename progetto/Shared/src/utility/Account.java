@@ -23,7 +23,7 @@ import interfaces.ClientInterface;
 import java.security.NoSuchAlgorithmException;
 
 import static java.util.Objects.requireNonNull;
-import static utility.hashFunctions.compareHashandString;
+import static utility.hashFunctions.compareHashAndString;
 import static utility.hashFunctions.stringHash;
 
 public class Account {
@@ -106,7 +106,7 @@ public class Account {
         {
             throw new IllegalArgumentException();
         }
-        return compareHashandString(this.password, plainPassword);
+        return compareHashAndString(this.password, plainPassword);
     }
 
     /**getter**/
