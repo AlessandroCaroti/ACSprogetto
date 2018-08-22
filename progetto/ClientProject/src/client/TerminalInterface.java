@@ -25,10 +25,12 @@ public class TerminalInterface implements Callable<Integer> {
         System.out.print(ASCIIART);
         while(!uscita){
             current=this.parseCommand();
+            this.guiToClientEngine.offer(current);
+
             if(current instanceof ShutDown) {
                 uscita = true;
             }
-            this.guiToClientEngine.offer(current);
+
             current=this.clientEngineToGui.poll();
             if(current!=null){
                 //per l'interfaccia da terminale non mi interessa che finestra aprire ...
@@ -51,7 +53,7 @@ public class TerminalInterface implements Callable<Integer> {
         do {
             try {
 
-                System.out.print(PROMPT);
+                //System.out.print(PROMPT);
                 string = bufferedReader.readLine();
                 System.err.println("[DEBUG-INFO]:" + string + ";\n");
                 StringTokenizer tokenizer = new StringTokenizer(string, "\n\t ");
@@ -78,6 +80,7 @@ public class TerminalInterface implements Callable<Integer> {
                             break;
                         case "forgotpassword":
                             event = new ForgotPasswordWindow();
+                            ((ForgotPasswordWindow) event).setServerAddress(tokenizer.nextToken());
                             ((ForgotPasswordWindow) event).setNewPassword(tokenizer.nextToken());
                             ((ForgotPasswordWindow) event).setRepeatPassword(tokenizer.nextToken());
                             ((ForgotPasswordWindow) event).setEmail(tokenizer.nextToken());
@@ -141,7 +144,7 @@ public class TerminalInterface implements Callable<Integer> {
             "anonymouslogin <serverAddress> \n"
             +"login <serverAddress> <username> <password>\n"
             +"newaccount <serverAddress> <username> <password> <email>\n"
-            +"forgotpassword <newPassword> <repeatPassword> <email>\n"
+            +"forgotpassword <serverAddress> <newPassword> <repeatPassword> <email>\n"
 
                     +"disconnect\n" +"help\n"+"shutdown\n";
 }

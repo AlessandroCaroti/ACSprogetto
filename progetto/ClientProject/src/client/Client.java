@@ -63,12 +63,12 @@ public class Client extends AnonymousClient {
      * Client's constructor
      * @param username          identificativo client
      * @param plainPassword     password in chiaro
-     * @param email             la mail associata all'account
+     * @param email             la mail associata all'account(può essere vuota)
      */
     public Client(String username, String plainPassword, String email ) throws RemoteException
     {
         super();
-        if(plainPassword==null||email==null)
+        if(plainPassword==null)
             throw new NullPointerException();
         this.plainPassword=plainPassword;
         this.username     = username;
