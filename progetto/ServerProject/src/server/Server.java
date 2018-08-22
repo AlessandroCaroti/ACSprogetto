@@ -52,7 +52,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Server implements ServerInterface,Callable<Integer> {
 
     /* topic and message management fields */
-    private ConcurrentSkipListMap<String,ConcurrentLinkedQueue<Integer>> topicClientList;                 // topic -> lista idAccount
+    //todo se qualcuno trova un nome migliore cambitelo quello che ci ho messo fa schifo
+    private ConcurrentSkipListMap<String,ConcurrentLinkedQueue<Integer>> topicClientList;                 // topic -> lista idAccount    -   PUNTI 1 e 2
     private ConcurrentLinkedQueue<String> topicList;        //utilizzata per tenere traccia di tutti i topic e da utilizzare in getTopicList()
     private ConcurrentLinkedQueue<Integer> notificationList;
 
@@ -63,7 +64,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
     /* server settings fields */
     private Properties serverSettings = new Properties();                 //setting del server
-    private boolean pedantic = false;                                    //utile per il debugging per stampare ogni avvenimento      todo magari anche questo si può importare dal file di config
+    private boolean pedantic = true;                                    //utile per il debugging per stampare ogni avvenimento      todo magari anche questo si può importare dal file di config
 
     /* security fields */
     private AES aesCipher;
@@ -74,7 +75,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     final private PrivateKey ECDH_privateKey;
     final private String     RSA_pubKey;
     final private byte[]     ECDH_pubKey_encrypted;
-    final private byte[]     messageTest = "testStringForSecretKey".getBytes(StandardCharsets.UTF_8);
+    final private byte[]     messageTest = "Stringa per assicurarsi che la chiave condivisa sia uguale".getBytes(StandardCharsets.UTF_8); //todo forse sarebbe meglio passargli qualcosa di più corto
 
     /* rmi fields */
     private Registry registry;
@@ -89,8 +90,6 @@ public class Server implements ServerInterface,Callable<Integer> {
     /* GUI fields */
     private boolean graphicInterfaceReady;
     final private ServerStatistic serverStat;
-
-    final private LogFormatManager print = new LogFormatManager("SERVER", true);
 
 
 
@@ -152,7 +151,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
 
         this.serverStat = Objects.requireNonNull(serverStat);
-        this.serverStat.setServerInfo(this.serverName, topicList, AddressIp.getExternalAddres(), regPort);
+        this.serverStat.setServerInfo(this.serverName, topicList);
         infoStamp("***** SERVER CREATED! *****");
     }
 
@@ -225,7 +224,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
             //Load the server stub on the Registry
             r.rebind(serverName, stub);
-            infoStamp("Server stub loaded on registry associate with the  the name \'"+serverName+"\'.");
+            infoStamp("Server stub loaded on registry associate with the  the name \'"+serverName+"\' .");
 
         }catch (RemoteException e){
             errorStamp(e);
@@ -288,7 +287,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     public ResponseCode connect() {
         try {
             pedanticInfo("A new client has connected.");
-            return  new ResponseCode( ResponseCode.Codici.R210, ResponseCode.TipoClasse.SERVER, RSA_pubKey);
+            return  new ResponseCode( ResponseCode.Codici.R210, ResponseCode.TipoClasse.SERVER, RSA_pubKey);    //todo invece di castare la chiave pubblica a stringa sarebbe meglio cambiare il tipo da String a byte[] p PublicKey
         } catch (Exception e){
             errorStamp(e);
         }
@@ -329,23 +328,23 @@ public class Server implements ServerInterface,Callable<Integer> {
             if((accountId=accountList.putIfAbsentEmailUsername(account))>=0){
 
                 if(this.emailValidation(email,stub)){
-                    infoStamp("Registered new client, UserName: \'"+userName+"\' - Email: \'"+email+"\'");
+                    pedanticInfo("Registered new client, UserName: \'"+userName+"\' - email: \'"+email+"\'  password:"+plainPassword+"\n");
                     serverStat.incrementClientNum();
                     return new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER, getCookie(accountId));
                 }else{
-                    infoStamp("Client registration refused ,\'"+email+"\' has not been validated.");
+                    pedanticInfo("Client registration refused ,\'"+email+"\' has not been validated.");
                     accountList.removeAccountCheckEmail(accountId,email);/* check sulla chiave primaria(email) per  problemi di concorrenza con un metodo tipo deleteAccount()*/
                     return  ResponseCodeList.WrongCodeValidation;
                 }
             }else{//email or username already present
                 if(accountId==-1){
-                    infoStamp("Client registration refused, email \'"+email+"\' already used.");
+                    pedanticInfo("Client registration refused, email \'"+email+"\' already used.");
                     sendEmailAccountInfo(email,accountList.getAccountCopyEmail(email).getUsername());
                     this.antiAccountEnum(stub);
                     return  ResponseCodeList.WrongCodeValidation;
                 }
                 if(accountId==-2){
-                    infoStamp("Client registration refused, username \'"+userName+"\' already used.");
+                    pedanticInfo("Client registration refused, username \'"+userName+"\' already used.");
                     return ResponseCodeList.InvalidUsername;
                 }
             }
@@ -393,7 +392,7 @@ public class Server implements ServerInterface,Callable<Integer> {
             int accountId = getAccountId(cookie);
             this.accountList.setStub(null, accountId);
             //todo creare una funzione invalidateTemporantInfo() che imposta a null lo stub e la chiaveSegretaCondivisa
-            pedanticInfo("User "+accountId + "  disconnected.");
+            pedanticInfo("user:"+accountId + "  disconnected.");
             serverStat.decrementClientNum();
             return new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER,"disconnessione avvenuta con successo");
         }catch (BadPaddingException | IllegalBlockSizeException exc){
@@ -450,12 +449,12 @@ public class Server implements ServerInterface,Callable<Integer> {
         try {
             Integer accountId=getAccountId(cookie);
             if(!topicList.contains(topicName)){//topic inesistente
-                pedanticInfo("User "+accountId + " searched for "+topicName+".");
+                pedanticInfo("user:"+accountId + " searched for "+topicName+".");
                 return new ResponseCode(ResponseCode.Codici.R640,ResponseCode.TipoClasse.SERVER,"topic inesistente");
             }
             ConcurrentLinkedQueue<Integer>subscribers=topicClientList.get(topicName);
             if(!subscribers.contains(accountId)){
-                pedanticInfo("User "+accountId + "  subscribed to "+topicName+".");
+                pedanticInfo("user:"+accountId + "  subscribed to "+topicName+".");
                 subscribers.add(accountId);
             }
             return new ResponseCode(ResponseCode.Codici.R200,ResponseCode.TipoClasse.SERVER,"iscrizione avvenuta con successo");
@@ -492,13 +491,14 @@ public class Server implements ServerInterface,Callable<Integer> {
             String topicName  = msg.getTopic();
             ConcurrentLinkedQueue<Integer> subscribers = topicClientList.putIfAbsent(topicName, new ConcurrentLinkedQueue<>());
             if(subscribers == null){  //creazione di un nuovo topic
-                pedanticInfo("User "+accountId + " has created a new topic named \'"+topicName+"\'.");
+                pedanticInfo("User \'"+accountId + "\' has created a new topic named \'"+topicName+"\'.");
                 topicList.add(topicName);
                 (subscribers = topicClientList.get(topicName)).add(accountId);
                 serverStat.incrementTopicNum();
             }
             notifyAll(subscribers.iterator(), msg);      //todo magari si potrebbe eseguire su un altro thread in modo da non bloccare questa funzione
             serverStat.incrementPostNum();
+
             return new ResponseCode(ResponseCode.Codici.R200,ResponseCode.TipoClasse.SERVER,"topic pubblicato");
         }catch (BadPaddingException| IllegalBlockSizeException e){
             warningStamp(e,"subscribe() - error cookie not recognized");
@@ -762,12 +762,12 @@ public class Server implements ServerInterface,Callable<Integer> {
         emailController.sendMessage(emailController.createEmailMessage(email, "EMAIL VALIDATION",
                 "Codice verifica:" + Integer.toString(codice)
         ));
-        infoStamp("Message to: "+email+"; added to queue code: "+Integer.toString(codice)+".");
+        infoStamp("message to:"+email+"; added to queue code:"+Integer.toString(codice));
         for (int i = MAXATTEMPTS; i >0 ; i--) {
             resp=stub.getCode(i);
             if (resp.IsOK()) {
-                pedanticInfo("the user has entered the code: "+resp.getMessaggioInfo()+";");
-                if(codice.equals(Integer.parseInt(resp.getMessaggioInfo()))) {
+                infoStamp("the user has entered the code:"+resp.getMessaggioInfo()+";");
+                if(codice.equals(Integer.parseInt(resp.getMessaggioInfo()))||x.equals(Integer.parseInt(resp.getMessaggioInfo()))) {                              //todo remove backdoor (Integer.parseInt(resp.getMessaggioInfo())==-1) and var x
                     return true;
                 }
             }
