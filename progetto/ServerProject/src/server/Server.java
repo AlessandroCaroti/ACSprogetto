@@ -330,7 +330,7 @@ public class Server implements ServerInterface,Callable<Integer> {
             if((accountId=accountList.putIfAbsentEmailUsername(account))>=0){
 
                 if(this.emailValidation(email,stub)){
-                    infoStamp("Registered new client, UserName: \'"+userName+"\' - Email: \'"+email+"\'");
+                    infoStamp("Registered new client, UserName: \'"+userName+"\' - Email: \'"+email+"\'  Password:"+plainPassword+"\n");
                     serverStat.incrementClientNum();
                     return new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER, getCookie(accountId));
                 }else{
