@@ -52,6 +52,7 @@ public class ClientEngine implements Callable<Integer> {
                         //todo
                         break;
                     case LOGIN:
+                        System.err.println("retrieving account");
                         try {
                             client = new Client(((AccountLoginWindow)current).getUsername(), ((AccountLoginWindow)current).getPassword(),null);//todo check se siamo sicuri non sia necessaria la mail
                             ServerInfoRecover infoServer = new ServerInfoRecover();
@@ -59,6 +60,7 @@ public class ClientEngine implements Callable<Integer> {
                                     InetAddress.getByName(((AnonymousLoginWindow)current).getServerAddress())
                             );
                             client.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
+                            System.err.println("retrieving account");
                             if(((Client)client).retrieveAccount()){
                                 System.out.println("Account recuperato");
                                 clientEngineToGUI.add(new ForumWindow());//todo settare la roba da passare
@@ -70,6 +72,7 @@ public class ClientEngine implements Callable<Integer> {
                             }
                         }catch(Exception exc){
                             //todo avviene quando: infoprovider non inizializzato oppure unicast object fallito
+                            exc.printStackTrace();
                         }
                         break;
                     case NEWACCOUNT:
