@@ -3,6 +3,7 @@ package client;
 import Events.*;
 import utility.ServerInfoRecover;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -15,10 +16,12 @@ public class ClientEngine implements Callable<Integer> {
     private LinkedBlockingQueue<Event> clientEngineToGUI;
     private LinkedBlockingQueue<Event> guiToClientEngine;
     private AnonymousClient client;
+    private  ServerInfoRecover infoServer;
 
-    public ClientEngine(LinkedBlockingQueue<Event>clientEngineToGUI, LinkedBlockingQueue<Event> guiToClientEngine){
+    public ClientEngine(LinkedBlockingQueue<Event>clientEngineToGUI, LinkedBlockingQueue<Event> guiToClientEngine) throws IOException {
         this.clientEngineToGUI=requireNonNull(clientEngineToGUI);
         this.guiToClientEngine=requireNonNull(guiToClientEngine);
+        infoServer = new ServerInfoRecover();
     }
 
 
@@ -52,15 +55,12 @@ public class ClientEngine implements Callable<Integer> {
                         //todo
                         break;
                     case LOGIN:
-                        System.err.println("retrieving account");
                         try {
                             client = new Client(((AccountLoginWindow)current).getUsername(), ((AccountLoginWindow)current).getPassword(),null);//todo check se siamo sicuri non sia necessaria la mail
-                            ServerInfoRecover infoServer = new ServerInfoRecover();
                             String[] a = infoServer.getServerInfo(
                                     InetAddress.getByName(((AnonymousLoginWindow)current).getServerAddress())
                             );
                             client.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
-                            System.err.println("retrieving account");
                             if(((Client)client).retrieveAccount()){
                                 System.out.println("Account recuperato");
                                 clientEngineToGUI.add(new ForumWindow());//todo settare la roba da passare
@@ -78,7 +78,6 @@ public class ClientEngine implements Callable<Integer> {
                     case NEWACCOUNT:
                         try {
                             client = new Client(((NewAccountWindow)current).getUsername(), ((NewAccountWindow)current).getPassword(),((NewAccountWindow)current).getEmail());
-                            ServerInfoRecover infoServer = new ServerInfoRecover();
                             String[] a = infoServer.getServerInfo(
                                     InetAddress.getByName(((NewAccountWindow)current).getServerAddress())
                             );
@@ -95,13 +94,13 @@ public class ClientEngine implements Callable<Integer> {
                             }
                         }catch(Exception exc){
                             //todo
+                            exc.printStackTrace();
                         }
 
                         break;
                     case ANONYMOUSLOGIN:
                         try {
                             client = new AnonymousClient();
-                            ServerInfoRecover infoServer = new ServerInfoRecover();
                             String[] a = infoServer.getServerInfo(
                                     InetAddress.getByName(((AnonymousLoginWindow)current).getServerAddress())
                                     );
@@ -117,12 +116,12 @@ public class ClientEngine implements Callable<Integer> {
                             }
                         }catch(Exception exc){
                             //todo
+                            exc.printStackTrace();
                         }
                             break;
                     case FORGOTPASSWORD:
                         try {
                             client = new AnonymousClient();
-                            ServerInfoRecover infoServer = new ServerInfoRecover();
                             String[] a = infoServer.getServerInfo(
                                     InetAddress.getByName(((ForgotPasswordWindow)current).getServerAddress())
                             );
@@ -139,8 +138,14 @@ public class ClientEngine implements Callable<Integer> {
                             }
                         }catch(Exception exc){
                             //todo
+                            exc.printStackTrace();
+
                         }
                         break;
+                        default://todo da eliminare fine debugging
+                            System.err.println("uknown command");
+                            break;
+
                 }
             }
 
