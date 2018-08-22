@@ -77,7 +77,7 @@ public class Client extends AnonymousClient {
         try {
             ECDH_kayPair = ECDH.generateKeyPair(curveName);
         } catch (NoSuchProviderException | NoSuchAlgorithmException | InvalidAlgorithmParameterException e) {
-            errorStamp(e, "Error during generation of the keys for the ECDH algorithm.");
+            print.error(e, "Error during generation of the keys for the ECDH algorithm.");
             System.exit(1);
         }
     }
@@ -95,14 +95,14 @@ public class Client extends AnonymousClient {
     @Override
     public boolean register() {
         if(serverPublicKey_RSA==null) {
-            errorStamp("Unable to register without the public key of the server.");
+            print.error("Unable to register without the public key of the server.");
             return false;
         }
         try {
             ResponseCode responseCode = server_stub.register(this.skeleton);
             return registered(responseCode);
         }catch (RemoteException e){
-            errorStamp(e, "Unable to reach the server.");
+            print.error(e, "Unable to reach the server.");
             return false;
         }
     }
@@ -123,26 +123,26 @@ public class Client extends AnonymousClient {
                 if(this.getCookie()!=null) {
                     response = server_stub.retrieveAccountByCookie(this.getCookie(),this.plainPassword,this.skeleton);
                     if (response.getCodice() == R220) {
-                        infoStamp("Account successfully recovered.");
+                        print.info("Account successfully recovered.");
                         return true;
                     }else{
                         this.cookie=null;
-                        infoStamp("Invalid cookie trying with username and password");
+                        print.info("Invalid cookie trying with username and password");
                     }
                 }
                 response = server_stub.retrieveAccount(username, plainPassword, skeleton);
                 if (response.getCodice() == R220 && this.retrieveCookie()) {
-                    infoStamp("Account and cookie successfully recovered.");
+                    print.info("Account and cookie successfully recovered.");
                     return true;
                 }
-                errorStamp(response, "Impossible to retrieve information.");
+                print.error(response, "Impossible to retrieve information.");
                 return false;
             } catch (RemoteException exc) {
-                errorStamp(exc, "Unable to reach the server.");
+                print.error(exc, "Unable to reach the server.");
                 return false;
             }
         }
-        errorStamp("Not connected to any server.");
+        print.error("Not connected to any server.");
         return false;
     }
 
@@ -167,18 +167,18 @@ public class Client extends AnonymousClient {
                 {
                     topicsSubscribed.add(topic);
                     messagesSendAndNotReceived.add(msg);
-                    infoStamp("Message published.");
+                    print.info("Message published.");
                     return true;
                 }
                 else {
-                    errorStamp(response, "Error while publishing the message.");
+                    print.error(response, "Error while publishing the message.");
                 }
             }catch (Exception e) {
-                errorStamp(e);
+                print.error(e);
                 return false;
             }
         }else {
-            errorStamp("Not connected to any server.");
+            print.error("Not connected to any server.");
         }
         return false;
     }
@@ -253,7 +253,7 @@ public class Client extends AnonymousClient {
                 }
 
                 //TODO gestione della visualizazione del messaggio
-                pedanticInfo("Received new message\n" + m.toString());
+                print.pedanticInfo("Received new message\n" + m.toString());
             });
         }
 
@@ -272,12 +272,12 @@ public class Client extends AnonymousClient {
             byte[] serverPubKey_decrypted = RSA.decrypt(serverPublicKey_RSA, serverPubKey_encrypted);
             PublicKey serverPubKey = KeyFactory.getInstance("ECDH", "BC").generatePublic(new X509EncodedKeySpec(serverPubKey_decrypted));
             byte[] sharedSecret = ECDH.sharedSecretKey(ECDH_kayPair.getPrivate(), serverPubKey);
-            infoStamp("Created secret key sheared whit the server.\n");
-            pedanticInfo("Secret key: " + Arrays.toString(sharedSecret));
+            print.info("Created secret key sheared whit the server.\n");
+            print.pedanticInfo("Secret key: " + Arrays.toString(sharedSecret));
             secretAesKey = new SecretKeySpec(sharedSecret, "AES");
             return ECDH_kayPair.getPublic();
         } catch (Exception e) {
-            errorStamp(e, "Error during creation of shared secret key whit server.");
+            print.error(e, "Error during creation of shared secret key whit server.");
             return null;
         }
     }
@@ -305,7 +305,7 @@ public class Client extends AnonymousClient {
             */
             return encryptedAccountInfo;
         } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException | NoSuchAlgorithmException e) {
-            errorStamp(e, "Errore durante la cifratura delle informazioni dell'account.");
+            print.error(e, "Errore durante la cifratura delle informazioni dell'account.");
             //todo forse aggiungere una migliore della gestione degli errori
         }
         return null;
@@ -341,7 +341,7 @@ public class Client extends AnonymousClient {
         try {
             msg = new Message(title, this.username, text, topic);
         } catch (Exception e) {
-            errorStamp("An exception has been thrown during the creation of a message.");
+            print.error("An exception has been thrown during the creation of a message.");
         }
         return msg;
     }
@@ -353,18 +353,18 @@ public class Client extends AnonymousClient {
             if(connected()) {
                 ResponseCode response = server_stub.retrieveCookie(this.username, this.plainPassword);
                 if (response == null || !response.getCodice().equals(ResponseCode.Codici.R100)) {
-                    errorStamp(response, "cookie retrieve failed");
+                    print.error(response, "cookie retrieve failed");
                     return false;
                 }
                 this.cookie = response.getMessaggioInfo();
-                infoStamp("Cookie successfully retrieved.");
+                print.info("Cookie successfully retrieved.");
                 return true;
             }else{
-                errorStamp("Not connected to any server.");
+                print.error("Not connected to any server.");
                 return false;
             }
         }catch (RemoteException e){
-            errorStamp(e, "Unable to reach the server.");
+            print.error(e, "Unable to reach the server.");
             return false;
         }
     }

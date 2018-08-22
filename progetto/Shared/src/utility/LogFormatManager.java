@@ -33,8 +33,21 @@ final public class LogFormatManager {
             e.printStackTrace();
     }
 
+    public void error(ResponseCode r, String msg){
+        System.out.flush();
+        System.err.println("["+className+"-ERROR]: "  + msg);
+        System.err.println("\tError code: "           + r.getCodice());
+        System.err.println("\tError message: "        + r.getMessaggioInfo());
+    }
+
     public void warning(Exception e, String msg) {
         System.err.println(this.className + "-WARNING]: " + msg);
+        System.err.println("\tException type: " + e.getClass().getSimpleName());
+        System.err.println("\tException message: " + e.getMessage());
+    }
+
+    public void warning(Exception e) {
+        System.err.println(this.className + "-WARNING]");
         System.err.println("\tException type: " + e.getClass().getSimpleName());
         System.err.println("\tException message: " + e.getMessage());
     }

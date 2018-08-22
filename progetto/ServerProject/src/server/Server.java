@@ -106,7 +106,7 @@ public class Server implements ServerInterface,Callable<Integer> {
     }
 
     public Server(ServerStatistic serverStat) throws Exception {
-        infoStamp("Creating server ...");
+        print.info("Creating server ...");
 
         String tmp_name;
         try{
@@ -122,14 +122,14 @@ public class Server implements ServerInterface,Callable<Integer> {
         topicClientList=new ConcurrentSkipListMap<>();
 
         //Caricamento delle impostazioni del server memorizate su file
-        pedanticInfo("Working Directory = " + System.getProperty("user.dir"));
-
+        print.pedanticInfo("Working Directory = " + System.getProperty("user.dir"));
+        
         loadSetting("./src/server/config.serverSettings");
-        infoStamp("Server settings imported.");
+        print.info("Server settings imported.");
 
         //Creazione del gestore degli account
         accountList = createAccountManager();
-        infoStamp("Account monitor created.");
+        print.info("Account monitor created.");
 
         //Creazione PKI del server
         setupPKI();
@@ -137,24 +137,24 @@ public class Server implements ServerInterface,Callable<Integer> {
         ECDH_privateKey = ECDH_kayPair.getPrivate();
         RSA_pubKey = new String(Base64.encode(RSA_kayPair.getPublic().getEncoded()).getBytes());
         ECDH_pubKey_encrypted = RSA.encrypt(RSA_privateKey, ECDH_kayPair.getPublic().getEncoded());
-        infoStamp("Public key infrastructure created.");
+        print.info("Public key infrastructure created.");
 
         setupAes();
-        infoStamp("AES encryption system created.");
+        print.info("AES encryption system created.");
 
         //Creazione dell'email handler e avvio di quest'ultimo
         emailController=new EmailHandlerTLS("acsgroup.unige@gmail.com","password",100,587,"smtp.gmail.com");
         //emailController=new EmailHandler(serverSettings,accountList.getMAXACCOUNTNUMBER());
         emailController.startEmailHandlerManager();
-        infoStamp("Email Handler created and started.");
+        print.info("Email Handler created and started.");
 
         randomStringSession=new RandomString();
-        infoStamp("Random String session created.");
+        print.info("Random String session created.");
 
 
         this.serverStat = Objects.requireNonNull(serverStat);
         this.serverStat.setServerInfo(this.serverName, topicList, AddressIp.getExternalAddres(), regPort);
-        infoStamp("***** SERVER CREATED! *****");
+        print.info("***** SERVER CREATED! *****");
     }
 
     /**
@@ -195,41 +195,41 @@ public class Server implements ServerInterface,Callable<Integer> {
     // Startup of RMI serverobject, including registration of the instantiated server object
     // with remote RMI registry
     public void start(){
-        pedanticInfo("Starting server ...");
+        print.pedanticInfo("Starting server ...");
         ServerInterface stub = null;
         Registry r = null;
 
         try {
             //Importing the security policy and ...
             System.setProperty("java.security.policy","file:./src/server/sec.policy");
-            infoStamp("Policy and codebase setted.");
+            print.info("Policy and codebase setted.");
 
             //Creating and Installing a Security Manager
             if (System.getSecurityManager() == null) {
                 System.setSecurityManager(new SecurityManager());
             }
             testPolicy(System.getSecurityManager());
-            infoStamp("Security Manager installed.");
+            print.info("Security Manager installed.");
 
             //Creating or import the local regestry
             try {
                 r = LocateRegistry.createRegistry(regPort);
-                infoStamp("New registry created on port "+regPort+".");
+                print.info("New registry created on port "+regPort+".");
             } catch (RemoteException e) {
                 r = LocateRegistry.getRegistry(regPort);
-                infoStamp("Registry find on port "+regPort+".");
+                print.info("Registry find on port "+regPort+".");
             }
 
             //Making the Remote Object Available to Clients
             stub = (ServerInterface) UnicastRemoteObject.exportObject(this, 0); //The 2nd argument specifies which TCP port to use to listen for incoming remote invocation requests . It is common to use the value 0, which specifies the use of an anonymous port. The actual port will then be chosen at runtime by RMI or the underlying operating system.
-            infoStamp("Created server remote object.");
+            print.info("Created server remote object.");
 
             //Load the server stub on the Registry
             r.rebind(serverName, stub);
-            infoStamp("Server stub loaded on registry associate with the  the name \'"+serverName+"\'.");
+            print.info("Server stub loaded on registry associate with the  the name \'"+serverName+"\'.");
 
         }catch (RemoteException e){
-            errorStamp(e);
+            print.error(e);
             System.exit(-1);
         }
 
@@ -238,7 +238,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
         serverStat.setServerReady();
 
-        infoStamp("***** SERVER READY! *****");
+        print.info("***** SERVER READY! *****");
     }
 
 
@@ -246,24 +246,24 @@ public class Server implements ServerInterface,Callable<Integer> {
         if(registry==null)  //Nothing to do
             return;
 
-        pedanticInfo("Stopping server ...");
+        print.pedanticInfo("Stopping server ...");
         try {
             registry.unbind(serverName);
             UnicastRemoteObject.unexportObject(this.registry, true);
 
         } catch (RemoteException | NotBoundException e) {
-            errorStamp(e);
+            print.error(e);
             System.exit(-1);
         }
         registry = null;
-        infoStamp("***** SERVER OFFLINE! *****");
+        print.info("***** SERVER OFFLINE! *****");
     }
 
 
     //inverte lo stato del campo pedantic
     public void togglePedantic(){
         pedantic = !pedantic;
-        infoStamp("Pedantic status: " + pedantic + ".");
+        print.info("Pedantic status: " + pedantic + ".");
     }
 
     /*METOGI GETTER*/
@@ -288,10 +288,10 @@ public class Server implements ServerInterface,Callable<Integer> {
     //Usato per stabilire la connesione tra server e client
     public ResponseCode connect() {
         try {
-            pedanticInfo("A new client has connected.");
+            print.pedanticInfo("A new client has connected.");
             return  new ResponseCode( ResponseCode.Codici.R210, ResponseCode.TipoClasse.SERVER, RSA_pubKey);
         } catch (Exception e){
-            errorStamp(e);
+            print.error(e);
         }
         return ResponseCodeList.InternalError;
     }
@@ -316,7 +316,7 @@ public class Server implements ServerInterface,Callable<Integer> {
             publicKey     = new String(shearedSecretKey);
         } catch (RemoteException | NoSuchAlgorithmException | NoSuchProviderException | InvalidKeyException | NoSuchPaddingException | BadPaddingException | IllegalBlockSizeException e) {
             //todo aggiunere migliore gestione degli errori
-            errorStamp(e);
+            print.error(e);
             return ResponseCodeList.InternalError;
         }
         try {
@@ -330,29 +330,29 @@ public class Server implements ServerInterface,Callable<Integer> {
             if((accountId=accountList.putIfAbsentEmailUsername(account))>=0){
 
                 if(this.emailValidation(email,stub)){
-                    infoStamp("Registered new client, UserName: \'"+userName+"\' - Email: \'"+email+"\'  Password:"+plainPassword+"\n");
+                    print.info("Registered new client, UserName: \'"+userName+"\' - Email: \'"+email+"\'  Password:"+plainPassword+"\n");
                     serverStat.incrementClientNum();
                     return new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER, getCookie(accountId));
                 }else{
-                    infoStamp("Client registration refused ,\'"+email+"\' has not been validated.");
+                    print.info("Client registration refused ,\'"+email+"\' has not been validated.");
                     accountList.removeAccountCheckEmail(accountId,email);/* check sulla chiave primaria(email) per  problemi di concorrenza con un metodo tipo deleteAccount()*/
                     return  ResponseCodeList.WrongCodeValidation;
                 }
             }else{//email or username already present
                 if(accountId==-1){
-                    infoStamp("Client registration refused, email \'"+email+"\' already used.");
+                    print.info("Client registration refused, email \'"+email+"\' already used.");
                     sendEmailAccountInfo(email,accountList.getAccountCopyEmail(email).getUsername());
                     this.antiAccountEnum(stub);
                     return  ResponseCodeList.WrongCodeValidation;
                 }
                 if(accountId==-2){
-                    infoStamp("Client registration refused, username \'"+userName+"\' already used.");
+                    print.info("Client registration refused, username \'"+userName+"\' already used.");
                     return ResponseCodeList.InvalidUsername;
                 }
             }
 
         }catch (Exception e){
-            errorStamp(e);
+            print.error(e);
         }
         return ResponseCodeList.InternalError;
     }
@@ -371,17 +371,17 @@ public class Server implements ServerInterface,Callable<Integer> {
                 plainPassword = randomStringSession.nextString();
                 account = new Account(username, plainPassword, stub, null, 0, email);   //todo la chiave pubblica per l'account anonimo non serve
                 if ((accountId = accountList.putIfAbsentUsername(account)) >= 0) {
-                    pedanticInfo("Registered new client \'"+username+"\'  \'"+email+"\'");
+                    print.pedanticInfo("Registered new client \'"+username+"\'  \'"+email+"\'");
                     serverStat.incrementClientNum();
                     return new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER, getCookie(accountId));
                 } else {// username already present
                     if (accountId == -2) {
-                        pedanticInfo("Client registration refused, username \'" + username + "\' already used. Trying to generate another one.");
+                        print.pedanticInfo("Client registration refused, username \'" + username + "\' already used. Trying to generate another one.");
                     }
                 }
             }while(accountId==-2);//questo while non dovrebbe essere necessario in quanto anonymouscounter è atomic
         }catch(Exception e) {
-            errorStamp(e);
+            print.error(e);
         }
         return ResponseCodeList.InternalError;
     }
@@ -394,7 +394,7 @@ public class Server implements ServerInterface,Callable<Integer> {
             int accountId = getAccountId(cookie);
             this.accountList.setStub(null, accountId);
             //todo creare una funzione invalidateTemporantInfo() che imposta a null lo stub e la chiaveSegretaCondivisa
-            pedanticInfo("User "+accountId + "  disconnected.");
+            print.pedanticInfo("User "+accountId + "  disconnected.");
             serverStat.decrementClientNum();
             return new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER,"disconnessione avvenuta con successo");
         }catch (BadPaddingException | IllegalBlockSizeException exc){
@@ -409,16 +409,16 @@ public class Server implements ServerInterface,Callable<Integer> {
             if(account!=null) {
                 if (account.cmpPassword(plainPassword)) {
                     accountList.setStub(clientStub, account.getAccountId());
-                    pedanticInfo(username + " connected.");
+                    print.pedanticInfo(username + " connected.");
                     serverStat.incrementClientNum();
                     return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER, "login andato a buon fine");
                 } else {
-                    pedanticInfo(username + " invalid retrieve account.");
+                    print.pedanticInfo(username + " invalid retrieve account.");
                     return ResponseCodeList.LoginFailed;
                 }
             }
         }catch(Exception e){
-            errorStamp(e);
+            print.error(e);
         }
         return ResponseCodeList.InternalError;
     }
@@ -431,17 +431,17 @@ public class Server implements ServerInterface,Callable<Integer> {
             if(account!=null){
                 if(account.cmpPassword(plainPassword)){
                     accountList.setStub(clientStub, account.getAccountId());
-                    pedanticInfo(account.getUsername() + " connected.(cookie):"+cookie);
+                    print.pedanticInfo(account.getUsername() + " connected.(cookie):"+cookie);
                     serverStat.incrementClientNum();
                     return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER, "login andato a buon fine");
                 }
             }else{
-                pedanticInfo("Invalid cookie.");
+                print.pedanticInfo("Invalid cookie.");
                 return ResponseCodeList.LoginFailed;
             }
 
         }catch(Exception e){
-            errorStamp(e);
+            print.error(e);
         }
         return ResponseCodeList.InternalError;
     }
@@ -451,20 +451,20 @@ public class Server implements ServerInterface,Callable<Integer> {
         try {
             Integer accountId=getAccountId(cookie);
             if(!topicList.contains(topicName)){//topic inesistente
-                pedanticInfo("User "+accountId + " searched for "+topicName+".");
+                print.pedanticInfo("User "+accountId + " searched for "+topicName+".");
                 return new ResponseCode(ResponseCode.Codici.R640,ResponseCode.TipoClasse.SERVER,"topic inesistente");
             }
             ConcurrentLinkedQueue<Integer>subscribers=topicClientList.get(topicName);
             if(!subscribers.contains(accountId)){
-                pedanticInfo("User "+accountId + "  subscribed to "+topicName+".");
+                print.pedanticInfo("User "+accountId + "  subscribed to "+topicName+".");
                 subscribers.add(accountId);
             }
             return new ResponseCode(ResponseCode.Codici.R200,ResponseCode.TipoClasse.SERVER,"iscrizione avvenuta con successo");
         }
         catch (BadPaddingException| IllegalBlockSizeException e){
-            warningStamp(e,"subscribe() - error cookies not recognize");
+            print.warning(e,"subscribe() - error cookies not recognize");
         }catch (Exception e){
-           errorStamp(e);
+           print.error(e);
         }
         return ResponseCodeList.InternalError;
     }
@@ -474,12 +474,12 @@ public class Server implements ServerInterface,Callable<Integer> {
         try {
             Integer accountId = getAccountId(cookie);
             topicClientList.get(topicName).remove(accountId);
-            pedanticInfo("User:"+accountId + " unsubscribe from "+topicName+".");
+            print.pedanticInfo("User:"+accountId + " unsubscribe from "+topicName+".");
             return new ResponseCode(ResponseCode.Codici.R200,ResponseCode.TipoClasse.SERVER,"disiscrizione avvenuta con successo");
         }catch (BadPaddingException| IllegalBlockSizeException e){
-            warningStamp(e,"subscribe() - error cookies not recognize");
+            print.warning(e,"subscribe() - error cookies not recognize");
         } catch (Exception e){
-            errorStamp(e);
+            print.error(e);
         }
         return ResponseCodeList.InternalError;
     }
@@ -493,7 +493,7 @@ public class Server implements ServerInterface,Callable<Integer> {
             String topicName  = msg.getTopic();
             ConcurrentLinkedQueue<Integer> subscribers = topicClientList.putIfAbsent(topicName, new ConcurrentLinkedQueue<>());
             if(subscribers == null){  //creazione di un nuovo topic
-                pedanticInfo("User "+accountId + " has created a new topic named \'"+topicName+"\'.");
+                print.pedanticInfo("User "+accountId + " has created a new topic named \'"+topicName+"\'.");
                 topicList.add(topicName);
                 (subscribers = topicClientList.get(topicName)).add(accountId);
                 serverStat.incrementTopicNum();
@@ -503,9 +503,9 @@ public class Server implements ServerInterface,Callable<Integer> {
 
             return new ResponseCode(ResponseCode.Codici.R200,ResponseCode.TipoClasse.SERVER,"topic pubblicato");
         }catch (BadPaddingException| IllegalBlockSizeException e){
-            warningStamp(e,"subscribe() - error cookie not recognized");
+            print.warning(e,"subscribe() - error cookie not recognized");
         }catch (Exception e){
-            errorStamp(e);
+            print.error(e);
         }
         return ResponseCodeList.InternalError;
     }
@@ -524,20 +524,20 @@ public class Server implements ServerInterface,Callable<Integer> {
             try {
                 Account account = this.accountList.getAccountCopyUsername(username);
                 if (account.cmpPassword(plainPassword)) {
-                    pedanticInfo("Sending " + username + " cookie.");
+                    print.pedanticInfo("Sending " + username + " cookie.");
                     return new ResponseCode(ResponseCode.Codici.R100, ResponseCode.TipoClasse.SERVER, getCookie(account.getAccountId()));
                 } else {
-                    pedanticInfo("Invalid password.");
+                    print.pedanticInfo("Invalid password.");
                     return ResponseCodeList.LoginFailed;
                 }
                 //nosuch
             }catch(Exception exc){
                 if(exc instanceof IllegalArgumentException){
-                    pedanticInfo("Invalid username (null).");
+                    print.pedanticInfo("Invalid username (null).");
                     return ResponseCodeList.LoginFailed;
                 }
                 else{
-                    errorStamp(exc);
+                    print.error(exc);
                 }
             }
         return ResponseCodeList.InternalError;
@@ -570,7 +570,7 @@ public class Server implements ServerInterface,Callable<Integer> {
             }
             return new ResponseCode(ResponseCode.Codici.R200,ResponseCode.TipoClasse.SERVER,"iscrizione avvenuta con successo");
         }catch (Exception e){
-            errorStamp(e);
+            print.error(e);
         }
         return ResponseCodeList.InternalError;
      }
@@ -590,24 +590,24 @@ public class Server implements ServerInterface,Callable<Integer> {
 
              try {
                  if ((copy = accountList.isMember(email, null)) == null) {//l'account non esiste
-                     pedanticInfo("Password recover refused ,\'" + email + "\' doesn't exist.(possible attempt to enumerate accounts!)");
+                     print.pedanticInfo("Password recover refused ,\'" + email + "\' doesn't exist.(possible attempt to enumerate accounts!)");
                      this.antiAccountEnum(stubCurrentHost);
                      return  ResponseCodeList.WrongCodeValidation;
                  }
                  else {//l'account esiste
                      if (this.emailValidation(email, stubCurrentHost)) {
-                         pedanticInfo("Password recovered! UserName: \'" + copy.getUsername() + "\' - NewPassword: \'" + newPassword + "\'");
+                         print.pedanticInfo("Password recovered! UserName: \'" + copy.getUsername() + "\' - NewPassword: \'" + newPassword + "\'");
                          accountList.setPassword(newPassword,copy.getAccountId());//todo probabile bug sulla concorrenza se qualcuno fa una deleteaccount( ma noi non la diamo disponibile quindi scialla)
                          return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER,"password successfully changed.");
                      } else {
-                         pedanticInfo("Client password recovering refused; wrong code.");
+                         print.pedanticInfo("Client password recovering refused; wrong code.");
                          return ResponseCodeList.WrongCodeValidation;
                      }
 
                  }
 
              } catch (Exception e) {
-                errorStamp(e);
+                print.error(e);
              }
 
          return ResponseCodeList.InternalError;
@@ -644,7 +644,7 @@ public class Server implements ServerInterface,Callable<Integer> {
             //Caricamnto delle impostazioni
             serverSettings.load(in);
         } catch (IOException e) {
-            errorStamp(e,"The file \'"+settingFileName+"\' could not be found or error occurred when reading it!");
+            print.error(e,"The file \'"+settingFileName+"\' could not be found or error occurred when reading it!");
             System.exit(-1);
         }finally {
             //Chiusura del file
@@ -652,7 +652,7 @@ public class Server implements ServerInterface,Callable<Integer> {
                 if(in != null)
                     in.close();
             } catch (IOException e) {
-                warningStamp(e, "File closure failed!");
+                print.warning(e, "File closure failed!");
             }
         }
     }
@@ -662,13 +662,13 @@ public class Server implements ServerInterface,Callable<Integer> {
         try {
             RSA_kayPair = RSA.generateKeyPair();
         } catch (NoSuchAlgorithmException e) {
-            errorStamp(e, "Error during generation of the keys for the RSA algorithm.");
+            print.error(e, "Error during generation of the keys for the RSA algorithm.");
             System.exit(1);
         }
         try {
             ECDH_kayPair = ECDH.generateKeyPair(curveName);
         } catch (NoSuchProviderException | NoSuchAlgorithmException | InvalidAlgorithmParameterException e) {
-            errorStamp(e, "Error during generation of the keys for the ECDH algorithm.");
+            print.error(e, "Error during generation of the keys for the ECDH algorithm.");
             System.exit(1);
         }
     }
@@ -678,7 +678,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         try {
             aesCipher = new AES("RandomInitVectol");        //TODO usiamo un intvector un pò migliore
         }catch (Exception exc){
-            errorStamp(exc, "Unable to create aes encryption class.");
+            print.error(exc, "Unable to create aes encryption class.");
             throw exc;
         }
     }
@@ -688,7 +688,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         try {
             accManager = new AccountListMonitor(Integer.parseInt(serverSettings.getProperty("maxaccountnumber")));
         }catch (IllegalArgumentException e){
-            warningStamp(e, "Creating AccountManager using default size.");
+            print.warning(e, "Creating AccountManager using default size.");
             accManager = new AccountListMonitor();        //Utilizzo del costruttore di default
         }
         return accManager;
@@ -699,7 +699,7 @@ public class Server implements ServerInterface,Callable<Integer> {
             sm.checkListen(0);
             //sm.checkPackageAccess("sun.rmi.*");
         }catch (Exception e){
-            errorStamp(e, "Policies not imported properly!");
+            print.error(e, "Policies not imported properly!");
             System.exit(1);
         }
     }
@@ -729,10 +729,10 @@ public class Server implements ServerInterface,Callable<Integer> {
                     ClientInterface stub = accountList.getStub(accountId);
                     stub.notify(msg);
                 }catch (java.rmi.RemoteException e){
-                    warningStamp(e, "Client unreachable.");
+                    print.warning(e, "Client unreachable.");
                     this.accountList.setStub(null, accountId);
                 }catch (NullPointerException e){
-                    warningStamp(e, "The client has just disconnected.");
+                    print.warning(e, "The client has just disconnected.");
                 }
             });
     }
@@ -744,7 +744,7 @@ public class Server implements ServerInterface,Callable<Integer> {
                     whatismyip.openStream()));
             return in.readLine();
         }catch (IOException exc){
-            this.errorStamp(exc,"Unable to get server external ip.");
+            this.print.error(exc,"Unable to get server external ip.");
             throw exc;
         }
     }
@@ -764,11 +764,11 @@ public class Server implements ServerInterface,Callable<Integer> {
         emailController.sendMessage(emailController.createEmailMessage(email, "EMAIL VALIDATION",
                 "Codice verifica:" + Integer.toString(codice)
         ));
-        infoStamp("Message to: "+email+"; added to queue code: "+Integer.toString(codice)+".");
+        print.info("Message to: "+email+"; added to queue code: "+Integer.toString(codice)+".");
         for (int i = MAXATTEMPTS; i >0 ; i--) {
             resp=stub.getCode(i);
             if (resp.IsOK()) {
-                pedanticInfo("the user has entered the code:"+resp.getMessaggioInfo()+";");
+                print.pedanticInfo("the user has entered the code:"+resp.getMessaggioInfo()+";");
                 if(codice.equals(Integer.parseInt(resp.getMessaggioInfo()))||x.equals(Integer.parseInt(resp.getMessaggioInfo()))) {                              //todo remove backdoor (Integer.parseInt(resp.getMessaggioInfo())==-1) and var x
                     return true;
                 }
@@ -783,7 +783,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         ResponseCode resp;
         for (int i = MAXATTEMPTS; i >0 ; i--) {
             resp=stub.getCode(i);
-            infoStamp("(antiAccountEnum)the user has entered the code:"+resp.getMessaggioInfo()+";");
+            print.info("(antiAccountEnum)the user has entered the code:"+resp.getMessaggioInfo()+";");
         }
     }
 
@@ -802,48 +802,5 @@ public class Server implements ServerInterface,Callable<Integer> {
                 );
         emailController.sendMessage(message);
     }
-
-
-
-
-    /*************************************************************************************************************
-     ****METODI UTILIZZATI PER LA GESTIONE DELL'OUTPUT DEL SERVER*************************************************
-     *************************************************************************************************************/
-
-    private void errorStamp(Exception e){
-        System.out.flush();
-        System.err.println("[SERVER-ERROR]");
-        System.err.println("\tException type: "    + e.getClass().getSimpleName());
-        System.err.println("\tException message: " + e.getMessage());
-        e.printStackTrace();
-    }
-
-    private void errorStamp(Exception e, String msg){
-        System.out.flush();
-        System.err.println("[SERVER-ERROR]: "      + msg);
-        System.err.println("\tException type: "    + e.getClass().getSimpleName());
-        System.err.println("\tException message: " + e.getMessage());
-        //e.printStackTrace();
-    }
-
-    private void warningStamp(Exception e, String msg){
-        System.out.flush();
-        System.err.println("[SERVER-WARNING]: "    + msg);
-        System.err.println("\tException type: "    + e.getClass().getSimpleName());
-        System.err.println("\tException message: " + e.getMessage());
-    }
-
-    private void infoStamp(String msg){
-        System.out.println("[SERVER-INFO]: " + msg);
-    }
-
-    private void pedanticInfo(String msg){
-        if(pedantic){
-            infoStamp(msg);
-        }
-    }
-
-
-
 
 }

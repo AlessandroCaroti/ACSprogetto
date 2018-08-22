@@ -30,8 +30,6 @@ import static java.util.Objects.requireNonNull;
 
 public class EmailHandlerTLS implements EmailController {
 
-    private final boolean pedantic = false;
-
     private final String username;
     private final String password;
     private final Session session;
@@ -49,7 +47,7 @@ public class EmailHandlerTLS implements EmailController {
         this.messagesList=new ArrayBlockingQueue<>(handlerMaxCapacity);
         this.username=requireNonNull(myEmail);
         this.password=requireNonNull(myPassword);
-        infoStamp("Connecting to:"+this.username+"; password:"+this.password+";  smtpPort:"+Integer.toString(smtpPort)+";  smtpProvider:"+smtpProvider+";");
+        print.info("Connecting to:"+this.username+"; password:"+this.password+";  smtpPort:"+Integer.toString(smtpPort)+";  smtpProvider:"+smtpProvider+";");
 
         Properties props=new Properties();
         props.put("mail.smtp.auth", "true");
@@ -107,7 +105,7 @@ public class EmailHandlerTLS implements EmailController {
         }
         this.messagesList.add(message);
         synchronized (messagesList) {
-            pedanticInfo("Waking up the email demon.");
+            print.pedanticInfo("Waking up the email demon.");
             this.messagesList.notify();
         }
     }
@@ -134,54 +132,22 @@ public class EmailHandlerTLS implements EmailController {
                 try {
                     while((toBeSent=emailHandlerClass.messagesList.poll())==null) {
                         synchronized(emailHandlerClass.messagesList) {
-                            pedanticInfo("Email daemon's going to sleep.");
+                            print.pedanticInfo("Email daemon's going to sleep.");
                             emailHandlerClass.messagesList.wait();
                         }
                     }
-                    pedanticInfo("Trying to send message ...");
+                    print.pedanticInfo("Trying to send message ...");
                     Transport.send(toBeSent);
-                    pedanticInfo("... message sent!");  //todo da cntrollare, non viene mai stampata la scritta
+                    print.pedanticInfo("... message sent!");  //todo da cntrollare, non viene mai stampata la scritta
                 }
                 catch (InterruptedException |MessagingException e) {
                     if(e instanceof InterruptedException) {
                         return;
                     }
-                    errorStamp(e,"unable to send email");
+                    print.error(e,"unable to send email");
                 }
             }
 
-        }
-    }
-
-    private void errorStamp(Exception e){
-        System.out.flush();
-        System.err.println("[EMAILHANDLER-ERROR]");
-        System.err.println("\tException type: "    + e.getClass().getSimpleName());
-        System.err.println("\tException message: " + e.getMessage());
-        e.printStackTrace();
-    }
-
-    private void errorStamp(Exception e, String msg){
-        System.out.flush();
-        System.err.println("[EMAILHANDLER-ERROR]: "      + msg);
-        System.err.println("\tException type: "    + e.getClass().getSimpleName());
-        System.err.println("\tException message: " + e.getMessage());
-        e.printStackTrace();
-    }
-
-    private void warningStamp(Exception e, String msg){
-        System.out.flush();
-        System.err.println("[EMAILHANDLER-WARNING]: "    + msg);
-        System.err.println("\tException type: "    + e.getClass().getSimpleName());
-        System.err.println("\tException message: " + e.getMessage());
-    }
-    private void infoStamp(String msg){
-        System.out.println("[EMAILHANDLER-INFO]: " + msg);
-    }
-
-    private void pedanticInfo(String msg){
-        if(pedantic){
-            infoStamp(msg);
         }
     }
 }
