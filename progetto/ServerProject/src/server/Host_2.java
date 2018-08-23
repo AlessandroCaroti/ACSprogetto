@@ -27,7 +27,7 @@ public class Host_2 {
 
     final private String cmdList = "***********************************************\nCOMMANDS LIST:\n\n" +
             "\t\t?/help\n" +
-            "\t\tstart [server/infoProvider]\n" +
+            "\t\tstart [server/infoProvider/all]\n" +
             "\t\tstop [server/infoProvider/gui]\n" +
             "\t\tshutdown\n" +
             "\t\tinfo\n" +
@@ -87,8 +87,6 @@ public class Host_2 {
         try {
             while (!stopAll) {
                 line = sc.nextLine();
-                //todo rimmuovere la stampa di debug
-                System.err.println("-[DEBUG-STAMP] Read from System.in: \'"+line+"\'");
                 switch (line) {
                     case "?":
                     case "help":
@@ -97,6 +95,10 @@ public class Host_2 {
                     case "start":
                     case "start server":
                         startServer();
+                        break;
+                    case "start all":
+                        startServer();
+                        startInfoProvider();
                         break;
                     case "start infoProvider":
                         startInfoProvider();
@@ -248,7 +250,11 @@ public class Host_2 {
     private void showInfo() {
         String statusGui = "Graphic Interface: " + (gui != null ? "active" : "inactive");
         String statusInfoProvider = "InfoProvider: " + (infoProvider != null ? "active" : "inactive");
-        infoStamp(serverStat.getGeneralServerStat() + "\n" + statusGui + "\n" + statusInfoProvider);
+        infoStamp("---------------------------------------\n" +
+                serverStat.getGeneralServerStat() + "\n" +
+                statusGui + "\n" +
+                statusInfoProvider + "\n" +
+                "---------------------------------------");
     }
 
     private void showTopic(String[] topicList) {

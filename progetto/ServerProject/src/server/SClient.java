@@ -1,4 +1,4 @@
-/**
+/*
     This file is part of ACSprogetto.
 
     ACSprogetto is free software: you can redistribute it and/or modify
@@ -16,51 +16,39 @@
 
 **/
 package server;
+import utility.ResponseCode;
+import utility.ServerInfo;
+import utility.ServerInfoRecover;
 
-import client.Client;
-import interfaces.ClientInterface;
-import java.io.FileInputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.InetAddress;
 import java.rmi.RemoteException;
-import java.util.Properties;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.Callable;
+import static java.util.Objects.requireNonNull;
+
 
 public class SClient implements Callable<Integer> {
-    private Client[] clients;
-    private static final int DEFAULTCONNECTIONNUMBER=10;
+    private List<AnonymousClientExtended> clients;
+    private List<ServerInfo> serverList;
 
 
-    private String myUsername;
-    private String plainPassword;
-    private ClientInterface skeleton;
-    private String myPublicKey;
-    private String myPrivateKey;
+    private boolean pedantic=true;
+    private Server myServer;
 
-    public SClient(String username, String plainPassword, ClientInterface skeleton, String bp_key, String my_private_key)
-            throws RemoteException
-    {
-
-        try {
-            Properties sClientSettings = new Properties();//setting del server
-            FileInputStream in = new FileInputStream("config.serverSettings");
-            sClientSettings.load(in);
-            in.close();
-            this.clients = new Client[Integer.parseInt(sClientSettings.getProperty("maxbrokerconnection"))];
-        }catch(IOException exc){
-            System.err.println("ERROR:unable to open or read config.serverSettings");
-            this.clients=new Client[DEFAULTCONNECTIONNUMBER];
-        }
-
-        if(username==null||plainPassword==null||skeleton==null||bp_key==null||my_private_key==null)
+    public SClient(List serverList,Server myServer)  {
+        if(serverList==null )
         {
             throw new NullPointerException("passing null argument to SClient constructor");
         }
-        this.myUsername=username;
-        this.plainPassword=plainPassword;
-        this.skeleton=skeleton;
-        this.myPublicKey=bp_key;
-        this.myPrivateKey=my_private_key;
+        this.serverList=serverList;
+        this.myServer=requireNonNull(myServer);
     }
+
 
 
 
@@ -69,19 +57,150 @@ public class SClient implements Callable<Integer> {
     {
         //INIT
 
+        try {
+            pedanticInfo("initializing connection with brokers");
+            this.initAndConnectAnonymousClients(serverList.size());
+            pedanticInfo("initializing accounts.");
+            for (AnonymousClientExtended it:clients) {
+                this.registerOnServer(it);
+            }
+            pedanticInfo("subscribing for notifications.");
+            for (AnonymousClientExtended it:clients) {
+                this.subscribeForNotifications(it);
+            }
+            pedanticInfo("subscribing to all topics.");
+            for (AnonymousClientExtended it:clients) {
+                this.subscribeToAllTopics(it);
+            }
+
+        } catch (Exception e) {
+            errorStamp(e,"unable to create anonymous clients.");
+            return 1;
+        }
 
 
+        System.out.println("Enter something here : ");
+        try{
+            BufferedReader bufferRead = new BufferedReader(new InputStreamReader(System.in));
+            String s = bufferRead.readLine();
 
-
-
-
-
-
-
-
-
+        }
+        catch(IOException e)
+        {
+            e.printStackTrace();
+        }
+        System.out.println("Closing Sclient with exitcode:0");
         return 0;
     }
 
+
+    //PRIVATE METHODS
+
+    /**
+     *  Tenta di stabilire una connessione con tutti i server.
+     * @param initialSize la grandezza della lista dei server
+     * @throws IOException se è impossibile creare il ServerInfoRecover
+     */
+    private void initAndConnectAnonymousClients(int initialSize) throws IOException  {
+        this.clients=new ArrayList<>(initialSize);
+        Iterator it=serverList.iterator();
+        int oldSize=serverList.size();
+        int i=0;
+        ServerInfoRecover infoServer = new ServerInfoRecover();
+
+
+        while(it.hasNext()){
+
+                it.next();
+                try {
+                    clients.add(new AnonymousClientExtended(this.myServer));
+                    String[] a = infoServer.getServerInfo(InetAddress.getByName(((ServerInfo) it).regHost));
+                    clients.get(i).setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
+                    i++;
+                }catch(RemoteException e){
+                    warningStamp(e,"unable to connect with server");
+                    it.remove();//lo rimuovo dato che la connessione non è riuscita
+                }
+
+        }
+
+        infoStamp("connected to "+i+"/"+oldSize+" servers.");
+    }
+
+
+
+    private void registerOnServer(AnonymousClientExtended client){
+        if(client==null)throw new NullPointerException("anonymousclientextended==null");
+        boolean result=client.register();
+            if(result) {
+                pedanticInfo("registration successfully completed.");
+            }else{
+                pedanticInfo("unable to register on the server.");
+            }
+        }
+
+
+    private void subscribeForNotifications(AnonymousClientExtended client){
+        if(client==null)throw new NullPointerException("anonymousclientextended==null");
+        try {
+            ResponseCode resp=client.getServer_stub().subscribeNewTopicNotification(client.getCookie());
+            if(resp.IsOK()){
+                pedanticInfo("successfully subscribed to notification list.");
+            }else{
+                pedanticInfo("unable to register for notification list.");
+            }
+        }catch(Exception exc){
+            errorStamp(exc);
+        }
+    }
+
+    private void subscribeToAllTopics(AnonymousClientExtended client){
+        if(client==null)throw new NullPointerException("anonymousclientextended==null");
+        boolean result;
+        String[]topics;
+        topics = client.getTopics();
+        for (String topic : topics) {
+            result = client.subscribe(topic);
+            if(!result){
+                pedanticInfo("unable to subscribe to "+topic+"on the server.");
+            }else {
+                myServer.addTopic(topic);
+            }
+        }
+    }
+    //METODI UTILIZZATI PER LA GESTIONE DELL'OUTPUT DEL SCLIENT
+
+    private void errorStamp(Exception e){
+        System.out.flush();
+        System.err.println("[SCLIENT-ERROR]");
+        System.err.println("\tException type: "    + e.getClass().getSimpleName());
+        System.err.println("\tException message: " + e.getMessage());
+        e.printStackTrace();
+    }
+
+    private void errorStamp(Exception e, String msg){
+        System.out.flush();
+        System.err.println("[SCLIENT-ERROR]: "      + msg);
+        System.err.println("\tException type: "    + e.getClass().getSimpleName());
+        System.err.println("\tException message: " + e.getMessage());
+        e.printStackTrace();
+    }
+
+    private void warningStamp(Exception e, String msg){
+        System.out.flush();
+        System.err.println("[SCLIENT-WARNING]: "    + msg);
+        System.err.println("\tException type: "    + e.getClass().getSimpleName());
+        System.err.println("\tException message: " + e.getMessage());
+    }
+
+    private void infoStamp(String msg){
+        System.out.println("[SERVER-INFO]: " + msg);
+    }
+
+    private void pedanticInfo(String msg){
+        if(pedantic){
+            infoStamp(msg);
+        }
+    }
 
 }

@@ -11,6 +11,8 @@ public class ServerStatistic {
     private AtomicInteger topicNumber;
     private AtomicInteger postNumber;
     private AtomicInteger clientNumber;
+    private String regIp;
+    private int regPort;
     private boolean active;
 
 
@@ -28,9 +30,11 @@ public class ServerStatistic {
 
 
     //SETTER
-    public void setServerInfo(String serverName, ConcurrentLinkedQueue<String> topicList){
+    public void setServerInfo(String serverName, ConcurrentLinkedQueue<String> topicList, String regIp, int regPort){
         this.serverName = Objects.requireNonNull(serverName);
         this.topicList  = Objects.requireNonNull(topicList);
+        this.regIp      = Objects.requireNonNull(regIp);
+        this.regPort    = regPort;
     }
 
     public void incrementTopicNum(){
@@ -95,12 +99,22 @@ public class ServerStatistic {
         return gui;
     }
 
+    public String getRegIp() {
+        return regIp;
+    }
+
+    public int getRegPort() {
+        return regPort;
+    }
+
     public String getGeneralServerStat() {
-        return  "ServerName: "      + getServerName()   +
-                "\nServer ready: "  + getServerReady()  +
-                "\nClient online: " + getClientNumber() +
-                "\nTopic number: "  + getTopicNumber()  +
-                "\nPost created: "  + getPostNumber();
+        return  "ServerName: "        + getServerName()   +
+                "\nRegistry addres: " + getRegIp()        +
+                "\nRegistry port: "   + getRegPort()      +
+                "\nServer ready: "    + getServerReady()  +
+                "\nClient online: "   + getClientNumber() +
+                "\nTopic number: "    + getTopicNumber()  +
+                "\nPost created: "    + getPostNumber();
     }
 
 }

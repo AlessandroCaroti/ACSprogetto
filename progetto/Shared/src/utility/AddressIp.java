@@ -59,8 +59,7 @@ public class AddressIp {
         	URL whatismyip = new URL("http://checkip.amazonaws.com");
         	BufferedReader in = new BufferedReader(new InputStreamReader(whatismyip.openStream()));
         	publicIp = in.readLine();
-            if (in != null)
-            	in.close();
+			in.close();
             getLocalAddres();
         }catch(IOException e) {
         	publicIp = "Unkown";

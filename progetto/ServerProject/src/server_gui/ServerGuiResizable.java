@@ -1200,8 +1200,10 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
                         try {
                             executor.write(command.getBytes());
                         } catch (IOException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
+                            appendToPane("\n[GUI-ERROR] Console reports an Internal error on stdIn The error is: " + e + ". Resetting it to the initial stream\n",attributeError);
+                            try {
+                                StreamRedirector.resetStdIn();
+                            } catch (IOException ignored) { }
                         }
                     });
                 }

@@ -43,6 +43,7 @@ public  class ResponseCode implements Serializable {
          //I messaggi che iniziano per 500 sono di errore del server
          R500,  //received null message
          R505,  //Internal Server Error
+         R510, //sono stati passati argomenti invalidi (null ecc...)
 
 
          //I messaggi che iniziano per 600 sono di errore del client

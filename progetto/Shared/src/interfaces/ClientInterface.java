@@ -28,6 +28,8 @@ public interface ClientInterface extends Remote,Serializable
 {
     ResponseCode notify(Message m) throws RemoteException;
 
+    void newTopicNotification(String topicName) throws RemoteException;
+
     void isAlive()  throws RemoteException;
 
     //lo si può usare sia per la register sia per il forgot password!
