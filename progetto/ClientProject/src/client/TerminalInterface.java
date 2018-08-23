@@ -142,7 +142,7 @@ public class TerminalInterface implements Callable<Integer> {
                             ((ForgotPasswordWindow) event).setRepeatPassword(tokenizer.nextToken());
                             ((ForgotPasswordWindow) event).setEmail(tokenizer.nextToken());
                             break;
-                        case "help":
+                        case "help":case"?":case"h":
                             System.out.print(COMMANDS);
                             break;
                         case "shutdown":
@@ -222,5 +222,5 @@ public class TerminalInterface implements Callable<Integer> {
             +"login <serverAddress> <username> <password>\n"
             +"newaccount <serverAddress> <username> <password> <email>\n"
             +"forgotpassword <serverAddress> <newPassword> <repeatPassword> <email>\n"
-            +"gettopics\ngetalltopics\ndisconnect\n" +"help\n"+"shutdown\n";
+            +"gettopics\ngetalltopics\ndisconnect\n" +"help/?/h\n"+"shutdown\n";
 }
