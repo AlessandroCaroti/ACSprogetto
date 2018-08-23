@@ -31,8 +31,7 @@ public class ClientEngine implements Callable<Integer> {
     @Override
     public Integer call() {
         Event current;
-        boolean uscita=false;
-        do{
+        loop:do{
             try {
                 current = guiToClientEngine.take();
             }catch(InterruptedException e){
@@ -42,15 +41,11 @@ public class ClientEngine implements Callable<Integer> {
             if(current instanceof ClientEvent){
                 switch(((ClientEvent) current).getType()){
                     case SHUTDOWN:
-                        uscita=true;
-                        break;
+                        break loop;
                     case DISCONNECT:
-                        current=new Disconnect();
                         if(!client.disconnect()){
                             ((Disconnect) current).setErrExit(true);
                         }
-                        clientEngineToGUI.add(current);
-                        current=null;
                         break;
                     case GETALLTOPICS:
                         try {
@@ -58,8 +53,6 @@ public class ClientEngine implements Callable<Integer> {
                         }catch (Exception exc){
                             ((GetAllTopics) current).setErr(true);
                         }
-                        clientEngineToGUI.add(current);
-                        current=null;
                         break;
                     case GETTOPICS:
                         try {
@@ -73,8 +66,6 @@ public class ClientEngine implements Callable<Integer> {
                         }catch (Exception exc){
                             ((GetTopics) current).setErr(true);
                         }
-                        clientEngineToGUI.add(current);
-                        current=null;
                         break;
 
                 }
@@ -92,12 +83,10 @@ public class ClientEngine implements Callable<Integer> {
                             client.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
                             if(((Client)client).retrieveAccount()){
                                 System.out.println("Account recuperato");
-                                clientEngineToGUI.add(new ForumWindow());//todo settare la roba da passare
+                                current=new ForumWindow();//todo settare la roba da passare
                             }else{
                                 System.out.println("NON recuperato");
                                 ((AnonymousLoginWindow)current).setErr(true);
-                                clientEngineToGUI.add(current);
-                                current=null;
                             }
                         }catch(Exception exc){
                             //todo avviene quando: infoprovider non inizializzato oppure unicast object fallito
@@ -113,13 +102,10 @@ public class ClientEngine implements Callable<Integer> {
                             client.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
                             if(((Client) client).register()){
                                 System.out.println("Account creato");
-                                clientEngineToGUI.add(new ForumWindow());//todo settare la roba da passare
+                                current=new ForumWindow();//todo settare la roba da passare
                             }else{
                                 System.out.println("NON creato");
                                 ((NewAccountWindow)current).setErr(true);
-                                clientEngineToGUI.add(current);
-                                current=null;
-
                             }
                         }catch(Exception exc){
                             //todo
@@ -135,11 +121,9 @@ public class ClientEngine implements Callable<Integer> {
                                     );
                             client.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
                             if (client.register()) {
-                                clientEngineToGUI.add(new ForumWindow());//todo settare la roba da passare
+                                current=new ForumWindow();//todo settare la roba da passare
                             } else {
                                 ((AnonymousLoginWindow)current).setErr(true);
-                                clientEngineToGUI.add(current);
-                                current=null;
                             }
                         }catch(Exception exc){
                             //todo
@@ -155,11 +139,9 @@ public class ClientEngine implements Callable<Integer> {
                             client.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
                             if(client.recoverPassword(((ForgotPasswordWindow)current).getEmail(),((ForgotPasswordWindow)current).getNewPassword(),((ForgotPasswordWindow)current).getRepeatPassword()))
                             {
-                                clientEngineToGUI.add(new AccountLoginWindow());//todo settare la roba da passare
+                                current=new AccountLoginWindow();//todo settare la roba da passare
                             } else {
                                 ((ForgotPasswordWindow)current).setErr(true);
-                                clientEngineToGUI.add(current);
-                                current=null;
                             }
                         }catch(Exception exc){
                             //todo
@@ -167,17 +149,11 @@ public class ClientEngine implements Callable<Integer> {
 
                         }
                         break;
-                        default://todo da eliminare fine debugging
-                            System.err.println("uknown command");
-                            break;
-
 
                 }
             }
-
-
-
-        }while(!uscita);
+            clientEngineToGUI.add(current);
+        }while(true);
         return 0;
     }
 }
