@@ -5,6 +5,9 @@ import utility.ServerInfoRecover;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -51,6 +54,21 @@ public class ClientEngine implements Callable<Integer> {
                             ((GetAllTopics) current).setTopicsList(client.getTopics());
                         }catch (Exception exc){
                             ((GetAllTopics) current).setErr(true);
+                        }
+                        clientEngineToGUI.add(current);
+                        current=null;
+                        break;
+                    case GETTOPICS:
+                        try {
+                            List<String> list=new LinkedList<>();
+                            Iterator<String> it=client.getTopicsSubscribed();
+                            while(it.hasNext()){
+                                list.add(it.next());
+                            }
+                            ((GetTopics) current).setTopicsList(list.toArray(new String[0]));
+
+                        }catch (Exception exc){
+                            ((GetTopics) current).setErr(true);
                         }
                         clientEngineToGUI.add(current);
                         current=null;
