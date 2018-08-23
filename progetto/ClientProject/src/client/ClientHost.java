@@ -117,7 +117,6 @@ public class ClientHost {
                     try {
                         switch ( exitCodeTerminalInterface.get(100, TimeUnit.MILLISECONDS)) {
                             case EXIT://chiudo tutto
-                                System.out.println("chiudo");
                                 host.clientThread.awaitTermination(10, TimeUnit.SECONDS);
                                 System.exit(0);
                                 break;
