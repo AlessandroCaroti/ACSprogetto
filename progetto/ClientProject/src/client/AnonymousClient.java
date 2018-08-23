@@ -110,9 +110,9 @@ public class AnonymousClient implements ClientInterface {
             this.registryPort = regPort;
         this.server_stub = connect(regHost, serverName, regPort);
         if(server_stub!=null){      //Connessione al server avvenuta con successo
-            infoStamp("Successful connection to the server.");
+            print.info("Successful connection to the server.");
         }else {                     //Connessione fallita perchè non si è stato trovato il server o perchè durante la connessione c'è stato un errore
-            infoStamp("Unable to reach the server.");
+            print.info("Unable to reach the server.");
         }
     }
 
@@ -147,11 +147,11 @@ public class AnonymousClient implements ClientInterface {
                 ResponseCode responseCode = server_stub.anonymousRegister(this.skeleton);
                 return registered(responseCode);
             } catch (RemoteException e) {
-                errorStamp(e, "Unable to reach the server.");
+                print.error(e, "Unable to reach the server.");
             }
         }
         else
-            errorStamp("Not connected to any server.");
+            print.error("Not connected to any server.");
         return false;
     }
 
@@ -173,7 +173,7 @@ public class AnonymousClient implements ClientInterface {
                 this.server_stub = null;
             }
         }
-        errorStamp("Not connected to any server.");
+        print.error("Not connected to any server.");
         return false;
     }
 
@@ -187,25 +187,25 @@ public class AnonymousClient implements ClientInterface {
         if(connected()){
             try {
                 if(topicsSubscribed.contains(topic)){
-                    infoStamp("Already subscribe to the \'"+topic+"\' topic.");
+                    print.info("Already subscribe to the \'"+topic+"\' topic.");
                     return true;
                 }
                 ResponseCode response = server_stub.subscribe(this.cookie, topic);
                 if(response.IsOK())
                 {
                     topicsSubscribed.add(topic);
-                    infoStamp("Successfully subscribe to the topic \'"+topic+"\'.");
+                    print.info("Successfully subscribe to the topic \'"+topic+"\'.");
                     return true;
                 }
                 else {
-                    errorStamp(response, "Topic subscription failed.");
+                    print.error(response, "Topic subscription failed.");
                 }
             }catch (RemoteException e){
-                errorStamp(e, "Unable to reach the server.");
+                print.error(e, "Unable to reach the server.");
             }
         }
         else
-            errorStamp("Not connected to any server.");
+            print.error("Not connected to any server.");
         return false;
     }
 
@@ -220,25 +220,25 @@ public class AnonymousClient implements ClientInterface {
         if(connected()){
             try {
                 if(!topicsSubscribed.contains(topic)){
-                    infoStamp("Topic \'"+topic+"\' not included in the list of subscriptions");
+                    print.info("Topic \'"+topic+"\' not included in the list of subscriptions");
                     return true;
                 }
                 ResponseCode response = server_stub.unsubscribe(this.cookie, topic);
                 if(response.IsOK())
                 {
                     topicsSubscribed.remove(topic);
-                    infoStamp("Successfully unsubscribe to the topic \'"+topic+"\'.");
+                    print.info("Successfully unsubscribe to the topic \'"+topic+"\'.");
                     return true;
                 }
                 else {
-                    errorStamp(response, "Topic unsubscription failed.");
+                    print.error(response, "Topic unsubscription failed.");
                 }
             }catch (RemoteException e){
-                errorStamp(e, "Unable to reach the server.");
+                print.error(e, "Unable to reach the server.");
             }
         }
         else
-            errorStamp("Not connected to any server.");
+            print.error("Not connected to any server.");
         return false;
     }
 
@@ -258,7 +258,7 @@ public class AnonymousClient implements ClientInterface {
             }catch (RemoteException e){
                 //invalid cache
                 topicOnServer = null;
-                errorStamp(e, "Unable to reach the server.");
+                print.error(e, "Unable to reach the server.");
             }
         }
         return topicOnServer;
@@ -316,7 +316,7 @@ public class AnonymousClient implements ClientInterface {
 
             messageManager.execute(() -> {
                 //TODO gestione della visualizazione del messaggio
-                pedanticInfo("Received new message\n" + m.toString());
+                print.pedanticInfo("Received new message\n" + m.toString());
             });
         }
         return rc;
@@ -335,7 +335,7 @@ public class AnonymousClient implements ClientInterface {
             String s = bufferRead.readLine();
             return  new ResponseCode(R200,ResponseCode.TipoClasse.CLIENT,s);
         } catch (IOException e) {
-            errorStamp(e, "Unable to read user input");
+            print.error(e, "Unable to read user input");
         }
         return new ResponseCode(R670,ResponseCode.TipoClasse.CLIENT,
                 "(-) Internal client error");
@@ -353,18 +353,18 @@ public class AnonymousClient implements ClientInterface {
         try {
             ResponseCode resp = server_stub.recoverPassword(email, newPassword, repeatPassword, this.skeleton);
             if(resp.IsOK()){
-                infoStamp("password successfully changed.");
+                print.info("password successfully changed.");
                 return true;
             }else{
                 if(resp.getCodice()==ResponseCode.Codici.R510){
-                    infoStamp("invalid arguments.");
+                    print.info("invalid arguments.");
                 }else{
-                    infoStamp("Unknown error.");
+                    print.info("Unknown error.");
                 }
                 return false;
             }
         }catch(Exception exc){
-            errorStamp("Not connected.");
+            print.error("Not connected.");
         }
 
         return false;
@@ -409,13 +409,13 @@ public class AnonymousClient implements ClientInterface {
 
     protected boolean registered(ResponseCode response){
         if(response == null || !response.getCodice().equals(ResponseCode.Codici.R100)) {     //Registrazione fallita
-            errorStamp(response, "Server registration failed");
+            print.error(response, "Server registration failed");
             return false;
         }
 
         //Registrazione avvenuta con successo
         this.cookie = response.getMessaggioInfo();
-        infoStamp("Successfully registered on server "+serverName+".");
+        print.info("Successfully registered on server "+serverName+".");
         return true;
     }
 
@@ -437,52 +437,6 @@ public class AnonymousClient implements ClientInterface {
 
     public  String getClassName() {
         return this.className;
-    }
-
-
-
-
-    //METODI UTILIZZATI PER LA GESTIONE DELL'OUTPUT DEL CLIENT
-
-    void errorStamp(Exception e){
-       this.errorStamp(e,"");
-    }
-
-    void errorStamp(Exception e, String msg){
-        System.out.flush();
-        System.err.println("["+className+"-ERROR]: " + msg);
-        System.err.println("\tException type: "      + e.getClass().getSimpleName());
-        System.err.println("\tException message: "   + e.getMessage());
-        e.printStackTrace();    //todo da eliminare appena la fase di debigging è finita(solo questa linea non tutto il metodo)
-    }
-
-    void errorStamp(ResponseCode r, String msg){
-        System.out.flush();
-        System.err.println("["+className+"-ERROR]: "  + msg);
-        System.err.println("\tError code: "           + r.getCodice());
-        System.err.println("\tError message: "        + r.getMessaggioInfo());
-    }
-
-    void errorStamp(String msg){
-        System.out.flush();
-        System.err.println("["+className+"-ERROR]: "      + msg);
-    }
-
-    protected void warningStamp(Exception e, String msg){
-        System.out.flush();
-        System.err.println("["+className+"-WARNING]: " + msg);
-        System.err.println("\tException type: "        + e.getClass().getSimpleName());
-        System.err.println("\tException message: "     + e.getMessage());
-    }
-
-    void infoStamp(String msg){
-        System.out.println("["+className+"-INFO]: " + msg);
-    }
-
-    void pedanticInfo(String msg){
-        if(pedantic){
-            infoStamp(msg);
-        }
     }
 
 }
