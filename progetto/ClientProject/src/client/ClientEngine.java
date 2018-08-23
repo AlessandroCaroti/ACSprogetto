@@ -89,6 +89,16 @@ public class ClientEngine implements Callable<Integer> {
                             ((UnSubscribe) current).setErr(true);
                         }
                         break;
+                    case PUBLISH:
+                        try{
+                            if(client==null||!client.publish(((Publish)current).getTopicName(),((Publish)current).getTitle(),((Publish)current).getText())){
+                                ((Publish) current).setErr(true);
+                            }
+
+                        }catch(Exception exc){
+                            ((Publish)current).setErr(true);
+                        }
+                        break;
 
                 }
             }else if(current instanceof Window){

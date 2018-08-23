@@ -6,5 +6,6 @@ public enum ClientEventsType {
     GETALLTOPICS,
     GETTOPICS,
     SUBSCRIBE,
-    UNSUBSCRIBE
+    UNSUBSCRIBE,
+    PUBLISH
 }

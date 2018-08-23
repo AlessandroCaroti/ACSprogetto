@@ -102,6 +102,13 @@ public class TerminalInterface implements Callable<Integer> {
                                 System.out.println("Disiscrizione correttamente effettuata");
                             }
                             break;
+                        case PUBLISH:
+                            if(((Publish)current).isErr()){
+                                System.out.println("ERRORE:IMPOSSIBILE PUBBLICARE IL MESSAGGIO");
+                            }else{
+                                System.out.println("Pubblicazione correttamente effettuata");
+                            }
+                            break;
 
                     }
                 }
@@ -187,6 +194,11 @@ public class TerminalInterface implements Callable<Integer> {
                             event=new UnSubscribe();
                             ((UnSubscribe) event).setTopicName(tokenizer.nextToken());
                             break;
+                        case "publish":
+                            event=new Publish();
+                            ((Publish) event).setTopicName(tokenizer.nextToken());
+                            ((Publish) event).setTitle(tokenizer.nextToken());
+                            ((Publish) event).setText(tokenizer.nextToken());
                         default:
                             System.out.println("Unknown command:\"" + string + "\"");
                             event=null;
