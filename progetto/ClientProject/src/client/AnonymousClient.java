@@ -248,7 +248,7 @@ public class AnonymousClient implements ClientInterface {
      */
     //TODO magari invece di richiedre sempre la lista dei topic si può implementare un metodo get condizionale( get-if-modified-since) tipo http
     public String[] getTopics(){
-        String[] allTopics = null;
+        String[] allTopics;
         if(connected()){
             try {
                 allTopics = server_stub.getTopicList();
