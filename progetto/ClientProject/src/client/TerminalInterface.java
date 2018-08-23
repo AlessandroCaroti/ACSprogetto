@@ -183,8 +183,10 @@ public class TerminalInterface implements Callable<Integer> {
 
     private void printTopics(String[] topics){
         System.out.println("TOPICS LIST----------------------------------");
-        for (String topic : topics) {
-            System.out.println(topic);
+        if(topics!=null) {
+            for (String topic : topics) {
+                System.out.println(topic);
+            }
         }
         System.out.println("---------------------------------------------");
     }
