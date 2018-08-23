@@ -31,6 +31,7 @@ public class ClientEngine implements Callable<Integer> {
     @Override
     public Integer call() {
         Event current;
+        int exitCode=0;
         loop:do{
             try {
                 current = guiToClientEngine.take();
@@ -41,6 +42,9 @@ public class ClientEngine implements Callable<Integer> {
             if(current instanceof ClientEvent){
                 switch(((ClientEvent) current).getType()){
                     case SHUTDOWN:
+                        if(((ShutDown)current).isErrExit()){
+                            exitCode=1;//errore
+                        }
                         break loop;
                     case DISCONNECT:
                         if(client!=null&&!client.disconnect()){
@@ -65,6 +69,24 @@ public class ClientEngine implements Callable<Integer> {
 
                         }catch (Exception exc){
                             ((GetTopics) current).setErr(true);
+                        }
+                        break;
+                    case SUBSCRIBE:
+                        try{
+                            if(client==null||!client.subscribe(((Subscribe)current).getTopicName())){
+                                ((Subscribe) current).setErr(true);
+                            }
+                        }catch(Exception exc){
+                            ((Subscribe) current).setErr(true);
+                        }
+                        break;
+                    case UNSUBSCRIBE:
+                        try{
+                            if(client==null||!client.unsubscribe(((UnSubscribe)current).getTopicName())){
+                                ((UnSubscribe) current).setErr(true);
+                            }
+                        }catch(Exception exc){
+                            ((UnSubscribe) current).setErr(true);
                         }
                         break;
 
@@ -150,6 +172,6 @@ public class ClientEngine implements Callable<Integer> {
             }
             clientEngineToGUI.add(current);
         }while(true);
-        return 0;
+        return exitCode;
     }
 }

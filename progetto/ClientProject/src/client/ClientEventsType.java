@@ -4,5 +4,7 @@ public enum ClientEventsType {
     SHUTDOWN,
     DISCONNECT,
     GETALLTOPICS,
-    GETTOPICS
+    GETTOPICS,
+    SUBSCRIBE,
+    UNSUBSCRIBE
 }

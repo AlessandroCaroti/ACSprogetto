@@ -88,6 +88,20 @@ public class TerminalInterface implements Callable<Integer> {
                                 printTopics(((GetTopics) current).getTopicsList());
                             }
                             break;
+                        case SUBSCRIBE:
+                            if(((Subscribe)current).isErr()){
+                                System.out.println("ERRORE:IMPOSSIBILE ISCRIVERSI AL TOPIC");
+                            }else{
+                                System.out.println("Iscrizione correttamente effettuata");
+                            }
+                            break;
+                        case UNSUBSCRIBE:
+                            if(((UnSubscribe)current).isErr()){
+                                System.out.println("ERRORE:IMPOSSIBILE DISISCRIVERSI AL TOPIC");
+                            }else{
+                                System.out.println("Disiscrizione correttamente effettuata");
+                            }
+                            break;
 
                     }
                 }
@@ -147,6 +161,11 @@ public class TerminalInterface implements Callable<Integer> {
                             break;
                         case "shutdown":
                             event = new ShutDown();
+                            if(tokenizer.hasMoreTokens()){
+                                if(tokenizer.nextToken().equalsIgnoreCase("err")){
+                                    ((ShutDown) event).setErrExit(true);
+                                }
+                            }
                             break;
                         case "forum":
                             //todo
@@ -159,6 +178,14 @@ public class TerminalInterface implements Callable<Integer> {
                             break;
                         case "gettopics":
                             event=new GetTopics();
+                            break;
+                        case "subscribe":
+                            event=new Subscribe();
+                            ((Subscribe) event).setTopicName(tokenizer.nextToken());
+                            break;
+                        case "unsubscribe":
+                            event=new UnSubscribe();
+                            ((UnSubscribe) event).setTopicName(tokenizer.nextToken());
                             break;
                         default:
                             System.out.println("Unknown command:\"" + string + "\"");
@@ -176,6 +203,9 @@ public class TerminalInterface implements Callable<Integer> {
         }while(!uscita);
         return event;
     }
+
+
+
 
     private void printForum(){
 
@@ -222,5 +252,7 @@ public class TerminalInterface implements Callable<Integer> {
             +"login <serverAddress> <username> <password>\n"
             +"newaccount <serverAddress> <username> <password> <email>\n"
             +"forgotpassword <serverAddress> <newPassword> <repeatPassword> <email>\n"
-            +"gettopics\ngetalltopics\ndisconnect\n" +"help/?/h\n"+"shutdown\n";
+            +"publish <topicName> <titolo> <testo>\n"
+            +"subscribe <topicName>\nunsubscribe <topicName>\n"
+            +"gettopics\ngetalltopics\ndisconnect\n" +"help/?/h\n"+"shutdown [err]\n";
 }
