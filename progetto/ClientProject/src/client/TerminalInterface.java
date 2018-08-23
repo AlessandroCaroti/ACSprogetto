@@ -65,7 +65,32 @@ public class TerminalInterface implements Callable<Integer> {
 
 
 
-                }else if(current instanceof )
+                }else if(current instanceof ClientEvent){
+                    switch(((ClientEvent) current).getType()){
+                        case DISCONNECT:
+                            if(((Disconnect)current).isErrExit()){
+                                System.out.println("ERRORE:DISCONNESSO CON ERRORE");
+                            }else{
+                                System.out.println("Disconnesso...");
+                            }
+                            break;
+                        case GETALLTOPICS:
+                            if(((GetAllTopics)current).isErr()){
+                                System.out.println("ERRORE:IMPOSSIBILE RECUPERARE TUTTI I TOPICS");
+                            }else{
+                                printTopics(((GetAllTopics) current).getTopicsList());
+                            }
+                            break;
+                        case GETTOPICS:
+                            if(((GetTopics)current).isErr()){
+                                System.out.println("ERRORE:IMPOSSIBILE RECUPERARE I TOPICS");
+                            }else{
+                                printTopics(((GetTopics) current).getTopicsList());
+                            }
+                            break;
+
+                    }
+                }
 
 
             }catch(InterruptedException exc){
@@ -156,6 +181,13 @@ public class TerminalInterface implements Callable<Integer> {
 
     }
 
+    private void printTopics(String[] topics){
+        System.out.println("TOPICS LIST----------------------------------");
+        for (String topic : topics) {
+            System.out.println(topic);
+        }
+        System.out.println("---------------------------------------------");
+    }
 
     /*patorjk.com*/
     private static final String ASCIIART=
