@@ -17,11 +17,9 @@
  **/
 package client;
 
-import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.concurrent.*;
 import Events.*;
-import org.omg.PortableInterceptor.SUCCESSFUL;
 //import guiClient.ClientGUI;
 
 public class ClientHost {
