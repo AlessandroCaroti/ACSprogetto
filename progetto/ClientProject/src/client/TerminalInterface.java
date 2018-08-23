@@ -97,6 +97,12 @@ public class TerminalInterface implements Callable<Integer> {
                         case "disconnect":
                             event = new Disconnect();
                             break;
+                        case "getalltopics":
+                            event=new GetAllTopics();
+                            break;
+                        case "gettopics":
+                            event=new GetTopics();
+                            break;
                         default:
                             System.out.println("Unknown command:\"" + string + "\"");
                             event=null;
