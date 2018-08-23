@@ -32,7 +32,6 @@ public class Host_2 {
             "\t\tshutdown\n" +
             "\t\tinfo\n" +
             "\t\tshow topic\n" +
-            "\t\tpedantic\n" +
             "***********************************************";
 
 
@@ -118,9 +117,6 @@ public class Host_2 {
                         break;
                     case "shutdown now":
                         stopAll = true;
-                        break;
-                    case "pedantic":
-                        server.togglePedantic();
                         break;
                     case "info":
                         showInfo();
