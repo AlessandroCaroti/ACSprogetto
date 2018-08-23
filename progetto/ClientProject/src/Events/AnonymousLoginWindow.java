@@ -29,6 +29,7 @@ public class AnonymousLoginWindow extends Window {
     public void setPort(String port) {
         this.port = port;
     }
+
     public boolean isErr() {
         return err;
     }

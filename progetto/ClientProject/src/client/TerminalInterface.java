@@ -20,25 +20,103 @@ public class TerminalInterface implements Callable<Integer> {
 
 
     public Integer call(){
-        boolean uscita=false;
         Event current;
         System.out.print(ASCIIART);
-        while(!uscita){
+        while(true){
             current=this.parseCommand();
             this.guiToClientEngine.offer(current);
 
-            if(current instanceof ShutDown) {
-                uscita = true;
-            }
+            if(current instanceof ShutDown) {break;}
 
-            current=this.clientEngineToGui.poll();
-            if(current!=null){
-                //per l'interfaccia da terminale non mi interessa che finestra aprire ...
-                //Quindi semplicemente svuoto la coda riempita da clientEngine..
-                //Per la gui invece bisognerà gestire l'apertura delle finestre gli errori eccetera.
-                current=null;
-            }
+            //recupero la risposta dell'engine
+            try {
+                current = this.clientEngineToGui.take();
+                if(current instanceof Window){
+                    switch(((Window) current).getWindowType()){
+                        case FORUM:
 
+
+                            break;
+                        case LOGIN:
+                            if(((AnonymousLoginWindow)current).isErr()){
+                                System.out.println("ERRORE:IL LOGIN NON E' ANDATO A BUON FINE");
+                            }
+                            break;
+                        case NEWACCOUNT:
+                            if(((NewAccountWindow)current).isErr()){
+                                System.out.println("ERRORE:LA CREAZIONE NON E' ANDATA A BUON FINE");
+                            }
+                            break;
+                        case ANONYMOUSLOGIN:
+                            if(((AnonymousLoginWindow)current).isErr()){
+                                System.out.println("ERRORE:IL LOGIN ANONIMO NON E' ANDATO A BUON FINE");
+                            }
+                            break;
+                        case FORGOTPASSWORD:
+                            if(((ForgotPasswordWindow)current).isErr()){
+                                System.out.println("ERRORE:NON RECUPERATA");
+                            }
+                            break;
+                        default://todo da eliminare fine debugging
+                            System.err.println("uknown command");
+                            break;
+
+                    }
+
+
+
+                }else if(current instanceof ClientEvent){
+                    switch(((ClientEvent) current).getType()){
+                        case DISCONNECT:
+                            if(((Disconnect)current).isErrExit()){
+                                System.out.println("ERRORE:DISCONNESSO CON ERRORE");
+                            }else{
+                                System.out.println("Disconnesso...");
+                            }
+                            break;
+                        case GETALLTOPICS:
+                            if(((GetAllTopics)current).isErr()){
+                                System.out.println("ERRORE:IMPOSSIBILE RECUPERARE TUTTI I TOPICS");
+                            }else{
+                                printTopics(((GetAllTopics) current).getTopicsList());
+                            }
+                            break;
+                        case GETTOPICS:
+                            if(((GetTopics)current).isErr()){
+                                System.out.println("ERRORE:IMPOSSIBILE RECUPERARE I TOPICS");
+                            }else{
+                                printTopics(((GetTopics) current).getTopicsList());
+                            }
+                            break;
+                        case SUBSCRIBE:
+                            if(((Subscribe)current).isErr()){
+                                System.out.println("ERRORE:IMPOSSIBILE ISCRIVERSI AL TOPIC");
+                            }else{
+                                System.out.println("Iscrizione correttamente effettuata");
+                            }
+                            break;
+                        case UNSUBSCRIBE:
+                            if(((UnSubscribe)current).isErr()){
+                                System.out.println("ERRORE:IMPOSSIBILE DISISCRIVERSI AL TOPIC");
+                            }else{
+                                System.out.println("Disiscrizione correttamente effettuata");
+                            }
+                            break;
+                        case PUBLISH:
+                            if(((Publish)current).isErr()){
+                                System.out.println("ERRORE:IMPOSSIBILE PUBBLICARE IL MESSAGGIO");
+                            }else{
+                                System.out.println("Pubblicazione correttamente effettuata");
+                            }
+                            break;
+
+                    }
+                }
+
+
+            }catch(InterruptedException exc){
+                return 1;
+            }
         }
         return 0;
     }
@@ -53,9 +131,9 @@ public class TerminalInterface implements Callable<Integer> {
         do {
             try {
 
-                //System.out.print(PROMPT);
+                System.out.print(PROMPT);
                 string = bufferedReader.readLine();
-                System.err.println("[DEBUG-INFO]:" + string + ";\n");
+                //System.err.println("[DEBUG-INFO]:" + string + ";");
                 StringTokenizer tokenizer = new StringTokenizer(string, "\n\t ");
                 if (tokenizer.hasMoreTokens()) {
 
@@ -85,17 +163,42 @@ public class TerminalInterface implements Callable<Integer> {
                             ((ForgotPasswordWindow) event).setRepeatPassword(tokenizer.nextToken());
                             ((ForgotPasswordWindow) event).setEmail(tokenizer.nextToken());
                             break;
-                        case "help":
+                        case "help":case"?":case"h":
                             System.out.print(COMMANDS);
                             break;
                         case "shutdown":
                             event = new ShutDown();
+                            if(tokenizer.hasMoreTokens()){
+                                if(tokenizer.nextToken().equalsIgnoreCase("err")){
+                                    ((ShutDown) event).setErrExit(true);
+                                }
+                            }
                             break;
                         case "forum":
                             //todo
                             break;
                         case "disconnect":
                             event = new Disconnect();
+                            break;
+                        case "getalltopics":
+                            event=new GetAllTopics();
+                            break;
+                        case "gettopics":
+                            event=new GetTopics();
+                            break;
+                        case "subscribe":
+                            event=new Subscribe();
+                            ((Subscribe) event).setTopicName(tokenizer.nextToken());
+                            break;
+                        case "unsubscribe":
+                            event=new UnSubscribe();
+                            ((UnSubscribe) event).setTopicName(tokenizer.nextToken());
+                            break;
+                        case "publish":
+                            event=new Publish();
+                            ((Publish) event).setTopicName(tokenizer.nextToken());
+                            ((Publish) event).setTitle(tokenizer.nextToken());
+                            ((Publish) event).setText(tokenizer.nextToken());
                             break;
                         default:
                             System.out.println("Unknown command:\"" + string + "\"");
@@ -112,6 +215,23 @@ public class TerminalInterface implements Callable<Integer> {
             }
         }while(!uscita);
         return event;
+    }
+
+
+
+
+    private void printForum(){
+
+    }
+
+    private void printTopics(String[] topics){
+        System.out.println("TOPICS LIST----------------------------------");
+        if(topics!=null) {
+            for (String topic : topics) {
+                System.out.println(topic);
+            }
+        }
+        System.out.println("---------------------------------------------");
     }
 
     /*patorjk.com*/
@@ -145,6 +265,13 @@ public class TerminalInterface implements Callable<Integer> {
             +"login <serverAddress> <username> <password>\n"
             +"newaccount <serverAddress> <username> <password> <email>\n"
             +"forgotpassword <serverAddress> <newPassword> <repeatPassword> <email>\n"
-
-                    +"disconnect\n" +"help\n"+"shutdown\n";
+            +"publish <topicName> <titolo> <testo>\n"
+            +"subscribe <topicName>\nunsubscribe <topicName>\n"
+            +"gettopics\ngetalltopics\ndisconnect\n" +"help/?/h\n"+"shutdown [err]\n";
 }
+
+
+//todo list
+//se faccio il login su un account inesistente da errore R505 (internal error) controllare se è normale o no
+
+//come gestire exc.printstacktrace di clientEngine non c'è tipo qualche funz di carrots?

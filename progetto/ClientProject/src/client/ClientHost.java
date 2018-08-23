@@ -17,11 +17,9 @@
  **/
 package client;
 
-import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.concurrent.*;
 import Events.*;
-import org.omg.PortableInterceptor.SUCCESSFUL;
 //import guiClient.ClientGUI;
 
 public class ClientHost {
@@ -117,7 +115,6 @@ public class ClientHost {
                     try {
                         switch ( exitCodeTerminalInterface.get(100, TimeUnit.MILLISECONDS)) {
                             case EXIT://chiudo tutto
-                                System.out.println("chiudo");
                                 host.clientThread.awaitTermination(10, TimeUnit.SECONDS);
                                 System.exit(0);
                                 break;
