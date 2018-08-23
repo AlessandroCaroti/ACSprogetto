@@ -45,9 +45,12 @@ public class ClientEngine implements Callable<Integer> {
                         uscita=true;
                         break;
                     case DISCONNECT:
-                        if(client.disconnect()){
-                            System.out.println("DISCONNESSO");
-                        }else{System.out.println("NON DISCONNESSO");}
+                        current=new Disconnect();
+                        if(!client.disconnect()){
+                            ((Disconnect) current).setErrExit(true);
+                        }
+                        clientEngineToGUI.add(current);
+                        current=null;
                         break;
                     case GETALLTOPICS:
                         try {
@@ -133,9 +136,7 @@ public class ClientEngine implements Callable<Integer> {
                             client.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
                             if (client.register()) {
                                 clientEngineToGUI.add(new ForumWindow());//todo settare la roba da passare
-                                System.out.println("REGISTRATO");
                             } else {
-                                System.out.println("NON REGISTRATO");
                                 ((AnonymousLoginWindow)current).setErr(true);
                                 clientEngineToGUI.add(current);
                                 current=null;
@@ -155,9 +156,7 @@ public class ClientEngine implements Callable<Integer> {
                             if(client.recoverPassword(((ForgotPasswordWindow)current).getEmail(),((ForgotPasswordWindow)current).getNewPassword(),((ForgotPasswordWindow)current).getRepeatPassword()))
                             {
                                 clientEngineToGUI.add(new AccountLoginWindow());//todo settare la roba da passare
-                                System.out.println("RECUPERATA");
                             } else {
-                                System.out.println("NON RECUPERATA");
                                 ((ForgotPasswordWindow)current).setErr(true);
                                 clientEngineToGUI.add(current);
                                 current=null;

@@ -20,25 +20,57 @@ public class TerminalInterface implements Callable<Integer> {
 
 
     public Integer call(){
-        boolean uscita=false;
         Event current;
         System.out.print(ASCIIART);
-        while(!uscita){
+        while(true){
             current=this.parseCommand();
             this.guiToClientEngine.offer(current);
 
-            if(current instanceof ShutDown) {
-                uscita = true;
-            }
+            if(current instanceof ShutDown) {break;}
 
-            current=this.clientEngineToGui.poll();
-            if(current!=null){
-                //per l'interfaccia da terminale non mi interessa che finestra aprire ...
-                //Quindi semplicemente svuoto la coda riempita da clientEngine..
-                //Per la gui invece bisognerà gestire l'apertura delle finestre gli errori eccetera.
-                current=null;
-            }
+            //recupero la risposta dell'engine
+            try {
+                current = this.clientEngineToGui.take();
+                if(current instanceof Window){
+                    switch(((Window) current).getWindowType()){
+                        case FORUM:
 
+
+                            break;
+                        case LOGIN:
+                            if(((AnonymousLoginWindow)current).isErr()){
+                                System.out.println("ERRORE:IL LOGIN NON E' ANDATO A BUON FINE");
+                            }
+                            break;
+                        case NEWACCOUNT:
+                            if(((NewAccountWindow)current).isErr()){
+                                System.out.println("ERRORE:LA CREAZIONE NON E' ANDATA A BUON FINE");
+                            }
+                            break;
+                        case ANONYMOUSLOGIN:
+                            if(((AnonymousLoginWindow)current).isErr()){
+                                System.out.println("ERRORE:IL LOGIN ANONIMO NON E' ANDATO A BUON FINE");
+                            }
+                            break;
+                        case FORGOTPASSWORD:
+                            if(((ForgotPasswordWindow)current).isErr()){
+                                System.out.println("ERRORE:NON RECUPERATA");
+                            }
+                            break;
+                        default://todo da eliminare fine debugging
+                            System.err.println("uknown command");
+                            break;
+
+                    }
+
+
+
+                }else if(current instanceof )
+
+
+            }catch(InterruptedException exc){
+                return 1;
+            }
         }
         return 0;
     }
@@ -53,7 +85,7 @@ public class TerminalInterface implements Callable<Integer> {
         do {
             try {
 
-                //System.out.print(PROMPT);
+                System.out.print(PROMPT);
                 string = bufferedReader.readLine();
                 System.err.println("[DEBUG-INFO]:" + string + ";\n");
                 StringTokenizer tokenizer = new StringTokenizer(string, "\n\t ");
@@ -119,6 +151,11 @@ public class TerminalInterface implements Callable<Integer> {
         }while(!uscita);
         return event;
     }
+
+    private void printForum(){
+
+    }
+
 
     /*patorjk.com*/
     private static final String ASCIIART=
