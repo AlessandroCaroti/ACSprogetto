@@ -199,6 +199,7 @@ public class TerminalInterface implements Callable<Integer> {
                             ((Publish) event).setTopicName(tokenizer.nextToken());
                             ((Publish) event).setTitle(tokenizer.nextToken());
                             ((Publish) event).setText(tokenizer.nextToken());
+                            break;
                         default:
                             System.out.println("Unknown command:\"" + string + "\"");
                             event=null;
@@ -268,3 +269,7 @@ public class TerminalInterface implements Callable<Integer> {
             +"subscribe <topicName>\nunsubscribe <topicName>\n"
             +"gettopics\ngetalltopics\ndisconnect\n" +"help/?/h\n"+"shutdown [err]\n";
 }
+
+
+//todo list
+//se faccio il login su un account inesistente da errore R505 (internal error) controllare se è normale o no
