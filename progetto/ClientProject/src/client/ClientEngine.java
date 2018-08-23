@@ -43,7 +43,7 @@ public class ClientEngine implements Callable<Integer> {
                     case SHUTDOWN:
                         break loop;
                     case DISCONNECT:
-                        if(!client.disconnect()){
+                        if(client!=null&&!client.disconnect()){
                             ((Disconnect) current).setErrExit(true);
                         }
                         break;
