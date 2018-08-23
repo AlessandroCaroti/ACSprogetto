@@ -29,7 +29,7 @@ public class ServerInfoRecover extends InfoProviderProtocol {
         Socket s = new Socket(serverAddres, port);
         BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
         while ((fromServer = in.readLine()) != null) {
-            infoStamp("Receved: "+fromServer);
+            print.info("Receved: "+fromServer);
             serverInfo.add(fromServer);
         }
         in.close();
@@ -43,7 +43,7 @@ public class ServerInfoRecover extends InfoProviderProtocol {
         Socket s = new Socket(serverAddres, port);
         BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
         while ((fromServer = in.readLine()) != null) {
-            infoStamp("Receved: "+fromServer);
+            print.info("Receved: "+fromServer);
             serverInfo.add(fromServer);
         }
         in.close();
@@ -57,69 +57,11 @@ public class ServerInfoRecover extends InfoProviderProtocol {
     private InetAddress findServerLocalAddress() throws IOException {
         DatagramSocket socket = new MulticastSocket(broadcastPort);        //Socket in cui si riceverà l'ip del server
         DatagramPacket packet = new DatagramPacket(buf, buf.length);
-        infoStamp("Network scan searching for a server ...");
+        print.info("Network scan searching for a server ...");
         socket.setSoTimeout(timeOut*1000);                                  //Se dopo un tot di tempo nessun messaggio viene ricevuto significa che nessun sta trasmettendo
         socket.receive(packet);
         socket.close();
-        infoStamp("Server found.");
+        print.info("Server found.");
         return packet.getAddress();
-    }
-
-
-    private void infoStamp(String msg){
-        System.out.println("[InfoRecover-INFO]: " + msg);
-    }
-
-    private void warningStamp(Exception e, String msg){
-        if(pedantic) {
-            System.err.println("[InfoRecover-WARNING]: " + msg);
-            System.err.println("\tException type: "      + e.getClass().getSimpleName());
-            System.err.println("\tException message: "   + e.getMessage());
-        }
-    }
-
-
-    private void errorStamp(Exception e, String msg){
-        System.out.flush();
-        System.err.println("[InfoRecover-ERROR]: " + msg);
-        System.err.println("\tException type: "    + e.getClass().getSimpleName());
-        System.err.println("\tException message: " + e.getMessage());
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    public static void main(String[] args) {
-        try {
-            ServerInfoRecover rec = new ServerInfoRecover();
-            rec.getServerInfo();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 }
