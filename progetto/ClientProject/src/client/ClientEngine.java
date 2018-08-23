@@ -16,7 +16,7 @@ public class ClientEngine implements Callable<Integer> {
     private LinkedBlockingQueue<Event> clientEngineToGUI;
     private LinkedBlockingQueue<Event> guiToClientEngine;
     private AnonymousClient client;
-    private  ServerInfoRecover infoServer;
+    private ServerInfoRecover infoServer;
 
     public ClientEngine(LinkedBlockingQueue<Event>clientEngineToGUI, LinkedBlockingQueue<Event> guiToClientEngine) throws IOException {
         this.clientEngineToGUI=requireNonNull(clientEngineToGUI);
@@ -46,17 +46,25 @@ public class ClientEngine implements Callable<Integer> {
                             System.out.println("DISCONNESSO");
                         }else{System.out.println("NON DISCONNESSO");}
                         break;
+                    case GETALLTOPICS:
+                        try {
+                            ((GetAllTopics) current).setTopicsList(client.getTopics());
+                        }catch (Exception exc){
+                            ((GetAllTopics) current).setErr(true);
+                        }
+                        clientEngineToGUI.add(current);
+                        current=null;
+                        break;
 
                 }
-            }
-            if(current instanceof Window){
+            }else if(current instanceof Window){
                 switch (((Window) current).getWindowType()){
                     case FORUM:
                         //todo
                         break;
                     case LOGIN:
                         try {
-                            client = new Client(((AccountLoginWindow)current).getUsername(), ((AccountLoginWindow)current).getPassword(),null);//todo check se siamo sicuri non sia necessaria la mail
+                            client = new Client(((AccountLoginWindow)current).getUsername(), ((AccountLoginWindow)current).getPassword(),null);
                             String[] a = infoServer.getServerInfo(
                                     InetAddress.getByName(((AnonymousLoginWindow)current).getServerAddress())
                             );
@@ -145,6 +153,7 @@ public class ClientEngine implements Callable<Integer> {
                         default://todo da eliminare fine debugging
                             System.err.println("uknown command");
                             break;
+
 
                 }
             }
