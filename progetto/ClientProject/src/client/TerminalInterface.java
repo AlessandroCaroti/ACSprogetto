@@ -222,6 +222,5 @@ public class TerminalInterface implements Callable<Integer> {
             +"login <serverAddress> <username> <password>\n"
             +"newaccount <serverAddress> <username> <password> <email>\n"
             +"forgotpassword <serverAddress> <newPassword> <repeatPassword> <email>\n"
-
-                    +"disconnect\n" +"help\n"+"shutdown\n";
+            +"gettopics\ngetalltopics\ndisconnect\n" +"help\n"+"shutdown\n";
 }
