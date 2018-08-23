@@ -119,7 +119,7 @@ public class ClientEngine implements Callable<Integer> {
                                 ((AnonymousLoginWindow)current).setErr(true);
                             }
                         }catch(Exception exc){
-                            //todo avviene quando: infoprovider non inizializzato oppure unicast object fallito
+                            ((AnonymousLoginWindow)current).setErr(true);
                             exc.printStackTrace();
                         }
                         break;
@@ -136,7 +136,7 @@ public class ClientEngine implements Callable<Integer> {
                                 ((NewAccountWindow)current).setErr(true);
                             }
                         }catch(Exception exc){
-                            //todo
+                            ((NewAccountWindow)current).setErr(true);
                             exc.printStackTrace();
                         }
 
@@ -154,7 +154,7 @@ public class ClientEngine implements Callable<Integer> {
                                 ((AnonymousLoginWindow)current).setErr(true);
                             }
                         }catch(Exception exc){
-                            //todo
+                            ((AnonymousLoginWindow)current).setErr(true);
                             exc.printStackTrace();
                         }
                             break;
@@ -172,7 +172,7 @@ public class ClientEngine implements Callable<Integer> {
                                 ((ForgotPasswordWindow)current).setErr(true);
                             }
                         }catch(Exception exc){
-                            //todo
+                            ((ForgotPasswordWindow)current).setErr(true);
                             exc.printStackTrace();
 
                         }

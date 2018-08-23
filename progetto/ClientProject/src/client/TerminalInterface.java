@@ -273,3 +273,5 @@ public class TerminalInterface implements Callable<Integer> {
 
 //todo list
 //se faccio il login su un account inesistente da errore R505 (internal error) controllare se è normale o no
+
+//come gestire exc.printstacktrace di clientEngine non c'è tipo qualche funz di carrots?
