@@ -82,10 +82,8 @@ public class ClientEngine implements Callable<Integer> {
                             );
                             client.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
                             if(((Client)client).retrieveAccount()){
-                                System.out.println("Account recuperato");
                                 current=new ForumWindow();//todo settare la roba da passare
                             }else{
-                                System.out.println("NON recuperato");
                                 ((AnonymousLoginWindow)current).setErr(true);
                             }
                         }catch(Exception exc){
@@ -101,10 +99,8 @@ public class ClientEngine implements Callable<Integer> {
                             );
                             client.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
                             if(((Client) client).register()){
-                                System.out.println("Account creato");
                                 current=new ForumWindow();//todo settare la roba da passare
                             }else{
-                                System.out.println("NON creato");
                                 ((NewAccountWindow)current).setErr(true);
                             }
                         }catch(Exception exc){
