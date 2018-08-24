@@ -16,6 +16,7 @@
 
 **/
 package server;
+import client.AnonymousClient;
 import utility.ResponseCode;
 import utility.ServerInfo;
 import utility.ServerInfoRecover;
@@ -52,7 +53,6 @@ public class SClient implements Callable<Integer> {
 
 
 
-
     public Integer call()
     {
         //INIT
@@ -78,20 +78,38 @@ public class SClient implements Callable<Integer> {
             return 1;
         }
 
+        while(true){
 
-        System.out.println("Enter something here : ");
-        try{
-            BufferedReader bufferRead = new BufferedReader(new InputStreamReader(System.in));
-            String s = bufferRead.readLine();
+
+
+
+
 
         }
-        catch(IOException e)
-        {
-            e.printStackTrace();
-        }
-        System.out.println("Closing Sclient with exitcode:0");
         return 0;
     }
+
+    //PUBLIC METHODS
+    public void addServerConnection(ServerInfo serverInfo){
+        try {
+            ServerInfoRecover infoServer = new ServerInfoRecover();
+            AnonymousClientExtended anonymousClient = new AnonymousClientExtended(this.myServer);
+            String[] a = infoServer.getServerInfo(InetAddress.getByName(serverInfo.regHost));
+            anonymousClient.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
+            if (!clients.add(anonymousClient)) {
+
+            }
+
+        }catch (Exception exc){
+            errorStamp(exc,"Unable to add server!");
+        }
+
+
+
+    }
+
+
+
 
 
     //PRIVATE METHODS
