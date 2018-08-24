@@ -1,9 +1,12 @@
 package client;
 
 import Events.*;
+import utility.ServerInfoRecover;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -133,7 +136,6 @@ public class TerminalInterface implements Callable<Integer> {
 
                 System.out.print(PROMPT);
                 string = bufferedReader.readLine();
-                //System.err.println("[DEBUG-INFO]:" + string + ";");
                 StringTokenizer tokenizer = new StringTokenizer(string, "\n\t ");
                 if (tokenizer.hasMoreTokens()) {
 
@@ -223,6 +225,39 @@ public class TerminalInterface implements Callable<Integer> {
     private void printForum(){
 
     }
+
+
+
+
+    private void findServerOnLan() {
+        ArrayList<String[]> servers = new ArrayList<>();
+        ServerInfoRecover infoServer;
+        int numServer;
+        try {
+            infoServer = new ServerInfoRecover();
+        } catch (IOException e) {
+            System.out.println("No server visible in the local network");
+            return;
+        }
+        try {
+            while (true) {
+                servers.add(infoServer.getServerInfo());
+            }
+        } catch (IOException e) {
+            numServer = servers.size();
+            if(numServer == 0){
+                System.out.println("No server visible in the local network");
+                return;
+            }
+        }
+        System.out.println("Find "+numServer+" server.");
+        for (int i = 0; i<numServer;i++){
+            System.out.println(i+") "+servers.get(numServer)[2]);
+        }
+    }
+
+
+
 
     private void printTopics(String[] topics){
         System.out.println("TOPICS LIST----------------------------------");
