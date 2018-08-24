@@ -52,7 +52,35 @@ public class SClient  {
 
 
 
+    //PUBLIC METHODS
 
+    /** Tenta di connettersi,registrarsi , sottoscriversi alle notifiche e fare la subscribe di tutti i topic
+     *  dele server passato.
+     * @param serverInfo il server su cui connettersi
+     * @return true se tutte le operazioni sono andate a buon fine.
+     * @return false se almeno uno di queste è fallita.
+     * NOTA BENE: la connessione , le registrazione potrebbero essere andate a buon fine ma la sottoscrizione ai topics no.
+     * In questo caso si è comunque connessi e registrati!
+     */
+    public boolean addServer(ServerInfo serverInfo){
+        try {
+            AnonymousClientExtended curr;
+            return (curr = addServerConnection(serverInfo)) != null
+                    && registerOnServer(curr)
+                    && subscribeForNotifications(curr)
+                    && subscribeToAllTopics(curr);
+        }catch (Exception exc){
+            print.error(exc,"Error while adding server:"+serverInfo.regHost);
+        }
+        return false;
+    }
+
+
+
+    /**Inizializza la connessione, la registrazione, la sottoscrizione alle notifiche
+     * e la subscribe ai topics dei server passati tramite la Lista serverList (passata nel costruttore)
+     * @return true se abuon fine , false altrimenti
+     */
 
     public boolean init()
     {
@@ -78,31 +106,8 @@ public class SClient  {
             print.error(e,"unable to create anonymous clients.");
             return false;
         }
-
-
-
-
-
         return true;
     }
-
-    //PUBLIC METHODS
-
-    public boolean addServer(ServerInfo serverInfo){
-        try {
-            AnonymousClientExtended curr;
-            return (curr = addServerConnection(serverInfo)) != null
-                    && registerOnServer(curr)
-                    && subscribeForNotifications(curr)
-                    && subscribeToAllTopics(curr);
-        }catch (Exception exc){
-            print.error(exc,"Error while adding server:"+serverInfo.regHost);
-        }
-        return false;
-    }
-
-
-
 
 
     //PRIVATE METHODS
