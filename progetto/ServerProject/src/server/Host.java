@@ -12,7 +12,7 @@ import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Scanner;
 
-public class Host_2 {
+public class Host {
 
     private Server server;
     private boolean started;
@@ -45,7 +45,7 @@ public class Host_2 {
         }
 
         try {
-            Host_2 h = new Host_2(Boolean.parseBoolean(args[0]));
+            Host h = new Host(Boolean.parseBoolean(args[0]));
             h.commandExecutorLoop();
         } catch (Exception e) {
 
@@ -60,7 +60,7 @@ public class Host_2 {
 
 
 
-    private Host_2(Boolean useGui) throws Exception {
+    private Host(Boolean useGui) throws Exception {
 
         //Creazione della struttura dati delle statistiche del server (utilizzate per la comunicazione con la GUI)
         serverStat = new ServerStatistic();
