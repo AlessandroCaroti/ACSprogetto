@@ -35,6 +35,7 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.mail.MessagingException;
 import java.io.*;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -113,13 +114,7 @@ public class Server implements ServerInterface,Callable<Integer> {
 
         print.info("Creating server ...");
 
-        String tmp_name;
-        try{
-            tmp_name   = "Server_" + this.getMyIp();
-        }catch(IOException exc){//se non riesce a reperire  l'ip
-            tmp_name   = "Server_" + (int)(Math.random()*1000000);
-        }
-        serverName = tmp_name;
+        serverName = "Server_" + UUID.randomUUID().toString();
 
         topicList        = new ConcurrentLinkedQueue<>();
         notificationList = new ConcurrentLinkedQueue<>();
