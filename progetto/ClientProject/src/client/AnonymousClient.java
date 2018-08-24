@@ -315,6 +315,7 @@ public class AnonymousClient implements ClientInterface {
                     "(+) OK il client ha ricevuto il messaggio");
 
             messageManager.execute(() -> {
+
                 //TODO gestione della visualizazione del messaggio
                 print.pedanticInfo("Received new message\n" + m.toString());
             });
