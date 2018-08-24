@@ -17,16 +17,11 @@
 **/
 package server;
 import utility.LogFormatManager;
-import client.AnonymousClient;
 import utility.ResponseCode;
 import utility.ServerInfo;
 import utility.ServerInfoRecover;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.InetAddress;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -66,17 +61,17 @@ public class SClient implements Callable<Integer> {
         //INIT
 
         try {
-            print.pedanticInfo("initializing connection with brokers");
+            print.pedanticInfo("Initializing connection with brokers");
             this.initAndConnectAnonymousClients(serverList.size());
-            print.pedanticInfo("initializing accounts.");
+            print.pedanticInfo("Initializing accounts.");
             for (AnonymousClientExtended it:clients) {
                 this.registerOnServer(it);
             }
-            print.pedanticInfo("subscribing for notifications.");
+            print.pedanticInfo("Subscribing for notifications.");
             for (AnonymousClientExtended it:clients) {
                 this.subscribeForNotifications(it);
             }
-            print.pedanticInfo("subscribing to all topics.");
+            print.pedanticInfo("Subscribing to all topics.");
             for (AnonymousClientExtended it:clients) {
                 this.subscribeToAllTopics(it);
             }
@@ -86,38 +81,21 @@ public class SClient implements Callable<Integer> {
             return 1;
         }
 
-        while(true){
-
-
-        System.out.println("Enter something here : ");
-        try{
-            BufferedReader bufferRead = new BufferedReader(new InputStreamReader(System.in));
-            String s = bufferRead.readLine();
 
 
 
 
-        }
         return 0;
     }
 
     //PUBLIC METHODS
-    public void addServerConnection(ServerInfo serverInfo){
-        try {
-            ServerInfoRecover infoServer = new ServerInfoRecover();
-            AnonymousClientExtended anonymousClient = new AnonymousClientExtended(this.myServer);
-            String[] a = infoServer.getServerInfo(InetAddress.getByName(serverInfo.regHost));
-            anonymousClient.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
-            if (!clients.add(anonymousClient)) {
 
-            }
-
-        }catch (Exception exc){
-            errorStamp(exc,"Unable to add server!");
-        }
-
-
-
+    public boolean addServer(ServerInfo serverInfo){
+        AnonymousClientExtended curr;
+        return (curr=addServerConnection(serverInfo))!=null
+                && registerOnServer(curr)
+                &&subscribeForNotifications(curr)
+                &&subscribeToAllTopics(curr);
     }
 
 
@@ -127,7 +105,7 @@ public class SClient implements Callable<Integer> {
     //PRIVATE METHODS
 
     /**
-     *  Tenta di stabilire una connessione con tutti i server.
+     *  Tenta di stabilire una connessione con tutti i server della lista serverList.
      * @param initialSize la grandezza della lista dei server
      * @throws IOException se è impossibile creare il ServerInfoRecover
      */
@@ -135,31 +113,33 @@ public class SClient implements Callable<Integer> {
         this.clients=new ArrayList<>(initialSize);
         Iterator it=serverList.iterator();
         int oldSize=serverList.size();
-        int i=0;
-        ServerInfoRecover infoServer = new ServerInfoRecover();
-
+        ServerInfo curr;
 
         while(it.hasNext()){
-
-                it.next();
-                try {
-                    clients.add(new AnonymousClientExtended(this.myServer));
-                    String[] a = infoServer.getServerInfo(InetAddress.getByName(((ServerInfo) it).regHost));
-                    clients.get(i).setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
-                    i++;
-                }catch(RemoteException e){
-                    print.warning(e,"unable to connect with server");
-                    it.remove();//lo rimuovo dato che la connessione non è riuscita
+                curr=(ServerInfo)it.next();
+                if(addServerConnection(curr)==null||!serverList.add(curr)){
+                    it.remove();
                 }
 
         }
-
-        print.info("connected to "+i+"/"+oldSize+" servers.");
+        print.info("Connected to "+serverList.size()+"/"+oldSize+" servers.");
     }
 
 
+    private AnonymousClientExtended addServerConnection(ServerInfo serverInfo){
+        try {
+            ServerInfoRecover infoServer = new ServerInfoRecover();
+            AnonymousClientExtended anonymousClient = new AnonymousClientExtended(this.myServer);
+            String[] a = infoServer.getServerInfo(InetAddress.getByName(serverInfo.regHost));
+            anonymousClient.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
+            return clients.add(anonymousClient)?anonymousClient:null;
+        }catch (Exception exc){
+            print.warning(exc,"Unable to add server!");
+        }
+        return null;
+    }
 
-    private void registerOnServer(AnonymousClientExtended client){
+    private boolean registerOnServer(AnonymousClientExtended client){
         if(client==null)throw new NullPointerException("anonymousclientextended==null");
         boolean result=client.register();
             if(result) {
@@ -167,36 +147,42 @@ public class SClient implements Callable<Integer> {
             }else{
                 print.pedanticInfo("unable to register on the server.");
             }
+            return result;
         }
 
 
-    private void subscribeForNotifications(AnonymousClientExtended client){
+    private boolean subscribeForNotifications(AnonymousClientExtended client){
         if(client==null)throw new NullPointerException("anonymousclientextended==null");
         try {
             ResponseCode resp=client.getServer_stub().subscribeNewTopicNotification(client.getCookie());
             if(resp.IsOK()){
                 print.pedanticInfo("successfully subscribed to notification list.");
+                return true;
             }else{
                 print.pedanticInfo("unable to register for notification list.");
+                return false;
             }
         }catch(Exception exc){
             print.error(exc);
         }
+        return false;
     }
 
-    private void subscribeToAllTopics(AnonymousClientExtended client){
+    private boolean subscribeToAllTopics(AnonymousClientExtended client){
         if(client==null)throw new NullPointerException("anonymousclientextended==null");
-        boolean result;
+        boolean result,exitStat=true;
         String[]topics;
         topics = client.getTopics();
         for (String topic : topics) {
             result = client.subscribe(topic);
             if(!result){
                 print.pedanticInfo("unable to subscribe to "+topic+"on the server.");
+                exitStat=false;
             }else {
                 myServer.addTopic(topic);
             }
         }
+        return exitStat;
     }
 
 }
