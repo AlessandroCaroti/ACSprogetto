@@ -5,6 +5,9 @@ import utility.ServerInfoRecover;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -28,8 +31,8 @@ public class ClientEngine implements Callable<Integer> {
     @Override
     public Integer call() {
         Event current;
-        boolean uscita=false;
-        do{
+        int exitCode=0;
+        loop:do{
             try {
                 current = guiToClientEngine.take();
             }catch(InterruptedException e){
@@ -39,12 +42,14 @@ public class ClientEngine implements Callable<Integer> {
             if(current instanceof ClientEvent){
                 switch(((ClientEvent) current).getType()){
                     case SHUTDOWN:
-                        uscita=true;
-                        break;
+                        if(((ShutDown)current).isErrExit()){
+                            exitCode=1;//errore
+                        }
+                        break loop;
                     case DISCONNECT:
-                        if(client.disconnect()){
-                            System.out.println("DISCONNESSO");
-                        }else{System.out.println("NON DISCONNESSO");}
+                        if(client!=null&&!client.disconnect()){
+                            ((Disconnect) current).setErrExit(true);
+                        }
                         break;
                     case GETALLTOPICS:
                         try {
@@ -52,8 +57,47 @@ public class ClientEngine implements Callable<Integer> {
                         }catch (Exception exc){
                             ((GetAllTopics) current).setErr(true);
                         }
-                        clientEngineToGUI.add(current);
-                        current=null;
+                        break;
+                    case GETTOPICS:
+                        try {
+                            List<String> list=new LinkedList<>();
+                            Iterator<String> it=client.getTopicsSubscribed();
+                            while(it.hasNext()){
+                                list.add(it.next());
+                            }
+                            ((GetTopics) current).setTopicsList(list.toArray(new String[0]));
+
+                        }catch (Exception exc){
+                            ((GetTopics) current).setErr(true);
+                        }
+                        break;
+                    case SUBSCRIBE:
+                        try{
+                            if(client==null||!client.subscribe(((Subscribe)current).getTopicName())){
+                                ((Subscribe) current).setErr(true);
+                            }
+                        }catch(Exception exc){
+                            ((Subscribe) current).setErr(true);
+                        }
+                        break;
+                    case UNSUBSCRIBE:
+                        try{
+                            if(client==null||!client.unsubscribe(((UnSubscribe)current).getTopicName())){
+                                ((UnSubscribe) current).setErr(true);
+                            }
+                        }catch(Exception exc){
+                            ((UnSubscribe) current).setErr(true);
+                        }
+                        break;
+                    case PUBLISH:
+                        try{
+                            if(client==null||!client.publish(((Publish)current).getTopicName(),((Publish)current).getTitle(),((Publish)current).getText())){
+                                ((Publish) current).setErr(true);
+                            }
+
+                        }catch(Exception exc){
+                            ((Publish)current).setErr(true);
+                        }
                         break;
 
                 }
@@ -70,16 +114,12 @@ public class ClientEngine implements Callable<Integer> {
                             );
                             client.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
                             if(((Client)client).retrieveAccount()){
-                                System.out.println("Account recuperato");
-                                clientEngineToGUI.add(new ForumWindow());//todo settare la roba da passare
+                                current=new ForumWindow();//todo settare la roba da passare
                             }else{
-                                System.out.println("NON recuperato");
                                 ((AnonymousLoginWindow)current).setErr(true);
-                                clientEngineToGUI.add(current);
-                                current=null;
                             }
                         }catch(Exception exc){
-                            //todo avviene quando: infoprovider non inizializzato oppure unicast object fallito
+                            ((AnonymousLoginWindow)current).setErr(true);
                             exc.printStackTrace();
                         }
                         break;
@@ -91,17 +131,12 @@ public class ClientEngine implements Callable<Integer> {
                             );
                             client.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
                             if(((Client) client).register()){
-                                System.out.println("Account creato");
-                                clientEngineToGUI.add(new ForumWindow());//todo settare la roba da passare
+                                current=new ForumWindow();//todo settare la roba da passare
                             }else{
-                                System.out.println("NON creato");
                                 ((NewAccountWindow)current).setErr(true);
-                                clientEngineToGUI.add(current);
-                                current=null;
-
                             }
                         }catch(Exception exc){
-                            //todo
+                            ((NewAccountWindow)current).setErr(true);
                             exc.printStackTrace();
                         }
 
@@ -114,16 +149,12 @@ public class ClientEngine implements Callable<Integer> {
                                     );
                             client.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
                             if (client.register()) {
-                                clientEngineToGUI.add(new ForumWindow());//todo settare la roba da passare
-                                System.out.println("REGISTRATO");
+                                current=new ForumWindow();//todo settare la roba da passare
                             } else {
-                                System.out.println("NON REGISTRATO");
                                 ((AnonymousLoginWindow)current).setErr(true);
-                                clientEngineToGUI.add(current);
-                                current=null;
                             }
                         }catch(Exception exc){
-                            //todo
+                            ((AnonymousLoginWindow)current).setErr(true);
                             exc.printStackTrace();
                         }
                             break;
@@ -136,31 +167,21 @@ public class ClientEngine implements Callable<Integer> {
                             client.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
                             if(client.recoverPassword(((ForgotPasswordWindow)current).getEmail(),((ForgotPasswordWindow)current).getNewPassword(),((ForgotPasswordWindow)current).getRepeatPassword()))
                             {
-                                clientEngineToGUI.add(new AccountLoginWindow());//todo settare la roba da passare
-                                System.out.println("RECUPERATA");
+                                current=new AccountLoginWindow();//todo settare la roba da passare
                             } else {
-                                System.out.println("NON RECUPERATA");
                                 ((ForgotPasswordWindow)current).setErr(true);
-                                clientEngineToGUI.add(current);
-                                current=null;
                             }
                         }catch(Exception exc){
-                            //todo
+                            ((ForgotPasswordWindow)current).setErr(true);
                             exc.printStackTrace();
 
                         }
                         break;
-                        default://todo da eliminare fine debugging
-                            System.err.println("uknown command");
-                            break;
-
 
                 }
             }
-
-
-
-        }while(!uscita);
-        return 0;
+            clientEngineToGUI.add(current);
+        }while(true);
+        return exitCode;
     }
 }
