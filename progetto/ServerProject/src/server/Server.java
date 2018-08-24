@@ -734,7 +734,7 @@ public class Server implements ServerInterface,Callable<Integer> {
             });
     }
 
-    private  String getMyIp() throws IOException {
+    private  String getMyIp() throws IOException {  //todo codice duplicato
         try {
             URL whatismyip = new URL("http://checkip.amazonaws.com");
             BufferedReader in = new BufferedReader(new InputStreamReader(
