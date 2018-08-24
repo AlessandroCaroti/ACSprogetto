@@ -20,16 +20,14 @@ import utility.LogFormatManager;
 import utility.ResponseCode;
 import utility.ServerInfo;
 import utility.ServerInfoRecover;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.Callable;
 import static java.util.Objects.requireNonNull;
 
 
-public class SClient implements Callable<Integer> {
+public class SClient  {
     private List<AnonymousClientExtended> clients;
     private List<ServerInfo> serverList;
 
@@ -56,7 +54,7 @@ public class SClient implements Callable<Integer> {
 
 
 
-    public Integer call()
+    public boolean init()
     {
         //INIT
 
@@ -78,24 +76,29 @@ public class SClient implements Callable<Integer> {
 
         } catch (Exception e) {
             print.error(e,"unable to create anonymous clients.");
-            return 1;
+            return false;
         }
 
 
 
 
 
-        return 0;
+        return true;
     }
 
     //PUBLIC METHODS
 
     public boolean addServer(ServerInfo serverInfo){
-        AnonymousClientExtended curr;
-        return (curr=addServerConnection(serverInfo))!=null
-                && registerOnServer(curr)
-                &&subscribeForNotifications(curr)
-                &&subscribeToAllTopics(curr);
+        try {
+            AnonymousClientExtended curr;
+            return (curr = addServerConnection(serverInfo)) != null
+                    && registerOnServer(curr)
+                    && subscribeForNotifications(curr)
+                    && subscribeToAllTopics(curr);
+        }catch (Exception exc){
+            print.error(exc,"Error while adding server:"+serverInfo.regHost);
+        }
+        return false;
     }
 
 
@@ -107,9 +110,8 @@ public class SClient implements Callable<Integer> {
     /**
      *  Tenta di stabilire una connessione con tutti i server della lista serverList.
      * @param initialSize la grandezza della lista dei server
-     * @throws IOException se è impossibile creare il ServerInfoRecover
      */
-    private void initAndConnectAnonymousClients(int initialSize) throws IOException  {
+    private void initAndConnectAnonymousClients(int initialSize)   {
         this.clients=new ArrayList<>(initialSize);
         Iterator it=serverList.iterator();
         int oldSize=serverList.size();
@@ -139,7 +141,7 @@ public class SClient implements Callable<Integer> {
         return null;
     }
 
-    private boolean registerOnServer(AnonymousClientExtended client){
+    private boolean registerOnServer(AnonymousClientExtended client) throws NullPointerException {
         if(client==null)throw new NullPointerException("anonymousclientextended==null");
         boolean result=client.register();
             if(result) {
@@ -151,7 +153,7 @@ public class SClient implements Callable<Integer> {
         }
 
 
-    private boolean subscribeForNotifications(AnonymousClientExtended client){
+    private boolean subscribeForNotifications(AnonymousClientExtended client) throws NullPointerException {
         if(client==null)throw new NullPointerException("anonymousclientextended==null");
         try {
             ResponseCode resp=client.getServer_stub().subscribeNewTopicNotification(client.getCookie());
@@ -168,7 +170,7 @@ public class SClient implements Callable<Integer> {
         return false;
     }
 
-    private boolean subscribeToAllTopics(AnonymousClientExtended client){
+    private boolean subscribeToAllTopics(AnonymousClientExtended client) throws NullPointerException {
         if(client==null)throw new NullPointerException("anonymousclientextended==null");
         boolean result,exitStat=true;
         String[]topics;
