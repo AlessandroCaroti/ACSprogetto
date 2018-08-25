@@ -32,3 +32,4 @@ progetto/ClientProject/bin/*
 *.project
 *.idea
 /bin/
+.vscode/*
