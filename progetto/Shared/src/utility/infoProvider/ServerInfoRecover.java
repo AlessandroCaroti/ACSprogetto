@@ -1,8 +1,10 @@
-package utility;
+package utility.infoProvider;
 //per funzionare bisogna abilitare la ricezione di messaggi UDP per la rete locale
 /*
   WINDOWS :   New-NetFirewallRule  -Name ASC_client -DisplayName "ACS_client" -Enable True -Profile Domain, Private  -Direction Inbound -Action Allow -Protocol "UDP" -LocalPort "4444"
  */
+
+import utility.LogFormatManager;
 
 import java.io.BufferedReader;
 import java.io.IOException;

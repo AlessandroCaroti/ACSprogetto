@@ -1,7 +1,7 @@
 package client;
 
 import Events.*;
-import utility.ServerInfoRecover;
+import utility.infoProvider.ServerInfoRecover;
 
 import java.io.IOException;
 import java.net.InetAddress;

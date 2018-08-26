@@ -1,4 +1,4 @@
-package utility;
+package utility.cryptography;
 
 import javax.crypto.Cipher;
 import java.security.*;

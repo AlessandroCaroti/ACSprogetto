@@ -2,7 +2,7 @@ package server;
 
 import server_gui.ServerGuiResizable;
 import server_gui.ServerStatistic;
-import utility.ServerInfoProvider;
+import utility.infoProvider.ServerInfoProvider;
 
 import javax.swing.*;
 import java.awt.*;

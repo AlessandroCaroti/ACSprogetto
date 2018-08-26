@@ -1,4 +1,4 @@
-package utility;
+package utility.infoProvider;
 
 import java.net.*;
 

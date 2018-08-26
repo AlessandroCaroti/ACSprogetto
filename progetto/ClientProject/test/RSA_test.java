@@ -1,5 +1,5 @@
 import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
-import utility.RSA;
+import utility.cryptography.RSA;
 
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;

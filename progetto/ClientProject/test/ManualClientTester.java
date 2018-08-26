@@ -1,6 +1,6 @@
 import client.AnonymousClient;
 import client.Client;
-import utility.ServerInfoRecover;
+import utility.infoProvider.ServerInfoRecover;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;

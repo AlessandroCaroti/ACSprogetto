@@ -1,4 +1,4 @@
-import utility.AES;
+import utility.cryptography.AES;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;

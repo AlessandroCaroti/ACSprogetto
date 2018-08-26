@@ -1,11 +1,10 @@
-import utility.ECDH;
-import utility.RSA;
+import utility.cryptography.ECDH;
+import utility.cryptography.RSA;
 
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Arrays;
 
 public class ECDH_RSA__test {
     public static void main(String[] args) throws Exception {

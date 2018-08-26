@@ -1,5 +1,7 @@
-package utility;
+package utility.infoProvider;
 //per funzionare bisogna abilitare la ricezione di messaggi UDP e tricheste di connesioni TCP per la rete locale
+
+import utility.LogFormatManager;
 
 import java.io.IOException;
 import java.io.PrintWriter;

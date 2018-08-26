@@ -19,7 +19,7 @@ package server;
 import utility.LogFormatManager;
 import utility.ResponseCode;
 import utility.ServerInfo;
-import utility.ServerInfoRecover;
+import utility.infoProvider.ServerInfoRecover;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Iterator;

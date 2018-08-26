@@ -1,4 +1,4 @@
-package utility;
+package utility.cryptography;
 
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;

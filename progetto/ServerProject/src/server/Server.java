@@ -27,6 +27,8 @@ import interfaces.ClientInterface;
 import interfaces.ServerInterface;
 import server_gui.ServerStatistic;
 import utility.*;
+import utility.cryptography.ECDH;
+import utility.cryptography.RSA;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -35,7 +37,6 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.mail.MessagingException;
 import java.io.*;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -47,7 +48,6 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Server implements ServerInterface,Callable<Integer> {
@@ -302,7 +302,7 @@ public class Server implements ServerInterface,Callable<Integer> {
             
             //test the key
             byte[] res_encrypted = stub.testSecretKey(messageTest);
-            byte[] res = utility.AES.decrypt(res_encrypted, secretAesKey);
+            byte[] res = utility.cryptography.AES.decrypt(res_encrypted, secretAesKey);
             if(!Arrays.equals(res, messageTest))
                 throw new InvalidKeyException("La chiave condivisa non coincide");  //todo migliorare il messaggio di errore
             publicKey     = new String(shearedSecretKey);
@@ -314,9 +314,9 @@ public class Server implements ServerInterface,Callable<Integer> {
         try {
             //RECUPERO DELLE INFORMAZIONI DEL CLIENT
             byte[][] accountInfo = stub.getAccountInfo();
-            email         = new String(utility.AES.decrypt(accountInfo[0], secretAesKey), StandardCharsets.UTF_8);
-            userName      = new String(utility.AES.decrypt(accountInfo[1], secretAesKey), StandardCharsets.UTF_8);
-            plainPassword = new String(utility.AES.decrypt(accountInfo[2], secretAesKey), StandardCharsets.UTF_8);
+            email         = new String(utility.cryptography.AES.decrypt(accountInfo[0], secretAesKey), StandardCharsets.UTF_8);
+            userName      = new String(utility.cryptography.AES.decrypt(accountInfo[1], secretAesKey), StandardCharsets.UTF_8);
+            plainPassword = new String(utility.cryptography.AES.decrypt(accountInfo[2], secretAesKey), StandardCharsets.UTF_8);
             //CREAZIONE DI UN ACCOUNT PER IL CLIENT
             Account account=new Account(userName,plainPassword,stub,publicKey,0,email);
             if((accountId=accountList.putIfAbsentEmailUsername(account))>=0){
