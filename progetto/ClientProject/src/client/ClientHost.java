@@ -22,23 +22,24 @@ import java.util.concurrent.*;
 import Events.*;
 //import guiClient.ClientGUI;
 
+
 public class ClientHost {
     private static final int ERROR=1;
     private static final int EXIT=0;
 
-    private LinkedBlockingQueue<Event> clientEngineToGUI=new LinkedBlockingQueue<>();
-    private LinkedBlockingQueue<Event> guiToClientEngine= new LinkedBlockingQueue<>();
-    private  boolean guiActivated;
+    private LinkedBlockingQueue<Event> clientEngineToGUI=new LinkedBlockingQueue<>();//la coda consumata da GUI o terminalinterface e riempita da clientEngine
+    private LinkedBlockingQueue<Event> guiToClientEngine= new LinkedBlockingQueue<>();//la coda consumata da clientEngine e riempita da TerminalInterface oppure GUI
+    private  boolean guiActivated;//se è attiva l'interfaccia grafica (Se è attiva la GUI non è attiva terminalInterface e viceversa
 
 
 
     //Engine
-    private ExecutorService clientThread;
-    private ClientEngine clientEngine;
+    private ExecutorService clientThread;//il thread che esegue il clientEngine
+    private ClientEngine clientEngine;//la classe che si occupa della gestione degli eventi(pkg. Events) dell'appliczione lato client.
 
     //se viene utilizzato il terminale
-    private TerminalInterface terminalInterface;
-    private ExecutorService terminalInterfaceThread;
+    private TerminalInterface terminalInterface;// la classe che gestisce l'insermento da terminale
+    private ExecutorService terminalInterfaceThread;//il thread che esegue l'interfaccia da terminale
 
     //interfaccia grafica
     //private ClientGUI userInterface;
@@ -61,6 +62,30 @@ public class ClientHost {
 
     }
 
+    /** Il main si articola in uno step iniziale e un loop composto da 2 steps:
+     *
+     *  init step:
+     *      viene deciso in base ad args se creare GUI o TerminalInterface
+     *
+     *  loop:
+     *
+     *      1)Tramite il future exitCodeTerminalInterface viene controllato se il thread dell'interfaccia grafica è:
+     *          -uscito senza errori(0)-> chiudo l'applicazione
+     *          -uscito con error(1) -> la GUI o TerminalInterface viengono  riavviati
+     *          -non è ancora uscito-> continuo con il mio loop
+     *
+     *      2)Tramite il future exitCodeClient viene controllato se il thread clientEngine è:
+     *          -uscito senza errori(0)-> chiudo l'applicazione
+     *          -uscito con error(1) -> clientEngine viene  riavviato
+     *          -non è ancora uscito-> continuo con il mio loop
+     *
+     * NOTA:
+     *  Quando vengono creati clientEngine e l'interfaccia (TerminalInterface oppure GUI) vengono passati ai costruttori
+     *  le due code clientEngineToGUI guiToClientEngine.
+     *  Spiegazioni ulteriori sul funzionamento di queste due code in ClientEngine e TerminalInterface
+     *  
+     * @param args true se si vuole utilizzare l'interfaccia grafica, false se si vuole usare quella da terminale.
+     */
 
     public static void main(String[] args){
 

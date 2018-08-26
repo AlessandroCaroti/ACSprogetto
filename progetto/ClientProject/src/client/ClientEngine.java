@@ -16,10 +16,10 @@ import static java.util.Objects.requireNonNull;
 
 public class ClientEngine implements Callable<Integer> {
 
-    private LinkedBlockingQueue<Event> clientEngineToGUI;
-    private LinkedBlockingQueue<Event> guiToClientEngine;
+    private LinkedBlockingQueue<Event> clientEngineToGUI;//la coda riempita da clientEngine e consumata dalla GUI o da TerminalInterface
+    private LinkedBlockingQueue<Event> guiToClientEngine;//la coda riempita da GUI o TerminalInterface e consumata da ClientEngine
     private AnonymousClient client;
-    private ServerInfoRecover infoServer;
+    private ServerInfoRecover infoServer;//La classe per recuperare la porta del server e stabilire la connessione
 
     public ClientEngine(LinkedBlockingQueue<Event>clientEngineToGUI, LinkedBlockingQueue<Event> guiToClientEngine) throws IOException {
         this.clientEngineToGUI=requireNonNull(clientEngineToGUI);
@@ -27,6 +27,18 @@ public class ClientEngine implements Callable<Integer> {
         infoServer = new ServerInfoRecover();
     }
 
+    /** Questo Thread è il "motore" dell'applicazione lato client.
+     * Si occupa della gestione degli eventi passati dall'utente tramite la coda guiToClientEngine.
+     * Questo metodo è un loop di 3 steps:
+     * 1)(Bloccante) ClientEngine aspetta che venga inserito nella coda un evento da gestire.
+     *
+     * 2)Acquisisce l'evento e ne riconosce la tipologia eseguendo le opeazioni necessarie per soddisfare la richiesta dell'utente.
+     *
+     * 3)Viene creato l'evento risposta da inserire nella coda clientEngine(spesso il solito oggetto acquisito in precedenza).
+     *  Se avviene un'errore viene settato  con il field errore=true
+     *
+     * @return 0 se l'uscita dal ciclo è senza errori, 1 altrimenti.
+     */
 
     @Override
     public Integer call() {
