@@ -22,7 +22,7 @@ public class TerminalInterface implements Callable<Integer> {
 
     /**Il thread in questa funzione esegue un loop su 3 steps:
      * 1)riconosce il comando tramite parseCommand().
-     * Questa funzione è bloccante fino a quando non riconosce un comando valido.
+     * Questo metodo è bloccante fino a quando non riconosce un comando valido.
      * Restituisce uno degli oggetti evento (corrispondente al comando digitato) della pkg Events.
      *
      * 2)Inserisce l'evento ricevuto da parse command nella coda consumata da clientEngine.
