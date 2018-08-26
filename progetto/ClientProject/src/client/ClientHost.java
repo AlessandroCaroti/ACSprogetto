@@ -83,7 +83,7 @@ public class ClientHost {
      *  Quando vengono creati clientEngine e l'interfaccia (TerminalInterface oppure GUI) vengono passati ai costruttori
      *  le due code clientEngineToGUI guiToClientEngine.
      *  Spiegazioni ulteriori sul funzionamento di queste due code in ClientEngine e TerminalInterface
-     *  
+     *
      * @param args true se si vuole utilizzare l'interfaccia grafica, false se si vuole usare quella da terminale.
      */
 
