@@ -20,7 +20,7 @@ public class TerminalInterface implements Callable<Integer> {
         this.guiToClientEngine=guiToClientEngine;
     }
 
-    /**Il thread in questa funzione esegue un loop su  steps:
+    /**Il thread in questa funzione esegue un loop su 3 steps:
      * 1)riconosce il comando tramite parseCommand().
      * Questa funzione è bloccante fino a quando non riconosce un comando valido.
      * Restituisce uno degli oggetti evento (corrispondente al comando digitato) della pkg Events.
