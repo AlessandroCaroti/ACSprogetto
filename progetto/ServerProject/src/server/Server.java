@@ -378,7 +378,11 @@ public class Server implements ServerInterface,Callable<Integer> {
         return ResponseCodeList.InternalError;
     }
 
-
+    /** Pemette il recupero dell'account(cioè il settare la corrispondenza stub->account) tramite username
+     * @param cookie dell'account
+     * @return R200 se la disconnessione è andata a buon fine
+     * @return R620 altrimenti
+     */
 
     @Override
     public ResponseCode disconnect(String cookie) {
@@ -394,6 +398,14 @@ public class Server implements ServerInterface,Callable<Integer> {
         }
     }
 
+    /** Pemette il recupero dell'account(cioè il settare la corrispondenza stub->account) tramite username
+     * @param username dell'account
+     * @param plainPassword dell'account
+     * @param clientStub
+     * @return R220 se il login è andato a buon fine
+     * @return LoginFailed se il cookie non è valido
+     * @return InternalError se avviene un errore non identificato
+     */
     @Override
     public ResponseCode retrieveAccount(String username,String plainPassword,ClientInterface clientStub){
         try{
@@ -415,6 +427,14 @@ public class Server implements ServerInterface,Callable<Integer> {
         return ResponseCodeList.InternalError;
     }
 
+    /** Pemette il recupero dell'account(cioè il settare la corrispondenza stub->account) tramite cookie
+     * @param cookie dell'account
+     * @param plainPassword dell'account
+     * @param clientStub
+     * @return R220 se il login è andato a buon fine
+     * @return LoginFailed se il cookie non è valido
+     * @return InternalError se avviene un errore non identificato
+     */
     @Override
     public ResponseCode retrieveAccountByCookie(String cookie,String plainPassword,ClientInterface clientStub){
         try{
@@ -438,6 +458,13 @@ public class Server implements ServerInterface,Callable<Integer> {
         return ResponseCodeList.InternalError;
     }
 
+    /**Permette al client iscriversi al topic passato
+     * @param cookie dell'account
+     * @param topicName
+     * @return R640 se il topic non esiste
+     * @return R200 se op. andata a buon fine
+     * @return InternalError se avviene un errore non identificato
+     */
     @Override
     public ResponseCode subscribe(String cookie, String topicName)  {
         try {
@@ -461,11 +488,17 @@ public class Server implements ServerInterface,Callable<Integer> {
         return ResponseCodeList.InternalError;
     }
 
+    /**Permette al client disiscriversi al topic passato
+     * @param cookie dell'account
+     * @param topicName
+     * @return R200 se op. andata a buon fine
+     * @return InternalError se avviene un errore non identificato
+     */
     @Override
     public ResponseCode unsubscribe(String cookie,String topicName)  {
         try {
             Integer accountId = getAccountId(cookie);
-            topicClientList.get(topicName).remove(accountId);
+            topicClientList.get(topicName).remove(accountId);//todo se il topic non esiste?
             print.pedanticInfo("User:"+accountId + " unsubscribe from "+topicName+".");
             return new ResponseCode(ResponseCode.Codici.R200,ResponseCode.TipoClasse.SERVER,"disiscrizione avvenuta con successo");
         }catch (BadPaddingException| IllegalBlockSizeException e){
@@ -484,7 +517,7 @@ public class Server implements ServerInterface,Callable<Integer> {
             Integer accountId = getAccountId(cookie);
             String topicName  = msg.getTopic();
             ConcurrentLinkedQueue<Integer> subscribers = topicClientList.putIfAbsent(topicName, new ConcurrentLinkedQueue<>());
-            if(subscribers == null){  //creazione di un nuovo topic
+            if(subscribers == null){  //creazione di un nuovo topic //TODO bisogna chiamare su tutti gli account la newtopicNotification
                 print.pedanticInfo("User "+accountId + " has created a new topic named \'"+topicName+"\'.");
                 topicList.add(topicName);
                 (subscribers = topicClientList.get(topicName)).add(accountId);
@@ -506,11 +539,20 @@ public class Server implements ServerInterface,Callable<Integer> {
     public void ping()  {
     }
 
+    /**Permette al client di ricevere come array di stringhe tutti i topic presenti in quel momento sul sever.
+     * @return la lista dei topic del server
+     */
     @Override
     public String[] getTopicList()  {
-        return topicList.toArray(new String[0]);    //per spiegazioni a cosa server 'new String[0]' guarda esempio in https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ConcurrentLinkedQueue.html#toArray(T[])
+        return topicList.toArray(new String[0]);
     }
 
+    /**Permette al client di recuperare il cookie associato al suo account.
+     * @param username dell'account da recuperare
+     * @param plainPassword la pssaword dell'account
+     * @return R100 (set cookie) se la password e l'username sono corretti, LoginFailed altrimenti
+     * @return InteralError se avviene un errore imprevisto
+     */
     @Override
     public ResponseCode retrieveCookie(String username,String plainPassword){
             try {
@@ -539,6 +581,10 @@ public class Server implements ServerInterface,Callable<Integer> {
      ****    METODI PROTECTED       ******************************************************************************
      *************************************************************************************************************/
 
+    /**Inoltra il messaggio passato alla lista degli utenti iscitti al topic del msg.(tramite notifyAll())
+     * Se il topic non esiste viene aggiunto
+     * @param msg il messaggio da inoltrare
+     */
     protected void forwardMessage(Message msg){
 
             String topicName  = msg.getTopic();
@@ -549,7 +595,11 @@ public class Server implements ServerInterface,Callable<Integer> {
             notifyAll(subscribers.iterator(), msg);      //todo magari si potrebbe eseguire su un altro thread in modo da non bloccare questa funzione
     }
 
-
+    /**Aggiunge l'account corrispondente al cookie alla lista degli utenti notificati
+     * quando avviene l'inserimento di un nuovo topic
+     * @param cookie per recuperare l'accountId corrispondente
+     * @return ResponseCode OK se operazione a buon fine, InternalERROR altirmenti
+     */
      @Override
      public ResponseCode subscribeNewTopicNotification(String cookie){
 
@@ -567,6 +617,17 @@ public class Server implements ServerInterface,Callable<Integer> {
         return ResponseCodeList.InternalError;
      }
 
+    /**Permette di sostituire la password corrente con newpassord tramite l'inserimeto dekl codice inviato sulla mail passata.
+     * Se viene passata una mail inesistente il server chiama antAccountEnum() per evitare possibili account enumeration.
+     *
+     * @param email associata all'account da recuperare
+     * @param newPassword la nuova password
+     * @param repeatPassword per controllare la corretta digitazione di newPassword
+     * @param stubCurrentHost lo stub del client che stà tentando la recoverPassword().
+     * @return  R510 se uno dei campi passati non è valido
+     * @return WRONGCODEVALIDATION se il codice inserito è errato
+     * @return INTERNALERROR se avviene un errore sconosciuto
+     */
      @Override
      public ResponseCode recoverPassword(String email,String newPassword,String repeatPassword,ClientInterface stubCurrentHost){//il current host potrebbe essere diverso da quello salvtao nella classe account
         Account copy;
@@ -626,8 +687,6 @@ public class Server implements ServerInterface,Callable<Integer> {
     *************************************************************************************************************/
 
 
-    //METODI UTILIZZATI PER LA CREAZIONE DEL SERVER
-
     private void loadSetting(String settingFileName){
         FileInputStream in = null;
         try {
@@ -665,6 +724,7 @@ public class Server implements ServerInterface,Callable<Integer> {
         }
     }
 
+
     private void setupAes() throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchPaddingException, UnsupportedEncodingException {
 
         try {
@@ -675,6 +735,9 @@ public class Server implements ServerInterface,Callable<Integer> {
         }
     }
 
+    /**Crea la collezione AccountCollectionInterface con i parametri del file serverSettings
+     * @return la collezione creata
+     */
     private AccountCollectionInterface createAccountManager(){
         AccountCollectionInterface accManager;
         try {
@@ -703,17 +766,32 @@ public class Server implements ServerInterface,Callable<Integer> {
      ****METODI USATI PER LA GESTIONE DEGLI ACCOUNT***************************************************************
      *************************************************************************************************************/
 
+    /**Trasforma accountId nel cookie corrispondente.
+     * @param accountId
+     * @return il cookie corrispondente
+     * @throws BadPaddingException
+     * @throws IllegalBlockSizeException
+     */
 
     private String getCookie(int accountId) throws BadPaddingException, IllegalBlockSizeException {
         return aesCipher.encrypt(String.valueOf(accountId));
     }
 
+    /**Trasforma il cookie nel accountId corrispondente
+     *
+     * @param cookie
+     * @return l'accountId corrispondente
+     * @throws BadPaddingException
+     * @throws IllegalBlockSizeException
+     */
     private int getAccountId(String cookie) throws BadPaddingException, IllegalBlockSizeException {
         return Integer.parseInt(aesCipher.decrypt(cookie));
     }
 
-
-
+    /**Chiama il metodo notify() sulla lista di account passata tramite Iterator
+     * @param accounts gli account da notificare
+     * @param msg il messaggio da inviare
+     */
     private void notifyAll(Iterator<Integer> accounts, Message msg){
 
             accounts.forEachRemaining(accountId -> {
@@ -729,18 +807,16 @@ public class Server implements ServerInterface,Callable<Integer> {
             });
     }
 
-    private  String getMyIp() throws IOException {  //todo codice duplicato
-        try {
-            URL whatismyip = new URL("http://checkip.amazonaws.com");
-            BufferedReader in = new BufferedReader(new InputStreamReader(
-                    whatismyip.openStream()));
-            return in.readLine();
-        }catch (IOException exc){
-            this.print.error(exc,"Unable to get server external ip.");
-            throw exc;
-        }
-    }
 
+    /**Invia un codice numerico all'email passata per la verifica di quest'ultima.
+     * Viene poi chiamato su client getCode() per l'inserimento e la verifica del codice.
+     * L'utente ha MAXATTEMPTS=3 per l'inserimento del codice esatto.
+     * @param email del client
+     * @param stub del client
+     * @return true se il client ha inserito il codice esatto, false altrimenti
+     * @throws MessagingException se la mail passata non è valida
+     * @throws RemoteException se la connessione con il client che sta effettuando la registrazione è caduta
+     */
 
     private boolean emailValidation(String email,ClientInterface stub) throws MessagingException, RemoteException {
 
@@ -769,7 +845,13 @@ public class Server implements ServerInterface,Callable<Integer> {
         return false;
     }
 
-    /*fa finta di fare una emailValidation per non permettere di listare le email registrate al server*/
+
+
+    /** E' l'equivalente di emailValidation() solo che non controlla se il codice inserito è quello inviato via email.
+     * Questo permette di evitare possibili tentativi di account enumeration
+     * @param stub del client
+     * @throws RemoteException se la connessione non è più disponibile.
+     */
     private void antiAccountEnum(ClientInterface stub) throws RemoteException {
         final int MAXATTEMPTS = 3;
         ResponseCode resp;
@@ -779,6 +861,11 @@ public class Server implements ServerInterface,Callable<Integer> {
         }
     }
 
+    /** Invia una mail che notifica il tentativo di registrazione di un account con la mail passata
+     * @param email del client
+     * @param username del client
+     * @throws MessagingException
+     */
     private void sendEmailAccountInfo(String email,String username) throws MessagingException {
 
         String temp;

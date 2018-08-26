@@ -6,6 +6,7 @@ import utility.ResponseCode;
 import java.rmi.RemoteException;
 import static java.util.Objects.requireNonNull;
 
+/** Questa classe differisce da AnonymousClient per i due metodi  notify() e newTopicNotification()*/
 public class AnonymousClientExtended extends AnonymousClient {
 
     private Server server;
@@ -31,21 +32,13 @@ public class AnonymousClientExtended extends AnonymousClient {
         }
         return rc;
     }
-/*
-    @Override
-    public ResponseCode newTopicNotification(String topicName){
 
-        super.newTopicNotification(topicName);
-        if(resp.IsOK()){
-            server.addTopic(topicName);
-        }
-        return resp;
-    }
-*/
+
     @Override
     public void newTopicNotification(String topicName){
         super.newTopicNotification(topicName);
         server.addTopic(topicName);
+        //todo Non deve fare la subscribe al nuovo topic? subscribeNewTopicNotification su server
     }
 
     void infoStamp(String msg){

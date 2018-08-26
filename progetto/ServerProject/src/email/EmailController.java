@@ -33,7 +33,7 @@ public interface EmailController {
     Message createEmailMessage(String to, String subject, String bodyText) throws MessagingException ;  //Todo controllare con wireshark se usa ssl
 
     /**
-     * Inserisce il messaggio nella coda di quelli da inviare
+     * Inserisce il messaggio nella coda delle email da inviare
      * @param message il messaggio da inviare (non null)
      * @throws IllegalStateException se è stata raggiunta la capacità massima della coda
      * @throws NullPointerException se viene passato un ref. messaggio null

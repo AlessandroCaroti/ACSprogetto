@@ -138,7 +138,7 @@ public class EmailHandlerTLS implements EmailController {
                     }
                     print.pedanticInfo("Trying to send message ...");
                     Transport.send(toBeSent);
-                    print.pedanticInfo("... message sent!");  //todo da cntrollare, non viene mai stampata la scritta
+                    print.pedanticInfo("... message sent!");
                 }
                 catch (InterruptedException |MessagingException e) {
                     if(e instanceof InterruptedException) {
