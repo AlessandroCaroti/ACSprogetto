@@ -44,7 +44,7 @@ public class Client extends AnonymousClient {
     /* client fields */
     private String plainPassword;
     private String email;
-    private String username;
+    protected String username;
     /* security fields */
     final private String curveName = "prime192v1";
     private KeyPair ECDH_kayPair;       //todo cercare di renderla final
@@ -336,6 +336,8 @@ public class Client extends AnonymousClient {
         }
     }
 
+    //todo metodo non usato -> da rimuovere
+    @Deprecated
     private Message createMessage(String topic, String title, String text){
         Message msg = null;
         try {
