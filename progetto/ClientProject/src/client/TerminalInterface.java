@@ -2,7 +2,6 @@ package client;
 
 import Events.*;
 import utility.ServerInfoRecover;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -12,8 +11,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class TerminalInterface implements Callable<Integer> {
-    private LinkedBlockingQueue<Event> clientEngineToGui;
-    private LinkedBlockingQueue<Event> guiToClientEngine;
+    private LinkedBlockingQueue<Event> clientEngineToGui;//La coda per recuperare gli oggetti evento dal thread clientEngine
+    private LinkedBlockingQueue<Event> guiToClientEngine;//La coda per inviare gli oggetti evento al clientEngine
     private BufferedReader bufferedReader=new BufferedReader(new InputStreamReader(System.in));
 
     public TerminalInterface(LinkedBlockingQueue<Event> clientEngineToGUI,LinkedBlockingQueue<Event> guiToClientEngine) {
@@ -21,6 +20,18 @@ public class TerminalInterface implements Callable<Integer> {
         this.guiToClientEngine=guiToClientEngine;
     }
 
+    /**Il thread in questa funzione esegue un loop su  steps:
+     * 1)riconosce il comando tramite parseCommand().
+     * Questa funzione è bloccante fino a quando non riconosce un comando valido.
+     * Restituisce uno degli oggetti evento (corrispondente al comando digitato) della pkg Events.
+     *
+     * 2)Inserisce l'evento ricevuto da parse command nella coda consumata da clientEngine.
+     *
+     * 3)Recupera la risposta dell'engine consumando la coda clientEngineToGui.
+     * Per ogni evento restituito dall'engine viene fatto un check se è avvenuto un'errore.
+     *
+     * @return 0 se l'utente ha interrotto il loop ,1 altrimenti
+     */
 
     public Integer call(){
         Event current;
@@ -124,7 +135,9 @@ public class TerminalInterface implements Callable<Integer> {
         return 0;
     }
 
-
+    /** Riconosce il comando inserito e crea l'evento corrispondente settando i suoi fields
+     * @return l'evento corrispondente al comando digitato.
+     */
 
 
     private Event parseCommand(){
@@ -255,7 +268,6 @@ public class TerminalInterface implements Callable<Integer> {
             System.out.println(i+") "+servers.get(numServer)[2]);
         }
     }
-
 
 
 
