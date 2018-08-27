@@ -15,7 +15,7 @@
     along with ACSprogetto.  If not, see <http://www.gnu.org/licenses/>.
 
 **/
-package utility;
+package utility.cryptography;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

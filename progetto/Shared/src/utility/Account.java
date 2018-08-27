@@ -23,8 +23,8 @@ import interfaces.ClientInterface;
 import java.security.NoSuchAlgorithmException;
 
 import static java.util.Objects.requireNonNull;
-import static utility.hashFunctions.compareHashAndString;
-import static utility.hashFunctions.stringHash;
+import static utility.cryptography.hashFunctions.compareHashAndString;
+import static utility.cryptography.hashFunctions.stringHash;
 
 public class Account {
 

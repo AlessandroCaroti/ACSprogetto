@@ -2,7 +2,7 @@ package server;
 
 import server_gui.ServerGuiResizable;
 import server_gui.ServerStatistic;
-import utility.ServerInfoProvider;
+import utility.infoProvider.ServerInfoProvider;
 
 import javax.swing.*;
 import java.awt.*;
@@ -39,13 +39,11 @@ public class Host {
 
 
     public static void main(String[] args) {
-        if (args.length < 1) {
-            System.err.println("args: userinterface[true/false] ");
-            return;
-        }
-
+        boolean useGui = false;
+        if (args.length > 0)
+            useGui = Boolean.parseBoolean(args[0]);
         try {
-            Host h = new Host(Boolean.parseBoolean(args[0]));
+            Host h = new Host(useGui);
             h.commandExecutorLoop();
         } catch (Exception e) {
 

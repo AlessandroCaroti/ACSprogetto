@@ -1,7 +1,5 @@
 import client.Client;
-import utility.ServerInfoRecover;
-
-import java.util.Random;
+import utility.infoProvider.ServerInfoRecover;
 
 public class clientTest_3 {
     public static void main(String[] args) {

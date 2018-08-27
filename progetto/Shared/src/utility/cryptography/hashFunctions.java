@@ -15,7 +15,7 @@
     along with ACSprogetto.  If not, see <http://www.gnu.org/licenses/>.
 
 **/
-package utility;
+package utility.cryptography;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -40,14 +40,14 @@ public class hashFunctions {
      * @return l'hash della stringa passata
      * @throws NullPointerException se plainText è null
      */
-     static byte[] stringHash(String plainText) throws NullPointerException {
+     public static byte[] stringHash(String plainText) throws NullPointerException {
         if(plainText==null)
             throw new NullPointerException("plainText == null");
         md_s256.update(plainText.getBytes());
         return md_s256.digest();
     }
 
-    static byte[] stringHash(String plainText, String hashAlgorithm) throws NullPointerException,NoSuchAlgorithmException
+    public static byte[] stringHash(String plainText, String hashAlgorithm) throws NullPointerException,NoSuchAlgorithmException
     {
         MessageDigest md;
         if(plainText==null)
@@ -69,7 +69,7 @@ public class hashFunctions {
         return md.digest();
     }
 
-     static boolean compareHashAndString(byte[] hash, String string) throws NullPointerException {
+    public static boolean compareHashAndString(byte[] hash, String string) throws NullPointerException {
         byte[] hash2=stringHash(string);
         for(int i=0;i<hash.length;i++)
         {

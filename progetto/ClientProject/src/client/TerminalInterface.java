@@ -1,7 +1,8 @@
 package client;
 
 import Events.*;
-import utility.ServerInfoRecover;
+import utility.infoProvider.ServerInfoRecover;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;

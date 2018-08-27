@@ -1,6 +1,6 @@
-import utility.AES;
-import utility.ECDH;
-import utility.RSA;
+import utility.cryptography.AES;
+import utility.cryptography.ECDH;
+import utility.cryptography.RSA;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;

@@ -20,6 +20,9 @@ package client;
 import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 import interfaces.ServerInterface;
 import utility.*;
+import utility.cryptography.AES;
+import utility.cryptography.ECDH;
+import utility.cryptography.RSA;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -44,7 +47,7 @@ public class Client extends AnonymousClient {
     /* client fields */
     private String plainPassword;
     private String email;
-    private String username;
+    protected String username;
     /* security fields */
     final private String curveName = "prime192v1";
     private KeyPair ECDH_kayPair;       //todo cercare di renderla final
@@ -336,6 +339,8 @@ public class Client extends AnonymousClient {
         }
     }
 
+    //todo metodo non usato -> da rimuovere
+    @Deprecated
     private Message createMessage(String topic, String title, String text){
         Message msg = null;
         try {

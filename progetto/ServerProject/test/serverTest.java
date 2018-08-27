@@ -1,5 +1,5 @@
 import server.Server;
-import utility.ServerInfoProvider;
+import utility.infoProvider.ServerInfoProvider;
 
 
 
