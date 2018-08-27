@@ -176,6 +176,9 @@ public class Host {
                     serverStat.setGui(frame);
                 } catch (Exception e) {
                     serverStat.setGui(null);
+                    try {
+                        StreamRedirector.resetAllStdStreams();
+                    } catch (IOException e1) { e1.printStackTrace(); }
                     errorStamp(e, "Impossible to create the graphic user interface!");
                 }
             });

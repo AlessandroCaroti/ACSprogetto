@@ -35,8 +35,8 @@ public class Message implements Serializable
             throw new IllegalArgumentException("The author parameter can not be empty");
         if(topicName.isEmpty())
             throw new IllegalArgumentException("The topic parameter can not be empty");
-        if(text.isEmpty())
-            throw new IllegalArgumentException("The text parameter can not be empty");
+        /*if(text.isEmpty())
+            throw new IllegalArgumentException("The text parameter can not be empty");*/
         if(title.isEmpty())
             throw new IllegalArgumentException("The title parameter can not be empty");
         this.date = new Date();
