@@ -137,7 +137,7 @@ public class SClient  {
         try {
             ServerInfoRecover infoServer = new ServerInfoRecover();
             AnonymousClientExtended anonymousClient = new AnonymousClientExtended(this.myServer);
-            String[] a = infoServer.getServerInfo(InetAddress.getByName(serverInfo.regHost));
+            String[] a = infoServer.getServerInfo(InetAddress.getByName(serverInfo.regHost), 6000); //todo vedi todo clientEngine
             anonymousClient.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
             return clients.add(anonymousClient)?anonymousClient:null;
         }catch (Exception exc){

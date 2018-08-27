@@ -20,7 +20,7 @@ public class ClientBot extends Client {
     static private Timer actionMaker;
 
     public static void main(String[] args) throws RemoteException {
-        System.out.println("args [numBot] [regHost] [serverName] [regPort]");
+        //System.out.println("args [numBot] [regHost] [serverName] [regPort]");
 
         //SET NUMBER OF BOT
         int numBot = 10;
@@ -58,6 +58,7 @@ public class ClientBot extends Client {
         try {
             while (true) {  //Quando non ci sono più server diponibili viene lanciata un eccezione che rompe il ciclo while
                 servers.add(infoServer.getServerInfo());
+                infoServer.setTimeOut(1);
             }
         } catch (IOException e) {
             numServer = servers.size();
@@ -68,15 +69,15 @@ public class ClientBot extends Client {
         }
 
         //STAMPA DEI SERVER TROVATI
-        System.out.println("Find " + numServer + " server.");
+        System.out.println("\n\n\n\nFind " + numServer + " server:");
         for (int i = 0; i < numServer; i++) {
-            System.out.println(i + ") " + servers.get(numServer)[2]);
+            System.out.println("  "+i + ") " + (servers.get(i))[2]);
         }
 
         //SCELTA DEL SERVER A CUI CONNETERSI
         int serverToConnect = 0;
         if (numServer != 1) {
-            System.out.println("Connect to server number: ");
+            System.out.println("\nConnect to server number: ");
             Scanner sc = new Scanner(System.in);
             serverToConnect = sc.nextInt();
         }
