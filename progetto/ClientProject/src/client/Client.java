@@ -55,7 +55,6 @@ public class Client extends AnonymousClient {
     private SecretKeySpec secretAesKey;
 
     private ConcurrentLinkedQueue<Message> messagesSendAndNotReceived = new ConcurrentLinkedQueue<>();
-    final private LogFormatManager print = new LogFormatManager("ANONYMOUS_CLIENT", true);
 
 
 
@@ -71,18 +70,20 @@ public class Client extends AnonymousClient {
     public Client(String username, String plainPassword, String email ) throws RemoteException
     {
         super();
+        print = new LogFormatManager("CLIENT", true);
         if(plainPassword==null)
             throw new NullPointerException();
         this.plainPassword=plainPassword;
         this.username     = username;
         this.email=email;
-        this.className="CLIENT";
+        this.className = "CLIENT";        //TODO serve ancora questo campo?
         try {
             ECDH_kayPair = ECDH.generateKeyPair(curveName);
         } catch (NoSuchProviderException | NoSuchAlgorithmException | InvalidAlgorithmParameterException e) {
             print.error(e, "Error during generation of the keys for the ECDH algorithm.");
             System.exit(1);
         }
+
     }
 
 

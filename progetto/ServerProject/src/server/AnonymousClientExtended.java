@@ -1,6 +1,7 @@
 package server;
 
 import client.AnonymousClient;
+import utility.LogFormatManager;
 import utility.Message;
 import utility.ResponseCode;
 import java.rmi.RemoteException;
@@ -16,6 +17,7 @@ public class AnonymousClientExtended extends AnonymousClient {
         super();
         this.server=requireNonNull(server);
         this.className="ANONYMOUS_CLIENT_EXTENDED";
+        print = new LogFormatManager("ANONYMOUS_CLIENT_EXTENDED", false);
     }
 
     @Override

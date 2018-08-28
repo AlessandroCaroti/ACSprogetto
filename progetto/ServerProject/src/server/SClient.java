@@ -103,7 +103,7 @@ public class SClient  {
             }
 
         } catch (Exception e) {
-            print.error(e,"unable to create anonymous clients.");
+            print.error(e, "Unable to create anonymous clients.");
             return false;
         }
         return true;
@@ -150,9 +150,9 @@ public class SClient  {
         if(client==null)throw new NullPointerException("anonymousclientextended==null");
         boolean result=client.register();
             if(result) {
-                print.pedanticInfo("registration successfully completed.");
+                print.pedanticInfo("Registration successfully completed.");
             }else{
-                print.pedanticInfo("unable to register on the server.");
+                print.pedanticInfo("Unable to register on the server.");
             }
             return result;
         }
@@ -163,10 +163,10 @@ public class SClient  {
         try {
             ResponseCode resp=client.getServer_stub().subscribeNewTopicNotification(client.getCookie());
             if(resp.IsOK()){
-                print.pedanticInfo("successfully subscribed to notification list.");
+                print.pedanticInfo("Successfully subscribed to notification list.");
                 return true;
             }else{
-                print.pedanticInfo("unable to register for notification list.");
+                print.pedanticInfo("Unable to register for notification list.");
                 return false;
             }
         }catch(Exception exc){
@@ -183,7 +183,7 @@ public class SClient  {
         for (String topic : topics) {
             result = client.subscribe(topic);
             if(!result){
-                print.pedanticInfo("unable to subscribe to "+topic+"on the server.");
+                print.pedanticInfo("Unable to subscribe to " + topic + "on the server.");
                 exitStat=false;
             }else {
                 myServer.addTopic(topic);

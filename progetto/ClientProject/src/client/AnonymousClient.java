@@ -50,7 +50,7 @@ public class AnonymousClient implements ClientInterface {
     protected int registryPort;                       //port on which the registry accepts requests
 
     final protected Executor messageManager = Executors.newSingleThreadExecutor();
-    final private LogFormatManager print = new LogFormatManager("ANONYMOUS_CLIENT", true);
+    protected LogFormatManager print;
 
 
 
@@ -66,6 +66,7 @@ public class AnonymousClient implements ClientInterface {
      */
     public AnonymousClient()throws RemoteException
     {
+        print = new LogFormatManager("ANONYMOUS_CLIENT", true);
         this.skeleton     = (ClientInterface) UnicastRemoteObject.exportObject(this,0);
         topicsSubscribed  = new TreeSet<>();
     }
