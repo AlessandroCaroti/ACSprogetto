@@ -50,7 +50,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class Server implements ServerInterface,Callable<Integer> {
+public class Server implements ServerInterface {
 
     /* topic and message management fields */
     private ConcurrentSkipListMap<String,ConcurrentLinkedQueue<Integer>> topicClientList;                 // topic -> lista idAccount
@@ -154,26 +154,6 @@ public class Server implements ServerInterface,Callable<Integer> {
         this.serverStat = Objects.requireNonNull(serverStat);
         this.serverStat.setServerInfo(this.serverName, topicList, AddressIp.getExternalAddres(), regPort);
         print.info("***** SERVER CREATED! *****");
-    }
-
-    /**
-     * Avvia il server
-     * @return 0 quando l'utente vuole spegnere l'host,1 in caso di errore dell'interfaccia grafica
-     */
-    public Integer call(){
-
-
-        try{
-            BufferedReader bufferRead = new BufferedReader(new InputStreamReader(System.in));
-            String s = bufferRead.readLine();
-        }
-        catch(IOException e)
-        {
-            e.printStackTrace();
-        }
-
-        System.out.println("Closing Server with exitcode:0");
-        return 0;
     }
 
     /*****************************************************************************************************************************/
