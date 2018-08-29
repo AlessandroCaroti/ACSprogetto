@@ -19,7 +19,7 @@ package Events;
  *   -ShutDown
  *   -Subscribe
  *   -UnSubscribe
- *
+ *   -NewTopicNotification
  *   Questi eventi non esistendo come finestre nell'interfaccia GUI non estendono Window ma ClientEvent
  */
 public interface Event {
