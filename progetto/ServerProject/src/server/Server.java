@@ -557,31 +557,13 @@ public class Server implements ServerInterface {
         return ResponseCodeList.InternalError;
     }
 
-    /*************************************************************************************************************
-     ****    METODI PROTECTED       ******************************************************************************
-     *************************************************************************************************************/
-
-    /**Inoltra il messaggio passato alla lista degli utenti iscitti al topic del msg.(tramite notifyAll())
-     * Se il topic non esiste viene aggiunto
-     * @param msg il messaggio da inoltrare
-     */
-    void forwardMessage(Message msg){
-
-            String topicName  = msg.getTopic();
-            ConcurrentLinkedQueue<Integer> subscribers = topicClientList.putIfAbsent(topicName, new ConcurrentLinkedQueue<Integer>());
-            if(subscribers == null){  //creazione di un nuovo topic
-                topicList.add(topicName);
-            }
-            notifyAll(subscribers.iterator(), msg);      //todo magari si potrebbe eseguire su un altro thread in modo da non bloccare questa funzione
-    }
-
     /**Aggiunge l'account corrispondente al cookie alla lista degli utenti notificati
      * quando avviene l'inserimento di un nuovo topic
      * @param cookie per recuperare l'accountId corrispondente
      * @return ResponseCode OK se operazione a buon fine, InternalERROR altirmenti
      */
-     @Override
-     public ResponseCode subscribeNewTopicNotification(String cookie){
+    @Override
+    public ResponseCode subscribeNewTopicNotification(String cookie){
 
         try {
             Integer accountId = getAccountId(cookie);
@@ -595,7 +577,7 @@ public class Server implements ServerInterface {
             print.error(e);
         }
         return ResponseCodeList.InternalError;
-     }
+    }
 
     /**Permette di sostituire la password corrente con newpassord tramite l'inserimeto dekl codice inviato sulla mail passata.
      * Se viene passata una mail inesistente il server chiama antAccountEnum() per evitare possibili account enumeration.
@@ -608,49 +590,69 @@ public class Server implements ServerInterface {
      * @return WRONGCODEVALIDATION se il codice inserito è errato
      * @return INTERNALERROR se avviene un errore sconosciuto
      */
-     @Override
-     public ResponseCode recoverPassword(String email,String newPassword,String repeatPassword,ClientInterface stubCurrentHost){//il current host potrebbe essere diverso da quello salvtao nella classe account
+    @Override
+    public ResponseCode recoverPassword(String email,String newPassword,String repeatPassword,ClientInterface stubCurrentHost){//il current host potrebbe essere diverso da quello salvtao nella classe account
         Account copy;
-         if (newPassword == null || repeatPassword == null) {
+        if (newPassword == null || repeatPassword == null) {
             return new ResponseCode(ResponseCode.Codici.R510,ResponseCode.TipoClasse.SERVER,"newpassword or password ==null");
-         }
-         if(newPassword.isEmpty()){
-             return new ResponseCode(ResponseCode.Codici.R510,ResponseCode.TipoClasse.SERVER,"newpassword is empty");
-         }
-         if (!newPassword.equals(repeatPassword)) {
-             return new ResponseCode(ResponseCode.Codici.R510,ResponseCode.TipoClasse.SERVER,"newpassword != password");
-         }
+        }
+        if(newPassword.isEmpty()){
+            return new ResponseCode(ResponseCode.Codici.R510,ResponseCode.TipoClasse.SERVER,"newpassword is empty");
+        }
+        if (!newPassword.equals(repeatPassword)) {
+            return new ResponseCode(ResponseCode.Codici.R510,ResponseCode.TipoClasse.SERVER,"newpassword != password");
+        }
 
-             try {
-                 if ((copy = accountList.isMember(email, null)) == null) {//l'account non esiste
-                     print.pedanticInfo("Password recover refused ,\'" + email + "\' doesn't exist.(possible attempt to enumerate accounts!)");
-                     this.antiAccountEnum(stubCurrentHost);
-                     return  ResponseCodeList.WrongCodeValidation;
-                 }
-                 else {//l'account esiste
-                     if (this.emailValidation(email, stubCurrentHost)) {
-                         print.pedanticInfo("Password recovered! UserName: \'" + copy.getUsername() + "\' - NewPassword: \'" + newPassword + "\'");
-                         accountList.setPassword(newPassword,copy.getAccountId());//todo probabile bug sulla concorrenza se qualcuno fa una deleteaccount( ma noi non la diamo disponibile quindi scialla)
-                         return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER,"password successfully changed.");
-                     } else {
-                         print.pedanticInfo("Client password recovering refused; wrong code.");
-                         return ResponseCodeList.WrongCodeValidation;
-                     }
+        try {
+            if ((copy = accountList.isMember(email, null)) == null) {//l'account non esiste
+                print.pedanticInfo("Password recover refused ,\'" + email + "\' doesn't exist.(possible attempt to enumerate accounts!)");
+                this.antiAccountEnum(stubCurrentHost);
+                return  ResponseCodeList.WrongCodeValidation;
+            }
+            else {//l'account esiste
+                if (this.emailValidation(email, stubCurrentHost)) {
+                    print.pedanticInfo("Password recovered! UserName: \'" + copy.getUsername() + "\' - NewPassword: \'" + newPassword + "\'");
+                    accountList.setPassword(newPassword,copy.getAccountId());//todo probabile bug sulla concorrenza se qualcuno fa una deleteaccount( ma noi non la diamo disponibile quindi scialla)
+                    return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER,"password successfully changed.");
+                } else {
+                    print.pedanticInfo("Client password recovering refused; wrong code.");
+                    return ResponseCodeList.WrongCodeValidation;
+                }
 
-                 }
+            }
 
-             } catch (Exception e) {
-                print.error(e);
-             }
+        } catch (Exception e) {
+            print.error(e);
+        }
 
-         return ResponseCodeList.InternalError;
-     }
+        return ResponseCodeList.InternalError;
+    }
+
+    /*************************************************************************************************************
+     ****    METODI PROTECTED       ******************************************************************************
+     *************************************************************************************************************/
+
+
 
 
 
     /*************************************************************************************************************
      ****    METODI PKG             ******************************************************************************
      *************************************************************************************************************/
+
+    /**Inoltra il messaggio passato alla lista degli utenti iscitti al topic del msg.(tramite notifyAll())
+     * Se il topic non esiste viene aggiunto
+     * @param msg il messaggio da inoltrare
+     */
+    void forwardMessage(Message msg){
+
+        String topicName  = msg.getTopic();
+        ConcurrentLinkedQueue<Integer> subscribers = topicClientList.putIfAbsent(topicName, new ConcurrentLinkedQueue<Integer>());
+        if(subscribers == null){  //creazione di un nuovo topic
+            topicList.add(topicName);
+        }
+        notifyAll(subscribers.iterator(), msg);      //todo magari si potrebbe eseguire su un altro thread in modo da non bloccare questa funzione
+    }
 
 
     void addTopic(String topic){
