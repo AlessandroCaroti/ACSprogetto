@@ -46,13 +46,13 @@ public class StreamRedirector {
 
     //Resetta lo standard input a quello originale
     static public void resetStdErr() throws IOException {
-        System.setOut(stdErr);
+        System.setErr(stdErr);
     }
 
     static public void resetAllStdStreams() throws IOException {
+        resetStdErr();
         resetStdIn();
         resetStdOut();
-        resetStdErr();
 
     }
 
