@@ -285,6 +285,14 @@ public class AnonymousClient implements ClientInterface {
      * REMOTE METHOD ************************************************************************************************
      ****************************************************************************************************************/
 
+    /**Metodo remoto chimabile dal server.
+     * Controlla se il messaggio è valido e invia tramite anonymousClientToGui l'evento al clientEngine
+     * che gestirà l'evento.
+     * @param m il messaggio inviato dal server
+     * @return R500(messaggio vuoto) se il mess è vuoto ;D
+     * @return R200 (OK) se il mess è valido
+     * @return R670 (InternalError) se avviene un errore non identificabile
+     */
     public ResponseCode notify(Message m) {
         try {
             ResponseCode rc;
@@ -368,6 +376,11 @@ public class AnonymousClient implements ClientInterface {
         throw new UnsupportedOperationException();
     }
 
+    /**Metodo remoto chimabile dal server.
+     * Controlla se il topic è valido e invia tramite anonymousClientToGui l'evento al clientEngine
+     * che gestirà l'evento.
+     * @param topicName il nome del topic passato dal server
+     */
     @Override
     public void newTopicNotification(String topicName){
         if(topicName==null||topicName.isEmpty())return;
