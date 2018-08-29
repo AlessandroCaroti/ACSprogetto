@@ -1,6 +1,7 @@
 package client;
 
 import Events.Event;
+import Events.NewMessage;
 import Events.NewTopicNotification;
 import interfaces.ClientInterface;
 import interfaces.ServerInterface;
@@ -51,13 +52,12 @@ public class AnonymousClient implements ClientInterface {
     protected String registryHost;                    //host for the remote registry
     protected int registryPort;                       //port on which the registry accepts requests
 
-    final protected Executor messageManager = Executors.newSingleThreadExecutor();
     protected LogFormatManager print;
 
 
     /***************************************************************************/
     /*comunicazione con clientEngine*//*guardare metodo NewTopicNotification per maggiori info*/
-    protected LinkedBlockingQueue<NewTopicNotification> newTopicNotificationsList;
+    protected LinkedBlockingQueue<Event> anonymousClientToClientEngine;
 
 
 
@@ -72,7 +72,7 @@ public class AnonymousClient implements ClientInterface {
         print = new LogFormatManager("ANONYMOUS_CLIENT", true);
         this.skeleton     = (ClientInterface) UnicastRemoteObject.exportObject(this,0);
         topicsSubscribed  = new TreeSet<>();
-        this.newTopicNotificationsList=new LinkedBlockingQueue<>();
+        this.anonymousClientToClientEngine=new LinkedBlockingQueue<>();
     }
 
 
@@ -287,24 +287,24 @@ public class AnonymousClient implements ClientInterface {
      * REMOTE METHOD ************************************************************************************************
      ****************************************************************************************************************/
 
-
-    @Override
-    //TODO al server non importa del messaggio di risposta quindi si potrebbe mettere che ritorni void
     public ResponseCode notify(Message m) {
-        ResponseCode rc;
-        if(m==null) {
-            rc=new ResponseCode(ResponseCode.Codici.R500, ResponseCode.TipoClasse.CLIENT, "(-) WARNING Il client ha ricevuto un messaggio vuoto");
-        }else {
-            rc = new ResponseCode(R200, ResponseCode.TipoClasse.CLIENT,
-                    "(+) OK il client ha ricevuto il messaggio");
-
-            messageManager.execute(() -> {
-
-                //TODO gestione della visualizazione del messaggio
-                print.pedanticInfo("Received new message\n" + m.toString());
-            });
+        try {
+            ResponseCode rc;
+            if(m==null) {
+                rc=new ResponseCode(ResponseCode.Codici.R500, ResponseCode.TipoClasse.CLIENT, "(-) WARNING Il client ha ricevuto un messaggio vuoto");
+            }else {
+                Event newMessage=new NewMessage();
+                ((NewMessage) newMessage).setMessage(m);
+                this.anonymousClientToClientEngine.offer(newMessage);
+                rc = new ResponseCode(R200, ResponseCode.TipoClasse.CLIENT,
+                        "(+) OK il client ha ricevuto il messaggio");
+            }
+            return rc;
+        }catch (Exception exc){
+            exc.printStackTrace();
         }
-        return rc;
+        return new ResponseCode(R670,ResponseCode.TipoClasse.CLIENT,
+                "(-) Internal client error");
     }
 
     @Override
@@ -374,9 +374,9 @@ public class AnonymousClient implements ClientInterface {
     public void newTopicNotification(String topicName){
         if(topicName==null||topicName.isEmpty())return;
         try{
-            NewTopicNotification ev=new NewTopicNotification();
-            ev.setTopicName(topicName);
-            this.newTopicNotificationsList.offer(ev);
+            Event ev=new NewTopicNotification();
+            ((NewTopicNotification)ev).setTopicName(topicName);
+            this.anonymousClientToClientEngine.offer(ev);
         }catch(Exception exc){
             exc.printStackTrace();
         }
