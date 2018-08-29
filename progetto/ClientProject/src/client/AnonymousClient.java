@@ -1,11 +1,12 @@
 package client;
 
+import Events.Event;
+import Events.NewTopicNotification;
 import interfaces.ClientInterface;
 import interfaces.ServerInterface;
 import utility.LogFormatManager;
 import utility.Message;
 import utility.ResponseCode;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -18,6 +19,7 @@ import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import static utility.ResponseCode.Codici.R200;
 import static utility.ResponseCode.Codici.R670;
@@ -53,8 +55,9 @@ public class AnonymousClient implements ClientInterface {
     protected LogFormatManager print;
 
 
-
-
+    /***************************************************************************/
+    /*comunicazione con clientEngine*//*guardare metodo NewTopicNotification per maggiori info*/
+    protected LinkedBlockingQueue<NewTopicNotification> newTopicNotificationsList;
 
 
 
@@ -69,6 +72,7 @@ public class AnonymousClient implements ClientInterface {
         print = new LogFormatManager("ANONYMOUS_CLIENT", true);
         this.skeleton     = (ClientInterface) UnicastRemoteObject.exportObject(this,0);
         topicsSubscribed  = new TreeSet<>();
+        this.newTopicNotificationsList=new LinkedBlockingQueue<>();
     }
 
 
@@ -368,6 +372,14 @@ public class AnonymousClient implements ClientInterface {
 
     @Override
     public void newTopicNotification(String topicName){
+        if(topicName==null||topicName.isEmpty())return;
+        try{
+            NewTopicNotification ev=new NewTopicNotification();
+            ev.setTopicName(topicName);
+            this.newTopicNotificationsList.offer(ev);
+        }catch(Exception exc){
+            exc.printStackTrace();
+        }
 
     }
 
