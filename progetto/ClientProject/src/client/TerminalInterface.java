@@ -50,7 +50,7 @@ public class TerminalInterface implements Callable<Integer> {
                     switch(((Window) current).getWindowType()){
                         case FORUM:
                             printForum();
-
+                            //todo
                             break;
                         case LOGIN:
                             if(((AnonymousLoginWindow)current).isErr()){
@@ -197,7 +197,7 @@ public class TerminalInterface implements Callable<Integer> {
                             }
                             break;
                         case "forum":
-                            //todo
+                            event=new ForumWindow();
                             break;
                         case "disconnect":
                             event = new Disconnect();
@@ -246,35 +246,6 @@ public class TerminalInterface implements Callable<Integer> {
 
     }
 
-
-
-
-    private void findServerOnLan() {
-        ArrayList<String[]> servers = new ArrayList<>();
-        ServerInfoRecover infoServer;
-        int numServer;
-        try {
-            infoServer = new ServerInfoRecover();
-        } catch (IOException e) {
-            System.out.println("No server visible in the local network");
-            return;
-        }
-        try {
-            while (true) {
-                servers.add(infoServer.getServerInfo());
-            }
-        } catch (IOException e) {
-            numServer = servers.size();
-            if(numServer == 0){
-                System.out.println("No server visible in the local network");
-                return;
-            }
-        }
-        System.out.println("Find "+numServer+" server.");
-        for (int i = 0; i<numServer;i++){
-            System.out.println(i+") "+servers.get(numServer)[2]);
-        }
-    }
 
 
 
@@ -327,3 +298,32 @@ public class TerminalInterface implements Callable<Integer> {
 
 
 
+/*
+
+    private void findServerOnLan() {
+        ArrayList<String[]> servers = new ArrayList<>();
+        ServerInfoRecover infoServer;
+        int numServer;
+        try {
+            infoServer = new ServerInfoRecover();
+        } catch (IOException e) {
+            System.out.println("No server visible in the local network");
+            return;
+        }
+        try {
+            while (true) {
+                servers.add(infoServer.getServerInfo());
+            }
+        } catch (IOException e) {
+            numServer = servers.size();
+            if(numServer == 0){
+                System.out.println("No server visible in the local network");
+                return;
+            }
+        }
+        System.out.println("Find "+numServer+" server.");
+        for (int i = 0; i<numServer;i++){
+            System.out.println(i+") "+servers.get(numServer)[2]);
+        }
+    }
+*/
