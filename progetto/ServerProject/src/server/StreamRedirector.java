@@ -35,21 +35,21 @@ public class StreamRedirector {
 
 
     //Resetta lo standard input a quello originale
-    static public void resetStdIn() throws IOException {
+    static public void resetStdIn() {
         System.setIn(stdIn);
     }
 
     //Resetta lo standard input a quello originale
-    static public void resetStdOut() throws IOException {
+    static public void resetStdOut() {
         System.setOut(stdOut);
     }
 
     //Resetta lo standard input a quello originale
-    static public void resetStdErr() throws IOException {
+    static public void resetStdErr() {
         System.setErr(stdErr);
     }
 
-    static public void resetAllStdStreams() throws IOException {
+    static public void resetAllStdStreams() {
         resetStdErr();
         resetStdIn();
         resetStdOut();

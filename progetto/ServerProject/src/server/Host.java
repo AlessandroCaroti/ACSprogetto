@@ -87,7 +87,7 @@ public class Host {
                 switch (line) {
                     case "?":
                     case "help":
-                        infoStamp(cmdList);
+                        printCmdList();
                         break;
                     case "start":
                     case "start server":
@@ -126,7 +126,7 @@ public class Host {
                         fatalError_occurred(sc);
                         break;
                     default:
-                        infoStamp(line + ": command not found");
+                        System.out.println(line + ": command not found");
                 }
 
             }
@@ -144,7 +144,7 @@ public class Host {
             server.start();
             started = true;
         } else
-            infoStamp(" Server already started!");
+            System.out.println(" Server already started!");
     }
 
     private void startInfoProvider() {
@@ -152,13 +152,13 @@ public class Host {
             try {
                 infoProvider = new ServerInfoProvider(server.getRegHost(), server.getRegPort(), server.getServerName());
             } catch (IOException e) {
-                errStamp("Impossible to create the info provider");
+                System.err.println("Impossible to create the info provider");
                 infoProvider = null;
                 return;
             }
             infoProvider.start();
         } else
-            infoStamp(" InfoProvider already active!");
+            System.out.println(" InfoProvider already active!");
 
     }
 
@@ -175,16 +175,11 @@ public class Host {
                     frame.setVisible(true);
                     serverStat.setGui(frame);
                 } catch (Exception e) {
-                    serverStat.setGui(null);
-                    try {
-                        StreamRedirector.resetAllStdStreams();
-                    } catch (IOException e1) { e1.printStackTrace(); }
-                    errorStamp(e, "Impossible to create the graphic user interface!");
+                    guiCreationError(e);
                 }
             });
         } catch (InterruptedException | InvocationTargetException e) {
-            serverStat.setGui(null);
-            errorStamp(e, "Impossible to create the graphic user interface!");
+            guiCreationError(e);
         }
         return serverStat.getGui();
     }
@@ -214,7 +209,7 @@ public class Host {
         }
     }
 
-    private void stopGui() throws IOException {
+    private void stopGui() {
         if (gui != null) {
             SwingUtilities.invokeLater(() -> {
                 gui.setVisible(false);
@@ -225,35 +220,37 @@ public class Host {
         }
     }
 
+    /**
+     * chiude il server e tutto ciò a cui è associato (GUI, infoProvider, sClient)
+     */
     private void shutdownServer() {
-        //chiude il server e tutto ciò a cui ne è associato (GUI, infoProvider)
-        infoStamp("shutdown: COMANDO NON ANCORA FINITO DI ESSERE IMPLEMNTATO");
-
-
         stopInfoProvider();
-//        stop all sClient
-        try {
-            stopGui();
-        } catch (IOException e) {
-            errorStamp(e, "Impossibile ripristinare gli standard IO");
-        }
+        //todo stopSClient();
+        stopGui();
         stopServer();
         server = null;
         stopAll = true;
 
     }
 
-
+    /**
+     * Stampa le informazioni relative a server, GUI, infoProvider e sClient
+     */
     private void showInfo() {
         String statusGui = "Graphic Interface: " + (gui != null ? "active" : "inactive");
         String statusInfoProvider = "InfoProvider: " + (infoProvider != null ? "active" : "inactive");
-        infoStamp("---------------------------------------\n" +
+        System.out.println("---------------------------------------\n" +
                 serverStat.getGeneralServerStat() + "\n" +
                 statusGui + "\n" +
                 statusInfoProvider + "\n" +
                 "---------------------------------------");
     }
 
+    /**
+     * Stampa della lista passata
+     *
+     * @param topicList la lista di tutti i topic presenti sul server
+     */
     private void showTopic(String[] topicList) {
         if (topicList == null || topicList.length == 0) {
             System.out.println("No topics on the server");
@@ -266,69 +263,42 @@ public class Host {
     }
 
     private void fatalError_occurred(Scanner sc) {
-        System.err.println("A fatal error was caught in " + sc.nextLine());
+        System.err.print("A fatal error was caught in ");
         while (sc.hasNextLine())
             System.err.println(sc.nextLine());
         System.exit(1);
     }
 
-
+    /**
+     * Redireziona lo stdIn, stdOut e stdErr per permettere il dialogo tra GUI e server
+     * @throws IOException
+     */
     private void redirectStdIO() throws IOException {
         toStdIn    = StreamRedirector.redirectStdIn();
         fromStdOut = StreamRedirector.redirectStdOut();
         fromStdErr = StreamRedirector.redirectStdErr();
     }
 
-    private boolean resetStdIO() {
-        try {
-            StreamRedirector.redirectStdOut();
-            StreamRedirector.redirectStdIn();
-            StreamRedirector.redirectStdErr();
-        } catch (IOException e) {
-            errorStamp(e, "Couldn't reset STDIO to this console.");
-            return false;
-        }
-        toStdIn = null;
-        fromStdErr = null;
-        fromStdOut = null;
-
-        return true;
+    /**
+     * Stampa dei comandi
+     */
+    private void printCmdList() {
+        System.out.println(cmdList);
     }
 
+    /**
+     * Gestische il fallimento della creazione della GUI
+     * e riporta gli stream a quelli di base(dovrebbero essere quelli associati alla console)
+     *
+     * @param e eccezione lanciata durante il fallimento della creazione della gui
+     */
+    private void guiCreationError(Exception e) {
+        serverStat.setGui(null);
+        StreamRedirector.resetAllStdStreams();
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    static private void errorStamp(Exception e, String msg) {
-        System.out.flush();
-        System.err.println("[SERVER-ERROR]: " + msg);
+        System.err.println("[SERVER-ERROR]: Impossible to create the graphic user interface!");
         System.err.println("\tException type: " + e.getClass().getSimpleName());
         System.err.println("\tException message: " + e.getMessage());
-        //e.printStackTrace();
     }
 
-    private void infoStamp(String msg) {
-        System.out.println(msg);
-    }
-
-    private void errStamp(String msg) {
-        System.err.println(msg);
-    }
 }
