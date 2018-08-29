@@ -41,9 +41,9 @@ public class ServerInfoProvider extends InfoProviderProtocol {
         int serverSocketPort = 6000;
         boolean serverSocketCreated = false;
         ServerSocket tmpSocket = null;
-        while (!serverSocketCreated) {
+        while (!serverSocketCreated) {  //Se esiste già un socket associato alla porta riprova con la porta succesive
             try {
-                tmpSocket = new ServerSocket(serverSocketPort, 5);
+                tmpSocket = new ServerSocket(serverSocketPort, 20);
                 serverSocketCreated = true;
             } catch (IOException ignored) {
                 serverSocketPort++;

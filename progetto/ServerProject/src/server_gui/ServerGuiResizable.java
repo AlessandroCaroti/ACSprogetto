@@ -1,41 +1,29 @@
 package server_gui;
 
-import java.awt.event.*;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Objects;
-import java.util.Scanner;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
 import keeptoo.KGradientPanel;
 import server.StreamRedirector;
 import utility.AddressIp;
 import utility.gui.MyScrollBar;
 import utility.gui.MyScrollPaneLayout;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Font;
-import java.awt.Frame;
-import java.awt.Point;
-import java.awt.CardLayout;
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
-
-import java.awt.Insets;
-import java.awt.ComponentOrientation;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.MissingResourceException;
+import java.util.Objects;
+import java.util.Scanner;
 
 public class ServerGuiResizable extends JFrame implements ActionListener, Runnable {
 
@@ -131,14 +119,6 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         setIpAddress();
     }
 
-    public void serverIsActive(boolean active) {
-        if (active) {
-
-        } else {
-
-        }
-    }
-
     /**
      * Create the frame.
      */
@@ -149,27 +129,31 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         this.stdErr = err;
 
         ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-        clsL = new ImageIcon(Objects.requireNonNull(classLoader.getResource("CloseLight_28px.png")));
-        clsB = new ImageIcon(Objects.requireNonNull(classLoader.getResource("CloseDark_28px.png")));
+        try {
+            clsL = new ImageIcon(Objects.requireNonNull(classLoader.getResource("CloseLight_28px.png")));
+            clsB = new ImageIcon(Objects.requireNonNull(classLoader.getResource("CloseDark_28px.png")));
 
-        minL = new ImageIcon(Objects.requireNonNull(classLoader.getResource("MinimizeLight_28px.png")));
-        minB = new ImageIcon(Objects.requireNonNull(classLoader.getResource("MinimizeDark_28px.png")));
+            minL = new ImageIcon(Objects.requireNonNull(classLoader.getResource("MinimizeLight_28px.png")));
+            minB = new ImageIcon(Objects.requireNonNull(classLoader.getResource("MinimizeDark_28px.png")));
 
-        shdwnL = new ImageIcon(Objects.requireNonNull(classLoader.getResource("ShutdownLight_28px.png")));
-        shdwnR = new ImageIcon(Objects.requireNonNull(classLoader.getResource("ShutdownRed_28px.png")));
+            shdwnL = new ImageIcon(Objects.requireNonNull(classLoader.getResource("ShutdownLight_28px.png")));
+            shdwnR = new ImageIcon(Objects.requireNonNull(classLoader.getResource("ShutdownRed_28px.png")));
 
-        dotBlack = new ImageIcon(Objects.requireNonNull(classLoader.getResource("DotDark_26px.png")));
-        dotWhite = new ImageIcon(Objects.requireNonNull(classLoader.getResource("DotLight_15px.png")));
+            dotBlack = new ImageIcon(Objects.requireNonNull(classLoader.getResource("DotDark_26px.png")));
+            dotWhite = new ImageIcon(Objects.requireNonNull(classLoader.getResource("DotLight_15px.png")));
 
-        connected = new ImageIcon(Objects.requireNonNull(classLoader.getResource("Connected_20px.png")));
-        disconnected = new ImageIcon(Objects.requireNonNull(classLoader.getResource("Disconnected_20px.png")));
+            connected = new ImageIcon(Objects.requireNonNull(classLoader.getResource("Connected_20px.png")));
+            disconnected = new ImageIcon(Objects.requireNonNull(classLoader.getResource("Disconnected_20px.png")));
 
-        reduceWhite = new ImageIcon(Objects.requireNonNull(classLoader.getResource("Double_Left_White_32px.png")));
-        reduceGray = new ImageIcon(Objects.requireNonNull(classLoader.getResource("Double_Left_Gray_32px.png")));
+            reduceWhite = new ImageIcon(Objects.requireNonNull(classLoader.getResource("Double_Left_White_32px.png")));
+            reduceGray = new ImageIcon(Objects.requireNonNull(classLoader.getResource("Double_Left_Gray_32px.png")));
 
-        // ImageIcon(Objects.requireNonNull(classLoader.getResource("Double_Right_Gray_32px.png")));
-        growGray = new ImageIcon(Objects.requireNonNull(classLoader.getResource("icons8_Menu_30px.png")));
-        growWhite = new ImageIcon(Objects.requireNonNull(classLoader.getResource("Double_Right_White_32px.png")));
+            growGray = new ImageIcon(Objects.requireNonNull(classLoader.getResource("icons8_Menu_30px.png")));
+            growWhite = new ImageIcon(Objects.requireNonNull(classLoader.getResource("Double_Right_White_32px.png")));
+        } catch (NullPointerException e) {
+            throw new MissingResourceException("Impossible to load some necessary resources.", "ImageFile", "");
+        }
+
 
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setBounds(100, 100, 1270, 705);
@@ -948,7 +932,7 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         panel_25.add(label_21);
 
         JPanel panel_26 = new JPanel();
-        panel_26.setBorder(new MatteBorder(1, 0, 0, 0, (Color) new Color(0, 0, 0)));
+        panel_26.setBorder(new MatteBorder(1, 0, 0, 0, new Color(0, 0, 0)));
         panel_24.add(panel_26, BorderLayout.CENTER);
         panel_21.setLayout(gl_panel_21);
 
@@ -1201,9 +1185,7 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
                             executor.write(command.getBytes());
                         } catch (IOException e) {
                             appendToPane("\n[GUI-ERROR] Console reports an Internal error on stdIn The error is: " + e + ". Resetting it to the initial stream\n",attributeError);
-                            try {
-                                StreamRedirector.resetStdIn();
-                            } catch (IOException ignored) { }
+                            StreamRedirector.resetStdIn();
                         }
                     });
                 }
@@ -1251,7 +1233,7 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         AddressIp.updateIp();
         label_10.setText(AddressIp.getLocalIp());
         label_11.setText(AddressIp.getPublicIp());
-        if (!AddressIp.getLocalIp().equals("Unkown")) {
+        if (!AddressIp.getLocalIp().equals("Unknown")) {
             lblC.setIcon(connected);
             lblC.setToolTipText("Internet access");
         } else {
@@ -1306,15 +1288,11 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
             sc.close();
         } catch (Exception e) {
             String errorMsg = "\n[GUI-ERROR] Console reports an Internal error on" + (Thread.currentThread() == readerStdOut ? "StdOut" : Thread.currentThread() == readerStdErr ? "StdErr" : "???") + "The error is: " + e + ". Resetting it to the initial stream\n";
-            try {
-                if (Thread.currentThread() == readerStdOut) {
-                    StreamRedirector.resetStdOut();
-                }
-                else if (Thread.currentThread() == readerStdErr) {
-                    StreamRedirector.resetStdErr();
-                }
-            } catch (IOException e1) {
-                e1.printStackTrace();
+
+            if (Thread.currentThread() == readerStdOut) {
+                StreamRedirector.resetStdOut();
+            } else if (Thread.currentThread() == readerStdErr) {
+                StreamRedirector.resetStdErr();
             }
             SwingUtilities.invokeLater(() -> {
                 appendToPane(errorMsg, attributeError);
