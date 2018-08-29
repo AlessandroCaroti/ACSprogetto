@@ -565,7 +565,7 @@ public class Server implements ServerInterface {
      * Se il topic non esiste viene aggiunto
      * @param msg il messaggio da inoltrare
      */
-    protected void forwardMessage(Message msg){
+    void forwardMessage(Message msg){
 
             String topicName  = msg.getTopic();
             ConcurrentLinkedQueue<Integer> subscribers = topicClientList.putIfAbsent(topicName, new ConcurrentLinkedQueue<Integer>());
