@@ -331,7 +331,7 @@ public class AnonymousClient implements ClientInterface {
      * @param email l'email associata all'account
      * @param newPassword
      * @param repeatPassword
-     * @return
+     * @return true se op.a buon fine,false altrimenti
      */
 
     public boolean recoverPassword(String email,String newPassword,String repeatPassword){
