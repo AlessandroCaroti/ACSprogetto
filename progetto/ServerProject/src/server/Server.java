@@ -644,14 +644,15 @@ public class Server implements ServerInterface {
      * Se il topic non esiste viene aggiunto
      * @param msg il messaggio da inoltrare
      */
-    void forwardMessage(Message msg){
+    void forwardMessage(Message msg) {
 
-        String topicName  = msg.getTopic();
+        String topicName = msg.getTopic();
         ConcurrentLinkedQueue<Integer> subscribers = topicClientList.putIfAbsent(topicName, new ConcurrentLinkedQueue<Integer>());
-        if(subscribers == null){  //creazione di un nuovo topic
+        if (subscribers == null) {  //creazione di un nuovo topic
             topicList.add(topicName);
+        } else {
+            notifyAll(subscribers.iterator(), msg);      //todo magari si potrebbe eseguire su un altro thread in modo da non bloccare questa funzione
         }
-        notifyAll(subscribers.iterator(), msg);      //todo magari si potrebbe eseguire su un altro thread in modo da non bloccare questa funzione
     }
 
 
