@@ -13,7 +13,7 @@ public class AnonymousClientExtended extends AnonymousClient {
     private Server server;
 
 
-    public AnonymousClientExtended(Server server)throws NullPointerException,RemoteException{
+    AnonymousClientExtended(Server server)throws NullPointerException,RemoteException{
         super();
         this.server=requireNonNull(server);
         this.className="ANONYMOUS_CLIENT_EXTENDED";
@@ -38,7 +38,6 @@ public class AnonymousClientExtended extends AnonymousClient {
 
     @Override
     public void newTopicNotification(String topicName){
-        super.newTopicNotification(topicName);
         server.addTopic(topicName);
         //todo Non deve fare la subscribe al nuovo topic? subscribeNewTopicNotification su server
     }
@@ -52,4 +51,19 @@ public class AnonymousClientExtended extends AnonymousClient {
             infoStamp(msg);
         }
     }
+
+    /**PKG METHOD***************
+     * ************************/
+
+    boolean subscribeForNewTopicNotification(){
+        try {
+            this.server_stub.subscribeNewTopicNotification(this.getCookie());
+            return true;
+        }catch (Exception exc){
+            exc.printStackTrace();
+        }
+        return false;
+    }
+
+
 }
