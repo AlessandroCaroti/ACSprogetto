@@ -54,8 +54,8 @@ public class AnonymousClient implements ClientInterface {
 
 
     /***************************************************************************/
-    /*comunicazione con clientEngine*//*guardare metodo NewTopicNotification per maggiori info*/
-    protected LinkedBlockingQueue<Event> anonymousClientToClientEngine;
+    protected LinkedBlockingQueue<Event> anonymousClientToClientEngine;/*comunicazione con clientEngine guardare metodo NewTopicNotification per maggiori info*/
+
 
 
 
