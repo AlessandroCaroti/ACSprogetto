@@ -16,7 +16,7 @@ public class TerminalInterface implements Callable<Integer> {
     private LinkedBlockingQueue<Event> guiToClientEngine;//La coda per inviare gli oggetti evento al clientEngine
     private BufferedReader bufferedReader=new BufferedReader(new InputStreamReader(System.in));
 
-    public TerminalInterface(LinkedBlockingQueue<Event> clientEngineToGUI,LinkedBlockingQueue<Event> guiToClientEngine) {
+     TerminalInterface(LinkedBlockingQueue<Event> clientEngineToGUI,LinkedBlockingQueue<Event> guiToClientEngine) {
         this.clientEngineToGui=clientEngineToGUI;
         this.guiToClientEngine=guiToClientEngine;
     }
@@ -49,7 +49,7 @@ public class TerminalInterface implements Callable<Integer> {
                 if(current instanceof Window){
                     switch(((Window) current).getWindowType()){
                         case FORUM:
-
+                            printForum();
 
                             break;
                         case LOGIN:
@@ -72,7 +72,7 @@ public class TerminalInterface implements Callable<Integer> {
                                 System.out.println("ERRORE:NON RECUPERATA");
                             }
                             break;
-                        default://todo da eliminare fine debugging
+                        default:
                             System.err.println("uknown command");
                             break;
 
@@ -123,6 +123,12 @@ public class TerminalInterface implements Callable<Integer> {
                             }else{
                                 System.out.println("Pubblicazione correttamente effettuata");
                             }
+                            break;
+                        case NEWMESSAGE:
+                            //todo
+                            break;
+                        case NEWTOPICNOTIFICATION:
+                            System.out.println("Nuovo topic presente sul server:"+((NewTopicNotification)current).getTopicName());
                             break;
 
                     }
@@ -319,7 +325,5 @@ public class TerminalInterface implements Callable<Integer> {
 }
 
 
-//todo list
-//se faccio il login su un account inesistente da errore R505 (internal error) controllare se è normale o no
 
-//come gestire exc.printstacktrace di clientEngine non c'è tipo qualche funz di carrots?
+
