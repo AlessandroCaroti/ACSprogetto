@@ -18,8 +18,6 @@ import java.rmi.server.UnicastRemoteObject;
 import java.security.PublicKey;
 import java.util.Iterator;
 import java.util.TreeSet;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import static utility.ResponseCode.Codici.R200;
