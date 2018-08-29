@@ -226,8 +226,10 @@ public class Client extends AnonymousClient {
      * REMOTE METHOD *************************************************************************************************
      ****************************************************************************************************************/
 
+    /*La notify() di anonymousClient va già benissimo e il controllo che il messaggio ricevuto sia nostro non è necessario.
+    TODO Questo controllo può essere effettuato dal client engine
+
     @Override
-    //TODO al server non importa del messaggio di risposta quindi si potrebbe mettere che ritorni void
     public ResponseCode notify(Message m) {
         ResponseCode rc;
         if (m == null) {
@@ -256,14 +258,13 @@ public class Client extends AnonymousClient {
                     }
                 }
 
-                //TODO gestione della visualizazione del messaggio
                 print.pedanticInfo("Received new message\n" + m.toString());
             });
         }
 
         return rc;
     }
-
+    */
     /** Metodo che produce una chiave segreta utilizzando il protocollo Diffie–Hellman
      *  con la variante che utilizza le curve ellittiche (Elliptic-curve Diffie–Hellman)
      *
