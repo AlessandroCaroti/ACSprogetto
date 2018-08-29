@@ -665,6 +665,15 @@ public class Server implements ServerInterface {
              }
          }
     }
+
+    void removeTopic(String topic){
+        if(topic==null||topic.isEmpty()) return;
+        synchronized (topicList){
+            if(!topicList.contains(topic)){
+                topicList.add(topic);
+            }
+        }
+    }
     /*************************************************************************************************************
     ****    METODI PRIVATI          ******************************************************************************
     *************************************************************************************************************/
