@@ -332,18 +332,6 @@ public class Client extends AnonymousClient {
         }
     }
 
-    //todo metodo non usato -> da rimuovere
-    @Deprecated
-    private Message createMessage(String topic, String title, String text){
-        Message msg = null;
-        try {
-            msg = new Message(title, this.username, text, topic);
-        } catch (Exception e) {
-            print.error("An exception has been thrown during the creation of a message.");
-        }
-        return msg;
-    }
-
 
     private boolean retrieveCookie(){
 
@@ -351,18 +339,18 @@ public class Client extends AnonymousClient {
             if(connected()) {
                 ResponseCode response = server_stub.retrieveCookie(this.username, this.plainPassword);
                 if (response == null || !response.getCodice().equals(ResponseCode.Codici.R100)) {
-                    print.error(response, "cookie retrieve failed");
+                    //print.error(response, "cookie retrieve failed");
                     return false;
                 }
                 this.cookie = response.getMessaggioInfo();
-                print.info("Cookie successfully retrieved.");
+                //print.info("Cookie successfully retrieved.");
                 return true;
             }else{
-                print.error("Not connected to any server.");
+                //print.error("Not connected to any server.");
                 return false;
             }
         }catch (RemoteException e){
-            print.error(e, "Unable to reach the server.");
+            //print.error(e, "Unable to reach the server.");
             return false;
         }
     }
