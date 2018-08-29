@@ -26,7 +26,7 @@ public class AnonymousClientExtended extends AnonymousClient {
         if(m==null) {
             rc=new ResponseCode(ResponseCode.Codici.R500, ResponseCode.TipoClasse.CLIENT, "(-) WARNING Il client ha ricevuto un messaggio vuoto");
         }else {
-            pedanticInfo("Received new message\n" + m.toString());
+            print.pedanticInfo("Received new message\n" + m.toString());
             rc = new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.CLIENT, "(+) OK il client ha ricevuto il messaggio");
 
             server.forwardMessage(m);//inoltra il messaggio sul proprio server
@@ -45,16 +45,6 @@ public class AnonymousClientExtended extends AnonymousClient {
         }catch (Exception exc){//se fallisce rimuovo il topic dalla lista del mio server
             exc.printStackTrace();
             server.removeTopic(topicName);
-        }
-    }
-
-    void infoStamp(String msg){
-        System.out.println("["+className+"-INFO]: " + msg);
-    }
-
-    void pedanticInfo(String msg){
-        if(pedantic){
-            infoStamp(msg);
         }
     }
 
