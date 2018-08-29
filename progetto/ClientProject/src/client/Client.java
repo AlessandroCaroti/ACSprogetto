@@ -54,7 +54,6 @@ public class Client extends AnonymousClient {
     private PublicKey serverPublicKey_RSA;
     private SecretKeySpec secretAesKey;
 
-    private ConcurrentLinkedQueue<Message> messagesSendAndNotReceived = new ConcurrentLinkedQueue<>();
 
 
 
@@ -158,31 +157,23 @@ public class Client extends AnonymousClient {
      * @param text      il testo  del messaggio da inviare
      * @return          TRUE se andata a buon fine,FALSE altrimenti
      */
-    @Override
+    @Override//todo
     public boolean publish( String topic, String title, String text){
         if(connected()) {
             try {
-                //Message msg = createMessage(topic, title, text);
                 Message msg = new Message(title, this.username, text, topic);
-                ResponseCode response;
-
-                response=server_stub.publish(this.cookie, msg);
+                ResponseCode response=server_stub.publish(this.cookie, msg);
                 if(response.IsOK())
                 {
                     topicsSubscribed.add(topic);
-                    messagesSendAndNotReceived.add(msg);
-                    print.info("Message published.");
                     return true;
                 }
                 else {
-                    print.error(response, "Error while publishing the message.");
+                    return false;
                 }
             }catch (Exception e) {
-                print.error(e);
                 return false;
             }
-        }else {
-            print.error("Not connected to any server.");
         }
         return false;
     }
