@@ -10,5 +10,6 @@ public enum ClientEventsType {
     GETTOPICS,
     SUBSCRIBE,
     UNSUBSCRIBE,
-    PUBLISH
+    PUBLISH,
+    NEWTOPICNOTIFICATION
 }
