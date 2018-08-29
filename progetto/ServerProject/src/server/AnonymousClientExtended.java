@@ -38,8 +38,14 @@ public class AnonymousClientExtended extends AnonymousClient {
 
     @Override
     public void newTopicNotification(String topicName){
+
         server.addTopic(topicName);
-        //todo Non deve fare la subscribe al nuovo topic? subscribeNewTopicNotification su server
+        try {
+            this.server_stub.subscribe(this.getCookie(), topicName);
+        }catch (Exception exc){//se fallisce rimuovo il topic dalla lista del mio server
+            exc.printStackTrace();
+            server.removeTopic(topicName);
+        }
     }
 
     void infoStamp(String msg){
@@ -51,19 +57,5 @@ public class AnonymousClientExtended extends AnonymousClient {
             infoStamp(msg);
         }
     }
-
-    /**PKG METHOD***************
-     * ************************/
-
-    boolean subscribeForNewTopicNotification(){
-        try {
-            this.server_stub.subscribeNewTopicNotification(this.getCookie());
-            return true;
-        }catch (Exception exc){
-            exc.printStackTrace();
-        }
-        return false;
-    }
-
 
 }
