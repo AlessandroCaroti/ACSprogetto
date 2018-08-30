@@ -30,7 +30,7 @@ public class ServerInfoProvider extends InfoProviderProtocol {
 
 
     public ServerInfoProvider(String regHost, int regPort, String serverName) throws IOException {
-        if (!ready)
+        if (group == null)
             throw new UnknownHostException();
         timer = new Timer();
 

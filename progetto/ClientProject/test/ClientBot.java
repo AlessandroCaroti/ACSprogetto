@@ -37,7 +37,7 @@ public class ClientBot extends Client {
             bot.setServerInfo(regHost,regPort, serverName);
             if(!bot.connected())
             {
-                System.err.println("can not connect to the server");
+                System.err.println("Can not connect to the server");
                 System.exit(-1);
             }
             bot.register();
@@ -50,34 +50,30 @@ public class ClientBot extends Client {
     }
 
     static private void findServer() {
-        ArrayList<String[]> servers = new ArrayList<>();
         ServerInfoRecover infoServer;
+        HashMap<String, String[]> servers;
         int numServer;
 
-        //RICERCA DEI SERVER DISPONIBILI NELLA LAN
+        //RICERCA DEI SERVER DISPONIBILI NELLA RETE LOCALE
         try {
-            infoServer = new ServerInfoRecover();
+            infoServer = new ServerInfoRecover(false);
         } catch (IOException e) {
             System.err.println("ERRORE DURANTE LA CREAZIONE DELL'INFO_RECOVER");
             return;
         }
-        try {
-            while (true) {  //Quando non ci sono più server diponibili viene lanciata un eccezione che rompe il ciclo while
-                servers.add(infoServer.getServerInfo());
-                infoServer.setTimeOut(1);
-            }
-        } catch (IOException e) {
-            numServer = servers.size();
-            if (numServer == 0) {
-                System.err.println("No server found available for connection.");
-                System.exit(-1);
-            }
+        System.out.println("Local network scan looking for servers ...");
+        servers = infoServer.findAllServerOnLan();
+        numServer = servers.size();
+        if (numServer == 0) {
+            System.err.println("... no server found on the local network!");
+            System.exit(1);
         }
 
         //STAMPA DEI SERVER TROVATI
-        System.out.println("\n\n\n\nFind " + numServer + " server:");
+        System.out.println("\n\n\n\nFound " + numServer + " Servers:");
+        String[] serverFound = servers.keySet().toArray(new String[0]);
         for (int i = 0; i < numServer; i++) {
-            System.out.println("  "+i + ") " + (servers.get(i))[2]);
+            System.out.println("  " + i + ") " + serverFound[i]);
         }
 
         //SCELTA DEL SERVER A CUI CONNETERSI
@@ -87,7 +83,7 @@ public class ClientBot extends Client {
             Scanner sc = new Scanner(System.in);
             serverToConnect = sc.nextInt();
         }
-        String[] serverChosen = servers.get(serverToConnect);
+        String[] serverChosen = servers.get(serverFound[serverToConnect]);
         setServerInfoForBot(serverChosen[0], serverChosen[2], Integer.parseInt(serverChosen[1]));
     }
 

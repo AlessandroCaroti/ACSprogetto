@@ -13,21 +13,38 @@ import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public class ServerInfoRecover extends InfoProviderProtocol {
 
     private byte[] buf = new byte[256];             //Buffer su cui viene salvato il messaggio ricevuto dal brodcast
-    final private LogFormatManager print = new LogFormatManager("InfoRecover", true);
+    private Integer timeOut = super.timeOut * 1000;
+    final private LogFormatManager print;
 
 
     public ServerInfoRecover() throws IOException {
-        if (!ready)
-            throw new UnknownHostException();
+        this(true);
     }
 
+    public ServerInfoRecover(final boolean pedantic) throws IOException {
+        if (group == null)
+            throw new UnknownHostException();
+        print = new LogFormatManager("InfoRecover", pedantic);
+    }
 
+    /**
+     * Se esiste un infoProvider nella rete locale, recupera le informazioni necessarie per protesi
+     * connettere ad un server
+     *
+     * @return null in caso non si trvino dati apprpriati o un array di dimensioni 3 contenente:
+     * -in pos 0 l'ip dell'host del registry su cui è salvato lo stub del server
+     * -in pos 1 la porta del registry
+     * -il nome del server
+     * @throws IOException nel caso in cui non ci siano infoProvider nella lan
+     */
     public String[] getServerInfo() throws IOException {
-        DatagramPacket packet = findServerLocalAddress();
+        DatagramPacket packet = findServerLocalNetwork();
 
         //Estrazione delle informazioni dal pacchetto ricevuto in brodcast
         InetAddress serverAddress = packet.getAddress();
@@ -43,31 +60,54 @@ public class ServerInfoRecover extends InfoProviderProtocol {
         Socket s = new Socket(serverAddress, tcpPort);
         BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
         while ((fromServer = in.readLine()) != null) {
-            print.info("Received: "+fromServer);
+            print.pedanticInfo("Received: " + fromServer);
             serverInfo.add(fromServer);
         }
         in.close();
         s.close();
+        String[] connectionData = serverInfo.toArray(new String[0]);
+        try {
+            ServerConnectionInfo.validateData(connectionData);
+        } catch (IllegalArgumentException e) {
+            print.pedanticWarning(e, "ServerInfo refused.");
+            return null;
+        }
+        print.info("Found new server info(ServerName: \'" + connectionData[2] + "\').");
         return serverInfo.toArray(new String[0]);
     }
 
-    private Integer timeOut = super.timeOut;
-
     //Funzione che crea un socket in ascolto di datagram da parte di un server nella rete locale
-    private DatagramPacket findServerLocalAddress() throws IOException {
+    private DatagramPacket findServerLocalNetwork() throws IOException {
         DatagramSocket socket = new MulticastSocket(broadcastPort);        //Socket in cui si riceverà l'ip del server
         DatagramPacket packet = new DatagramPacket(buf, buf.length);
-        print.info("Network scan searching for a server ...");
-        socket.setSoTimeout(this.timeOut*1000);                                  //Se dopo un tot di tempo nessun messaggio viene ricevuto significa che nessun sta trasmettendo
+        print.pedanticInfo("Network scan searching for a server ...");
+        socket.setSoTimeout(this.timeOut);                             //Se dopo un tot di tempo nessun messaggio viene ricevuto significa che nessun sta trasmettendo
         socket.receive(packet);
         socket.close();
-        print.info("Server found.");
+        print.pedanticInfo("... new infoProvider found.");
         return packet;
     }
 
-
-
-    public void setTimeOut(int second){
-        this.timeOut = second;
+    /**Permette di trovare tutti i server nella rete locale che dispongono di un infoProvider attivo.
+     * A volte non li trova tutti =(
+     *
+     * @return
+     */
+    public HashMap<String, String[]> findAllServerOnLan() {
+        HashMap<String, String[]> servers = new HashMap<>();
+        try {
+            final long start = System.currentTimeMillis();
+            while (true) {  //Quando non ci sono più server diponibili viene lanciata un eccezione che rompe il ciclo while
+                String[] newServer = this.getServerInfo();
+                if (newServer != null) {
+                    servers.putIfAbsent(newServer[2], newServer);
+                }
+                if (System.currentTimeMillis() - start > timeOut)
+                    timeOut = 400;
+            }
+        } catch (IOException ignored) {
+        }
+        return servers;
     }
+
 }
