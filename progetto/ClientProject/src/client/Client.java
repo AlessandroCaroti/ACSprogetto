@@ -268,8 +268,7 @@ public class Client extends AnonymousClient {
             byte[] serverPubKey_decrypted = RSA.decrypt(serverPublicKey_RSA, serverPubKey_encrypted);
             PublicKey serverPubKey = KeyFactory.getInstance("ECDH", "BC").generatePublic(new X509EncodedKeySpec(serverPubKey_decrypted));
             byte[] sharedSecret = ECDH.sharedSecretKey(ECDH_kayPair.getPrivate(), serverPubKey);
-            print.info("Created secret key sheared whit the server.\n");
-            print.pedanticInfo("Secret key: " + Arrays.toString(sharedSecret));
+            print.pedanticInfo("Created secret key sheared whit the server:\n\t" + Arrays.toString(sharedSecret) + "\n");
             secretAesKey = new SecretKeySpec(sharedSecret, "AES");
             return ECDH_kayPair.getPublic();
         } catch (Exception e) {

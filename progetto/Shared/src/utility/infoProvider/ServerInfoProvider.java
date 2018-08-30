@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -32,34 +30,25 @@ public class ServerInfoProvider extends InfoProviderProtocol {
 
 
     public ServerInfoProvider(String regHost, int regPort, String serverName) throws IOException {
-        if (!ready)
+        if (group == null)
             throw new UnknownHostException();
-
         timer = new Timer();
 
         //CREAZIONE DEL SERVER_SOCKET
-        int serverSocketPort = 6000;
-        boolean serverSocketCreated = false;
-        ServerSocket tmpSocket = null;
-        while (!serverSocketCreated) {  //Se esiste già un socket associato alla porta riprova con la porta succesive
-            try {
-                tmpSocket = new ServerSocket(serverSocketPort, 20);
-                serverSocketCreated = true;
-            } catch (IOException ignored) {
-                serverSocketPort++;
-            }
-        }
-        serverSocket = Objects.requireNonNull(tmpSocket);
-        tcpSocketPort = serverSocketPort;
+        serverSocket = new ServerSocket(0, 20);
+        tcpSocketPort = serverSocket.getLocalPort();
 
         //CREAZIONE DEL MESSAGGIO DA INVIARE IN BRODCAST
-        String s = String.valueOf(serverSocketPort);
+        String s = String.valueOf(tcpSocketPort);
         byte[] buf = s.getBytes(StandardCharsets.UTF_8);
+        packet = new DatagramPacket(buf, buf.length, group, broadcastPort);
 
-        socket            = new DatagramSocket();
-        packet            = new DatagramPacket(buf, buf.length, group, broadcastPort);
+        socket = new DatagramSocket();
+        socket.setBroadcast(true);
 
-        serverInfoMessage = regHost + "\n" +
+        //CREAZIONE DEL MESSAGGIO DA INVIARE DURANTE LE CONNESIONNI CON serverSocket
+        serverInfoMessage =
+                regHost + "\n" +
                 regPort + "\n" +
                 serverName;
         print.info("Info Provider created.");
@@ -69,12 +58,10 @@ public class ServerInfoProvider extends InfoProviderProtocol {
     //Funzione che verrà eseguita dal timer - trasmette in brodcast l'indirisso della macchina su cui viene eseguito il codice
     private void brodcastDatagram(){
         try {
-            socket = new DatagramSocket();
-            socket.setBroadcast(true);
             socket.send(packet);
-            socket.close();
             errorCnt=0;
         } catch (Exception e) {
+            resetDatagramSocket();
             errorCnt++;
             print.warning(e);
             if(tooManyError() || stop){
@@ -82,6 +69,15 @@ public class ServerInfoProvider extends InfoProviderProtocol {
                 stopTimer();
                 stop = true;
             }
+        }
+    }
+
+    private void resetDatagramSocket() {
+        try {
+            socket.close();
+            socket = new DatagramSocket();
+            socket.setBroadcast(true);
+        } catch (SocketException ignored) {
         }
     }
 
@@ -95,7 +91,7 @@ public class ServerInfoProvider extends InfoProviderProtocol {
                 @Override
                 public void run() { brodcastDatagram(); }
             }, 0L, (period * 1000));
-            print.info("Info Provider started. Sendig the server address in brodcast on " + broadcastPort + " port, and listening on port " + tcpSocketPort);
+            print.info("Info Provider started. Sending the server address in broadcast on " + broadcastPort + " port, and listening on port " + tcpSocketPort + ".");
         }catch (Exception e){
             print.error(e, "An error occurred during the start of the Info Provider.");
             stop = true;
@@ -131,8 +127,6 @@ public class ServerInfoProvider extends InfoProviderProtocol {
         }
     }
 
-
-
     private boolean tooManyError(){
         errorCnt++;
         return errorCnt > maxError;
@@ -144,6 +138,7 @@ public class ServerInfoProvider extends InfoProviderProtocol {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        stopTimer();
         stop = true;
     }
 
