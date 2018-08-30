@@ -1,14 +1,15 @@
 package client;
 
 import Events.*;
+import utility.Message;
 import utility.infoProvider.ServerInfoRecover;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import static java.util.Objects.requireNonNull;
@@ -20,11 +21,13 @@ public class ClientEngine implements Callable<Integer> {
     private LinkedBlockingQueue<Event> guiToClientEngine;//la coda riempita da GUI o TerminalInterface e consumata da ClientEngine
     private AnonymousClient client;
     private ServerInfoRecover infoServer;//La classe per recuperare la porta del server e stabilire la connessione
+    private ConcurrentMap<String,LinkedBlockingQueue<Message>> topicMessageListMap;//associazione tra topic e messaggi arrivati(salvati in una lista
 
     public ClientEngine(LinkedBlockingQueue<Event>clientEngineToGUI, LinkedBlockingQueue<Event> guiToClientEngine) throws IOException {
         this.clientEngineToGUI=requireNonNull(clientEngineToGUI);
         this.guiToClientEngine=requireNonNull(guiToClientEngine);
         infoServer = new ServerInfoRecover();
+        this.topicMessageListMap= new ConcurrentHashMap<>();
     }
 
     /** Questo Thread è il "motore" dell'applicazione lato client.
@@ -48,6 +51,7 @@ public class ClientEngine implements Callable<Integer> {
     public Integer call() {
         try {
             Event current;
+            Event temp;
             int exitCode = 0;
             loop:
             do {
@@ -99,7 +103,7 @@ public class ClientEngine implements Callable<Integer> {
                                 ((Subscribe) current).setErr(true);
                             }
                             break;
-                        case UNSUBSCRIBE:
+                        case UNSUBSCRIBE://todo eliminare il topic dalla topicMessageListMap
                             try {
                                 if (client == null || !client.unsubscribe(((UnSubscribe) current).getTopicName())) {
                                     ((UnSubscribe) current).setErr(true);
@@ -123,19 +127,24 @@ public class ClientEngine implements Callable<Integer> {
                 } else if (current instanceof Window) {
                     switch (((Window) current).getWindowType()) {
                         case FORUM:
-                            //todo
+                            current = new ForumWindow();
+                            ((ForumWindow) current).setReceivedMessageList(this.topicMessageListMap);
                             break;
                         case LOGIN:
                             try {
+
                                 client = new Client(((AccountLoginWindow) current).getUsername(), ((AccountLoginWindow) current).getPassword(), null);
                                 String[] a = infoServer.getServerInfo(
                                         InetAddress.getByName(((AnonymousLoginWindow) current).getServerAddress()), 6000);    //todo agiongere la ricerca della porta - quella base è 6000 ma se ci sono più server nella stessa macchina potrebbe essere diversa
                                 client.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
-                                if (((Client) client).retrieveAccount()) {
-                                    current = new ForumWindow();//todo settare la roba da passare
+                                if ( client.retrieveAccount()) {
+                                    temp = new ForumWindow();
+                                    ((ForumWindow) temp).setReceivedMessageList(this.topicMessageListMap);
+                                    current=temp;
                                 } else {
                                     ((AnonymousLoginWindow) current).setErr(true);
                                 }
+
                             } catch (Exception exc) {
                                 ((AnonymousLoginWindow) current).setErr(true);
                                 exc.printStackTrace();
@@ -148,8 +157,10 @@ public class ClientEngine implements Callable<Integer> {
                                         InetAddress.getByName(((NewAccountWindow) current).getServerAddress()), 6000
                                 );
                                 client.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
-                                if (((Client) client).register()) {
-                                    current = new ForumWindow();//todo settare la roba da passare
+                                if (client.register()) {
+                                    temp = new ForumWindow();
+                                    ((ForumWindow) temp).setReceivedMessageList(this.topicMessageListMap);
+                                    current=temp;
                                 } else {
                                     ((NewAccountWindow) current).setErr(true);
                                 }
@@ -167,7 +178,9 @@ public class ClientEngine implements Callable<Integer> {
                                 );
                                 client.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
                                 if (client.register()) {
-                                    current = new ForumWindow();//todo settare la roba da passare
+                                    temp = new ForumWindow();
+                                    ((ForumWindow) temp).setReceivedMessageList(this.topicMessageListMap);
+                                    current=temp;
                                 } else {
                                     ((AnonymousLoginWindow) current).setErr(true);
                                 }
@@ -184,7 +197,9 @@ public class ClientEngine implements Callable<Integer> {
                                 );
                                 client.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
                                 if (client.recoverPassword(((ForgotPasswordWindow) current).getEmail(), ((ForgotPasswordWindow) current).getNewPassword(), ((ForgotPasswordWindow) current).getRepeatPassword())) {
-                                    current = new AccountLoginWindow();//todo settare la roba da passare
+                                    temp = new AccountLoginWindow();//todo settare la roba da passare
+
+                                    current=temp;
                                 } else {
                                     ((ForgotPasswordWindow) current).setErr(true);
                                 }
@@ -202,8 +217,22 @@ public class ClientEngine implements Callable<Integer> {
                 clientEngineToGUI.add(current);//3 STEP
 
                 //4 STEP start
-                if (this.client != null && this.client.anonymousClientToClientEngine.peek() != null) {
-                    clientEngineToGUI.add(this.client.anonymousClientToClientEngine.poll());
+                if (this.client != null && (current=this.client.anonymousClientToClientEngine.poll()) != null) {
+                    switch (((ClientEvent) current).getType()) {
+                        case NEWTOPICNOTIFICATION: break;
+                        case NEWMESSAGE:
+                            Message message=((NewMessage)current).getMessage();
+                            LinkedBlockingQueue<Message> returnValMessageList;
+                            LinkedBlockingQueue<Message> justCreatedMessList=new LinkedBlockingQueue<>();
+
+                            if((returnValMessageList=topicMessageListMap.putIfAbsent(message.getTopic(),justCreatedMessList))==null){//topic non ancora registrato
+                                justCreatedMessList.add(message);
+                            }else{//topic già registrato in precedenza
+                                returnValMessageList.add(message);
+                            }
+                            break;
+                    }
+                    clientEngineToGUI.add(current);
                 }
                 //4 STEP end
 

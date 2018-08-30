@@ -1,14 +1,13 @@
 package client;
 
 import Events.*;
-import utility.infoProvider.ServerInfoRecover;
+import utility.Message;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class TerminalInterface implements Callable<Integer> {
@@ -49,8 +48,7 @@ public class TerminalInterface implements Callable<Integer> {
                 if(current instanceof Window){
                     switch(((Window) current).getWindowType()){
                         case FORUM:
-                            printForum();
-                            //todo
+                            printForum((ForumWindow)current);
                             break;
                         case LOGIN:
                             if(((AnonymousLoginWindow)current).isErr()){
@@ -125,7 +123,7 @@ public class TerminalInterface implements Callable<Integer> {
                             }
                             break;
                         case NEWMESSAGE:
-                            //todo
+                            printMessage(((NewMessage)current).getMessage());
                             break;
                         case NEWTOPICNOTIFICATION:
                             System.out.println("Nuovo topic presente sul server:"+((NewTopicNotification)current).getTopicName());
@@ -242,11 +240,27 @@ public class TerminalInterface implements Callable<Integer> {
 
 
 
-    private void printForum(){
+    private void printForum(ForumWindow forumEvent){
+        if (forumEvent==null)return;
+        ConcurrentMap<String,LinkedBlockingQueue<Message>> topicMessageListMap=forumEvent.getReceivedMessageList();
+        System.out.println("FORUM++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+
+
+        System.out.println("END FORUM++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 
     }
 
-
+    private void printMessage(Message message){
+        System.out.println("NEW MESSAGE----------------------------------");
+        if(message!=null) {
+            System.out.println("Topic:"+message.getTopic());
+            System.out.println("Title:"+message.getTitle());
+            System.out.print("Author:"+message.getAuthor());
+            System.out.println("  Date:"+message.getDate().toString());
+            System.out.println("\n"+message.getText());
+        }
+        System.out.println("---------------------------------------------");
+    }
 
 
     private void printTopics(String[] topics){
