@@ -79,10 +79,6 @@ public class EmailHandlerTLS implements EmailController {
         );
     }
 
-    public BlockingQueue<Message> getMessagesList() {
-        return messagesList;
-    }
-
 
     /* *******************************************************
         PUBLIC METHODS
@@ -104,10 +100,6 @@ public class EmailHandlerTLS implements EmailController {
             throw new NullPointerException("Error: message == null.");
         }
         this.messagesList.add(message);
-        synchronized (messagesList) {
-            print.pedanticInfo("Waking up the email demon.");
-            this.messagesList.notify();
-        }
     }
 
     public void startEmailHandlerManager(){
@@ -130,18 +122,14 @@ public class EmailHandlerTLS implements EmailController {
             Message toBeSent;
             while(true){
                 try {
-                    while((toBeSent=emailHandlerClass.messagesList.poll())==null) {
-                        synchronized(emailHandlerClass.messagesList) {
-                            print.pedanticInfo("Email daemon's going to sleep.");
-                            emailHandlerClass.messagesList.wait();
-                        }
-                    }
+                    toBeSent=emailHandlerClass.messagesList.take();
                     print.pedanticInfo("Trying to send message ...");
                     Transport.send(toBeSent);
                     print.pedanticInfo("... message sent!");
                 }
                 catch (InterruptedException |MessagingException e) {
                     if(e instanceof InterruptedException) {
+                        print.error(e,"interrupted exception error");
                         return;
                     }
                     print.error(e,"unable to send email");
