@@ -462,6 +462,7 @@ public class Server implements ServerInterface {
         }
         catch (BadPaddingException| IllegalBlockSizeException e){
             print.warning(e,"subscribe() - error cookies not recognize");
+            return ResponseCodeList.CookieNotFound;
         }catch (Exception e){
            print.error(e);
         }
@@ -470,19 +471,22 @@ public class Server implements ServerInterface {
 
     /**Permette al client disiscriversi al topic passato
      * @param cookie dell'account
-     * @param topicName
+     * @param topicName nome del topic
      * @return R200 se op. andata a buon fine
-     * @return InternalError se avviene un errore non identificato
+     *         InternalError se avviene un errore non identificato
      */
     @Override
     public ResponseCode unsubscribe(String cookie,String topicName)  {
         try {
-            Integer accountId = getAccountId(cookie);
-            topicClientList.get(topicName).remove(accountId);//todo se il topic non esiste?
-            print.pedanticInfo("User:"+accountId + " unsubscribe from "+topicName+".");
-            return new ResponseCode(ResponseCode.Codici.R200,ResponseCode.TipoClasse.SERVER,"disiscrizione avvenuta con successo");
+            int accountId = getAccountId(cookie);
+            if (topicClientList.get(topicName).remove(accountId)) {   //todo se il topic non esiste? risposta -> non succede niente, la differenza si nota solo nel valore di ritorno
+                print.pedanticInfo("User " + accountId + " unsubscribe from " + topicName + ".");
+                return new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER, "Disiscrizione avvenuta con successo.");
+            }
+            return new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER, "Il topic richiesto non esiste.");
         }catch (BadPaddingException| IllegalBlockSizeException e){
             print.warning(e,"subscribe() - error cookies not recognize");
+            return ResponseCodeList.CookieNotFound;
         } catch (Exception e){
             print.error(e);
         }
@@ -509,6 +513,7 @@ public class Server implements ServerInterface {
             return new ResponseCode(ResponseCode.Codici.R200,ResponseCode.TipoClasse.SERVER,"topic pubblicato");
         }catch (BadPaddingException| IllegalBlockSizeException e){
             print.warning(e,"subscribe() - error cookie not recognized");
+            return ResponseCodeList.CookieNotFound;
         }catch (Exception e){
             print.error(e);
         }
