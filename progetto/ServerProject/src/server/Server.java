@@ -35,8 +35,9 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 import javax.mail.MessagingException;
-import java.io.*;
-import java.net.URL;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -45,7 +46,6 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.*;
 import java.util.*;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -160,14 +160,6 @@ public class Server implements ServerInterface {
     /* ********************************************************************************************************** **/
     //API
 
-    /*TODO
-        aggiungere i metodi elencari nel file che specifica le API del server
-     */
-    /*
-    Link spiegazione funzionamento Remote Java RMI Registry:
-        http://collaboration.cmc.ec.gc.ca/science/rpn/biblio/ddj/Website/articles/DDJ/2008/0812/081101oh01/081101oh01.html
-     */
-
 
 
 
@@ -273,6 +265,7 @@ public class Server implements ServerInterface {
         int accountId;
         SecretKeySpec secretAesKey;
         String userName=null, plainPassword=null, email=null, publicKey=null;
+
         //CREAZIONE DI UNA CHIAVE CONDIVSA SOLO TRA IL SERVER E IL CLIENT CHE HA INVOCATO QUESTO METODO REMOTO
         try {
             //compute the key
@@ -286,8 +279,12 @@ public class Server implements ServerInterface {
             if(!Arrays.equals(res, messageTest))
                 throw new InvalidKeyException("La chiave condivisa non coincide");  //todo migliorare il messaggio di errore
             publicKey     = new String(shearedSecretKey);
-        } catch (RemoteException | NoSuchAlgorithmException | NoSuchProviderException | InvalidKeyException | NoSuchPaddingException | BadPaddingException | IllegalBlockSizeException e) {
+        } catch (RemoteException e) {
+            print.pedanticWarning(e, "The client has broken the connection.");
+            return ResponseCodeList.BrokenConnection;
+        } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeyException | NoSuchPaddingException | BadPaddingException | IllegalBlockSizeException e) {
             //todo aggiunere migliore gestione degli errori
+
             print.error(e);
             return ResponseCodeList.InternalError;
         }
@@ -323,6 +320,9 @@ public class Server implements ServerInterface {
                 }
             }
 
+        } catch (RemoteException e) {
+            print.warning(e, "The client has broken the connection.");
+            return ResponseCodeList.BrokenConnection;
         }catch (Exception e){
             print.error(e);
         }
@@ -413,7 +413,7 @@ public class Server implements ServerInterface {
      * @param clientStub
      * @return R220 se il login è andato a buon fine
      * @return LoginFailed se il cookie non è valido
-     * @return InternalError se avviene un errore non identificato
+     *         InternalError se avviene un errore non identificato
      */
     @Override
     public ResponseCode retrieveAccountByCookie(String cookie,String plainPassword,ClientInterface clientStub){
@@ -459,8 +459,7 @@ public class Server implements ServerInterface {
                 subscribers.add(accountId);
             }
             return new ResponseCode(ResponseCode.Codici.R200,ResponseCode.TipoClasse.SERVER,"iscrizione avvenuta con successo");
-        }
-        catch (BadPaddingException| IllegalBlockSizeException e){
+        } catch (BadPaddingException | IllegalBlockSizeException e) {
             print.warning(e,"subscribe() - error cookies not recognize");
             return ResponseCodeList.CookieNotFound;
         }catch (Exception e){
@@ -795,7 +794,7 @@ public class Server implements ServerInterface {
                 try {
                     ClientInterface stub = accountList.getStub(accountId);
                     stub.notify(msg);
-                }catch (java.rmi.RemoteException e){
+                } catch (RemoteException e) {
                     print.warning(e, "Client unreachable.");
                     this.accountList.setStub(null, accountId);
                 }catch (NullPointerException e){
