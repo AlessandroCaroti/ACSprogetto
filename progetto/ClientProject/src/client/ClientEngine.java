@@ -9,7 +9,6 @@ import java.net.InetAddress;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import static java.util.Objects.requireNonNull;
@@ -21,7 +20,7 @@ public class ClientEngine implements Callable<Integer> {
     private LinkedBlockingQueue<Event> guiToClientEngine;//la coda riempita da GUI o TerminalInterface e consumata da ClientEngine
     private AnonymousClient client;
     private ServerInfoRecover infoServer;//La classe per recuperare la porta del server e stabilire la connessione
-    private ConcurrentMap<String,LinkedBlockingQueue<Message>> topicMessageListMap;//associazione tra topic e messaggi arrivati(salvati in una lista
+    private ConcurrentHashMap<String,LinkedBlockingQueue<Message>> topicMessageListMap;//associazione tra topic e messaggi arrivati(salvati in una lista
 
     public ClientEngine(LinkedBlockingQueue<Event>clientEngineToGUI, LinkedBlockingQueue<Event> guiToClientEngine) throws IOException {
         this.clientEngineToGUI=requireNonNull(clientEngineToGUI);
