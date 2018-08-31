@@ -5,6 +5,8 @@ import utility.Message;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentMap;
@@ -243,10 +245,17 @@ public class TerminalInterface implements Callable<Integer> {
     private void printForum(ForumWindow forumEvent){
         if (forumEvent==null)return;
         ConcurrentMap<String,LinkedBlockingQueue<Message>> topicMessageListMap=forumEvent.getReceivedMessageList();
-        System.out.println("FORUM++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-
-
-        System.out.println("END FORUM++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+        Set<String> topicSet=topicMessageListMap.keySet();
+        System.out.println("FORUM########################################################################");
+        for (String topic:topicSet) {
+            System.out.println("TOPIC:"+topic+"++++++++++++++++++++++++++++++++++++++++++++++");
+            Iterator<Message>it=topicMessageListMap.get(topic).iterator();
+            while(it.hasNext()){
+                printMessage(it.next());
+            }
+            System.out.println("END:"+topic+"++++++++++++++++++++++++++++++++++++++++++++++++");
+        }
+        System.out.println("END FORUM####################################################################");
 
     }
 
