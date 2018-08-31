@@ -503,7 +503,7 @@ public class Server implements ServerInterface {
                 (subscribers = topicClientList.get(topicName)).add(accountId);
                 serverStat.incrementTopicNum();
             }
-            notifyAll(subscribers.iterator(), msg);      //todo magari si potrebbe eseguire su un altro thread in modo da non bloccare questa funzione
+            notifyAll(subscribers.iterator(), msg);
             serverStat.incrementPostNum();
 
             return new ResponseCode(ResponseCode.Codici.R200,ResponseCode.TipoClasse.SERVER,"topic pubblicato");

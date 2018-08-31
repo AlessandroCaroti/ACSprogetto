@@ -169,14 +169,14 @@ public class AnonymousClient implements ClientInterface {
         if(connected()){
             try {
                 if(topicsSubscribed.contains(topic)){
-                    print.info("Already subscribe to the \'"+topic+"\' topic.");
+                    print.pedanticInfo("Already subscribe to the \'" + topic + "\' topic.");
                     return true;
                 }
                 ResponseCode response = server_stub.subscribe(this.cookie, topic);
                 if(response.IsOK())
                 {
                     topicsSubscribed.add(topic);
-                    print.info("Successfully subscribe to the topic \'"+topic+"\'.");
+                    print.pedanticInfo("Successfully subscribe to the topic \'" + topic + "\'.");
                     return true;
                 }
                 else {

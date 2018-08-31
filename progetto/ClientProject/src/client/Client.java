@@ -155,9 +155,9 @@ public class Client extends AnonymousClient {
      * @param topic     il topic su cui pubblicare il messsaggio
      * @param title     il titolo del messaggio da inviare
      * @param text      il testo  del messaggio da inviare
-     * @return          TRUE se andata a buon fine,FALSE altrimenti
+     * @return TRUE se andata a buon fine, FALSE altrimenti
      */
-    @Override//todo
+    @Override
     public boolean publish( String topic, String title, String text){
         if(connected()) {
             try {
@@ -165,12 +165,11 @@ public class Client extends AnonymousClient {
                 ResponseCode response=server_stub.publish(this.cookie, msg);
                 if(response.IsOK())
                 {
-                    topicsSubscribed.add(topic);
+//                    topicsSubscribed.add(topic);
+                    this.subscribe(topic);
                     return true;
                 }
-                else {
-                    return false;
-                }
+                return false;
             }catch (Exception e) {
                 return false;
             }
