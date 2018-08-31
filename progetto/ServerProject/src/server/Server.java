@@ -1,4 +1,4 @@
-/**
+/*
     This file is part of ACSprogetto.
 
     ACSprogetto is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with ACSprogetto.  If not, see <http://www.gnu.org/licenses/>.
 
-**/
+*/
 
 package server;
 
@@ -87,7 +87,6 @@ public class Server implements ServerInterface {
     private EmailController emailController;
 
     /* GUI fields */
-    private boolean graphicInterfaceReady;
     final private ServerStatistic serverStat;
 
     final private LogFormatManager print;
@@ -152,7 +151,7 @@ public class Server implements ServerInterface {
 
 
         this.serverStat = Objects.requireNonNull(serverStat);
-        this.serverStat.setServerInfo(this.serverName, topicList, AddressIp.getExternalAddres(), regPort);
+        this.serverStat.setServerInfo(this.serverName, topicList, AddressIp.getExternalAddress(), regPort);
         print.info("***** SERVER CREATED! *****");
     }
 
@@ -236,7 +235,7 @@ public class Server implements ServerInterface {
     }
 
     public String getRegHost(){
-        return AddressIp.getLocalAddres();
+        return AddressIp.getLocalAddress();
     }
 
     public String getServerName(){
