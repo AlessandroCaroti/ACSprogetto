@@ -42,7 +42,7 @@ public interface AccountCollectionInterface {
     /**
      * Ritorna uno snapshot della classe account nella posizione id della lista degli account
      * @param accountId posizione all'interno dell'array
-     * @return null  se non trovato o se index outofbounds
+     * @return null  se non trovato
      * @throws NullPointerException  deriva dal costruttore di Account
      *@throws IllegalArgumentException se accountId<0 || accountId>=MAXACCOUNTNUMBER
      **/
@@ -51,6 +51,7 @@ public interface AccountCollectionInterface {
     /**Ritorna uno snapshot della classe account con username uguale a quello passato
      * @param userName l'username da cercare
      * @return una copia dell'istanza account con username uguale a quello passato
+     * @return null se non esiste un account con quel username
      * @throws  IllegalArgumentException se l'username passato è null
      */
      Account getAccountCopyUsername(String userName);
@@ -58,6 +59,7 @@ public interface AccountCollectionInterface {
     /**Ritorna uno snapshot della classe account con email uguale a quello passato
      * @param email l'email da cercare
      * @return una copia dell'istanza account con email uguale a quello passato
+     * @return null se non esiste un account con quel username
      * @throws  IllegalArgumentException se l'email passato è null
      */
     Account getAccountCopyEmail(String email);
@@ -66,6 +68,7 @@ public interface AccountCollectionInterface {
      * Aggiunge o sovrascrive un account in posizione accountId
      * @return l'Account  eliminato(null se non era presente)
      * @throws IllegalArgumentException se accountId<0 || accountId>=MAXACCOUNTNUMBER
+     * @throws NullPointerException se l'account passato è null
      * Nota:account.accountId viene settato automaticamente
      */
 
@@ -84,6 +87,8 @@ public interface AccountCollectionInterface {
      * @param accountId la posizione dell'accoutn da eliminare
      * @param email l'email da controllare
      * @return null se non corrisponde o se non trovata, l'istanza account eliminata altrimenti
+     * @throws IllegalArgumentException se accountId<0 || accountId>=MAXACCOUNTNUMBER
+     * @throws NullPointerException se email==null
      */
      Account removeAccountCheckEmail(int accountId,String email);
 
@@ -103,7 +108,7 @@ public interface AccountCollectionInterface {
      *
      * @param account l'account da aggiungere con già i suoi fields settati
      * @return l'account id se non era presente; Torna  -2 se l'username è già presente
-     * @throws NullPointerException  se i fields email o username di account sono settati a null
+     * @throws NullPointerException  se il field  username di account è settato a null
      * @throws MaxNumberAccountReached se non ci sono più posti disponibili
      * @throws IllegalArgumentException se viene passato un reference null
      * @throws AccountMonitorRuntimeException errore irreversibile (non dovrebbe mai succedere)
@@ -124,10 +129,10 @@ public interface AccountCollectionInterface {
 
 
     /**
-     * Tutti i getter tornano il valore (null o qualcosa di definito) oppure una delle due eccezioni
+     * Tutti i getter tornano il valore richiesto associato all'account in posizione accountId
      * Nota:torna uno snapshot
      * @param accountId la posizione dove è stato salvato
-     * @return null or Something
+     * @return il valore richiesto
      * @throws IllegalArgumentException se accountId<0 || accountId>=MAXACCOUNTNUMBER
      * @throws NullPointerException se nella posizione accountId non è salvato alcun account
      */
