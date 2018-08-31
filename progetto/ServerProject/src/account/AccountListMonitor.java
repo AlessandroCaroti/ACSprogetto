@@ -130,7 +130,7 @@ public class AccountListMonitor implements AccountCollectionInterface {
         return toRemove;
     }
 
-    public int putIfAbsentEmailUsername(Account account) throws NullPointerException, MaxNumberAccountReached, IllegalArgumentException, AccountMonitorRuntimeException {
+    public int putIfAbsentEmailUsername(Account account) throws NullPointerException, MaxNumberAccountReached, IllegalArgumentException {
 
         if(account==null)throw new IllegalArgumentException("account==null");
         if (this.getNumberOfAccount() >= MAXACCOUNTNUMBER) {
@@ -350,10 +350,8 @@ public class AccountListMonitor implements AccountCollectionInterface {
         return l;
     }
 
-    public int getMAXACCOUNTNUMBER() {
-        return this.MAXACCOUNTNUMBER;
-    }
-
+    public int getMAXACCOUNTNUMBER() { return this.MAXACCOUNTNUMBER; }
+    public int getMAXACCOUNTNUMBERDEFAULT(){return this.MAXACCOUNTNUMBERDEFAULT;}
 
     /* ****************************************************************************************************/
     //METODI SETTER
@@ -431,7 +429,7 @@ public class AccountListMonitor implements AccountCollectionInterface {
         }
     }
 
-    private String[] getEmailAndUsername(int accountId){//todo getEmail e getUsername potrebbero sollevare NullPOinterExce
+    private String[] getEmailAndUsername(int accountId){
         String[] coppia=new String[2];
         testRange(accountId);
 
