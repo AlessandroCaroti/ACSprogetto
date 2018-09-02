@@ -1,7 +1,7 @@
 import client.Client;
 import utility.infoProvider.ServerInfoRecover;
 
-public class clientTest_3 {
+public class clientTest_register {
     public static void main(String[] args) {
         try {
             int k = (int)(Math.random()*10000);

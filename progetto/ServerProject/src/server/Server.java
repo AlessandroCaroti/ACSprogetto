@@ -160,10 +160,10 @@ public class Server implements ServerInterface {
     //API
 
 
-
-
-    // Startup of RMI serverobject, including registration of the instantiated server object
-    // with remote RMI registry
+    /**
+     * Startup of RMI serverObject, including registration of the instantiated server object
+     * with remote RMI registry
+     */
     public void start(){
         print.pedanticInfo("Starting server ...");
         ServerInterface stub = null;

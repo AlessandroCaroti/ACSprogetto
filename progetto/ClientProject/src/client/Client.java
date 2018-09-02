@@ -122,7 +122,6 @@ public class Client extends AnonymousClient {
         ResponseCode response;
         if(connected()) {
             try {
-
                 if(this.getCookie()!=null) {
                     response = server_stub.retrieveAccountByCookie(this.getCookie(),this.plainPassword,this.skeleton);
                     if (response.getCodice() == R220) {
@@ -352,6 +351,7 @@ public class Client extends AnonymousClient {
             return false;
         }
     }
+
 
     private static PublicKey stringToPublicKey(String publickey) throws NoSuchAlgorithmException, InvalidKeySpecException {
         byte[] pubBytes64Decode = Base64.decode(publickey);
