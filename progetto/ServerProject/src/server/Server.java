@@ -368,7 +368,7 @@ public class Server implements ServerInterface {
         try {
             int accountId = getAccountId(cookie);
             this.accountList.setStub(null, accountId);
-            //todo creare una funzione invalidateTemporantInfo() che imposta a null lo stub e la chiaveSegretaCondivisa
+            //todo creare una funzione invalidateTemporaryInfo() che imposta a null lo stub e la chiaveSegretaCondivisa
             print.pedanticInfo("User "+accountId + "  disconnected.");
             serverStat.decrementClientNum();
             return new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER,"disconnessione avvenuta con successo");
@@ -391,9 +391,11 @@ public class Server implements ServerInterface {
             Account account=accountList.getAccountCopyUsername(username);
             if(account!=null) {
                 if (account.cmpPassword(plainPassword)) {
-                    accountList.setStub(clientStub, account.getAccountId());
+                    int accountId = account.getAccountId();
+                    accountList.setStub(clientStub, accountId);
                     print.pedanticInfo(username + " connected.");
                     serverStat.incrementClientNum();
+                    account.getTopicSubscribed();
                     return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER, "login andato a buon fine");
                 } else {
                     print.pedanticInfo(username + " invalid retrieve account.");
@@ -456,6 +458,7 @@ public class Server implements ServerInterface {
             if(!subscribers.contains(accountId)){
                 print.pedanticInfo("User "+accountId + "  subscribed to "+topicName+".");
                 subscribers.add(accountId);
+                accountList.addTopic(topicName, accountId);
             }
             return new ResponseCode(ResponseCode.Codici.R200,ResponseCode.TipoClasse.SERVER,"iscrizione avvenuta con successo");
         } catch (BadPaddingException | IllegalBlockSizeException e) {
@@ -478,6 +481,7 @@ public class Server implements ServerInterface {
         try {
             int accountId = getAccountId(cookie);
             if (topicClientList.get(topicName).remove(accountId)) {   //todo se il topic non esiste? risposta -> non succede niente, la differenza si nota solo nel valore di ritorno
+                accountList.removeTopic(topicName, accountId);
                 print.pedanticInfo("User " + accountId + " unsubscribe from " + topicName + ".");
                 return new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER, "Disiscrizione avvenuta con successo.");
             }
