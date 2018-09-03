@@ -156,6 +156,7 @@ public class ResponseCode implements Serializable {
                 return "ClientError - Invalid Cookies";
             default:
                 return "Message Of Code " + this.statusCode + " Not Supported";
+
         }
     }
 }

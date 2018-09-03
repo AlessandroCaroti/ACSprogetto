@@ -21,6 +21,7 @@ package utility;
 import interfaces.ClientInterface;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.HashSet;
 
 import static java.util.Objects.requireNonNull;
 import static utility.cryptography.hashFunctions.compareHashAndString;
@@ -34,6 +35,8 @@ public class Account {
     private String publicKey;       //todo cambiare il nome in secretKey e anche tutte le funzioni getter
     private int accountId;//l'indice dove si trova nella lista degli account
     private String email;//can be null for anonymous users
+    final private HashSet<String> topicsSubscibed = new HashSet<>();
+
     /**
      * Crea un nuovo account
      * @param userName l'username :D
@@ -132,6 +135,10 @@ public class Account {
 
     public String getEmail(){return email;}
 
+    public String[] getTopicSubscribed() {
+        return topicsSubscibed.toArray(new String[0]);
+    }
+
     /**setter*/
     public void setAccountId(int accountId) {
         if(accountId<0)
@@ -165,6 +172,16 @@ public class Account {
     }
 
     public void setEmail(String email){ this.email=requireNonNull(email); }
+
+    public boolean addTopic(String topicName) {
+        if (topicName == null) throw new IllegalArgumentException("topicName==null");
+        return topicsSubscibed.add(topicName);
+    }
+
+    public boolean removeTopic(String topicName) {
+        if (topicName == null) throw new IllegalArgumentException("topicName==null");
+        return topicsSubscibed.remove(topicName);
+    }
 
 
     public Account copy()  {
