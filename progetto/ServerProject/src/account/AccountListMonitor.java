@@ -57,7 +57,7 @@ public class AccountListMonitor implements AccountCollectionInterface {
 
     /* ****************************************************************************************************/
     //METODI MODIFICATORI
-    public int addAccount(Account account) throws NullPointerException, MaxNumberAccountReached, AccountMonitorRuntimeException {
+    public int addAccount(Account account) throws NullPointerException, MaxNumberAccountReached {
         int posizione;
         if (account == null) {
             throw new NullPointerException("account==null");
@@ -75,43 +75,36 @@ public class AccountListMonitor implements AccountCollectionInterface {
                 account.setAccountId(lastFreeposition);
                 posizione = lastFreeposition;//System.err.println(" cache!");
                 lastFreeposition = -1;
+                this.length++;
                 return posizione;
             } else {
                 for (int i = 0; i < this.MAXACCOUNTNUMBER; i++) {
                     if (accountList[i] == null) {
                         accountList[i] = account;
                         account.setAccountId(i);
+                        this.length++;
                         return i;
                     }
                 }
+                throw new MaxNumberAccountReached();
             }
         } finally {
-            this.length++;
             listLock.writeLock().unlock();
         }
-        throw new AccountMonitorRuntimeException("ERRORE:addAccount");//Non dovrebbe mai essere sollevata :D speremmu!
     }
 
     public Account addAccount(Account account, int accountId) {
         testRange(accountId);
+        if(account==null)throw new NullPointerException();
         Account prev;
-
+        account.setAccountId(accountId);
         listLock.writeLock().lock();
         try {
             prev = accountList[accountId];
-
-            //gestione length
-            if (prev != null && account == null) {
-                this.length--;
-            } else if (prev == null && account != null) {
+            accountList[accountId] = account;
+            if(prev==null){
                 this.length++;
             }
-            if (account == null) {
-                lastFreeposition = accountId;
-            } else {
-                account.setAccountId(accountId);
-            }
-            accountList[accountId] = account;
         } finally {
             this.listLock.writeLock().unlock();
         }
@@ -129,15 +122,15 @@ public class AccountListMonitor implements AccountCollectionInterface {
             if (toRemove != null) {
                 this.length--;
                 accountList[accountId] = null;
-                lastFreeposition = accountId;
             }
+            lastFreeposition = accountId;
         } finally {
             this.listLock.writeLock().unlock();
         }
         return toRemove;
     }
 
-    public int putIfAbsentEmailUsername(Account account) throws NullPointerException, MaxNumberAccountReached, IllegalArgumentException, AccountMonitorRuntimeException {
+    public int putIfAbsentEmailUsername(Account account) throws NullPointerException, MaxNumberAccountReached, IllegalArgumentException {
 
         if(account==null)throw new IllegalArgumentException("account==null");
         if (this.getNumberOfAccount() >= MAXACCOUNTNUMBER) {
@@ -165,7 +158,7 @@ public class AccountListMonitor implements AccountCollectionInterface {
         }
     }
 
-    public int putIfAbsentUsername(Account account) throws NullPointerException, MaxNumberAccountReached, IllegalArgumentException, AccountMonitorRuntimeException {
+    public int putIfAbsentUsername(Account account) throws NullPointerException, MaxNumberAccountReached, IllegalArgumentException {
 
         if(account==null)throw new IllegalArgumentException("account==null");
         if (this.getNumberOfAccount() >= MAXACCOUNTNUMBER) {
@@ -191,6 +184,7 @@ public class AccountListMonitor implements AccountCollectionInterface {
 
     public Account removeAccountCheckEmail(int accountId,String email){
         testRange(accountId);
+        if(email==null)throw new IllegalArgumentException();
 
         Account toRemove;
         listLock.writeLock().lock();
@@ -201,6 +195,8 @@ public class AccountListMonitor implements AccountCollectionInterface {
                     this.length--;
                     accountList[accountId] = null;
                     lastFreeposition = accountId;
+                }else{
+                    toRemove=null;
                 }
             }
         } finally {
@@ -216,13 +212,13 @@ public class AccountListMonitor implements AccountCollectionInterface {
     public Account isMember(String email,String username) throws IllegalArgumentException {
         if(email==null&&username==null){throw new IllegalArgumentException("email==null AND username==null");}
         String[] coppia;
-        if(email==null){email="";}
-        if(username==null){username="";}
+
         listLock.readLock().lock();
         try {
             for (int i = 0; i < this.MAXACCOUNTNUMBER; i++) {
                 coppia = this.getEmailAndUsername(i);
-                if (email.equalsIgnoreCase(coppia[0]) || username.equals(coppia[1])) {
+
+                if ((email!=null&&email.equalsIgnoreCase(coppia[0])) || (username!=null&&username.equals(coppia[1]))) { //GLI AND e gli OR  sono cortocircuitati
                     return this.getAccountCopy(i);
                 }
             }
@@ -238,15 +234,14 @@ public class AccountListMonitor implements AccountCollectionInterface {
         testRange(accountId);
 
         Account snapShot;
-        Account curr;
 
         this.listLock.readLock().lock();
         try {
-            curr = accountList[accountId];
-            if (curr == null) {
+
+            if (accountList[accountId] == null) {
                 return null;
             }
-            snapShot = curr.copy();
+            snapShot = accountList[accountId].copy();
             return snapShot;
         } finally {
             listLock.readLock().unlock();
@@ -260,7 +255,7 @@ public class AccountListMonitor implements AccountCollectionInterface {
         listLock.readLock().lock();
         try {
 
-            return new String(accountList[accountId].getPublicKey());//è uno snapshot non è ridondante!
+            return accountList[accountId].getPublicKey();
         } finally {
             this.listLock.readLock().unlock();
         }
@@ -271,9 +266,7 @@ public class AccountListMonitor implements AccountCollectionInterface {
 
         listLock.readLock().lock();
         try {
-            byte[] returnValue;
-            returnValue= Arrays.copyOf(accountList[accountId].getPassword(),accountList[accountId].getPassword().length);//snapshot
-            return returnValue;
+            return Arrays.copyOf(accountList[accountId].getPassword(),accountList[accountId].getPassword().length);//snapshot;
         } finally {
             this.listLock.readLock().unlock();
         }
@@ -284,7 +277,7 @@ public class AccountListMonitor implements AccountCollectionInterface {
 
         listLock.readLock().lock();
         try {
-            return new String(accountList[accountId].getUsername());//è uno snapshot non è ridondante!
+            return accountList[accountId].getUsername();
         } finally {
             this.listLock.readLock().unlock();
         }
@@ -295,8 +288,7 @@ public class AccountListMonitor implements AccountCollectionInterface {
 
         listLock.readLock().lock();
         try {
-            //ClientInterface returnValue=new
-            return  accountList[accountId].getStub();//TODO come faccio a ritornare uno snapshot di clientInterface?
+            return  accountList[accountId].getStub();
         } finally {
             this.listLock.readLock().unlock();
         }
@@ -307,14 +299,14 @@ public class AccountListMonitor implements AccountCollectionInterface {
 
         listLock.readLock().lock();
         try{
-            return new String(accountList[accountId].getEmail());//è uno snapshot non è ridondante!
+            return accountList[accountId].getEmail();
         }finally{
             listLock.readLock().unlock();
         }
     }
 
     public Account getAccountCopyUsername(String username){
-        if(username==null){throw new IllegalArgumentException("username==null");}
+        if(username==null)throw new IllegalArgumentException("username==null");
         listLock.readLock().lock();
         try {
             for (int i = 0; i < this.MAXACCOUNTNUMBER; i++) {
@@ -358,14 +350,11 @@ public class AccountListMonitor implements AccountCollectionInterface {
         return l;
     }
 
-    public int getMAXACCOUNTNUMBER() {
-        return this.MAXACCOUNTNUMBER;
-    }
-
+    public int getMAXACCOUNTNUMBER() { return this.MAXACCOUNTNUMBER; }
+    public int getMAXACCOUNTNUMBERDEFAULT(){return this.MAXACCOUNTNUMBERDEFAULT;}
 
     /* ****************************************************************************************************/
     //METODI SETTER
-    //todo i setter non controllano prima di applicare il metodo se accountList[accountId] è null come mai?
 
     public String setPublicKey(String clientPublicKey, int accountId) {
         testRange(accountId);
@@ -446,13 +435,20 @@ public class AccountListMonitor implements AccountCollectionInterface {
 
         listLock.readLock().lock();//reentrant lock
         try{
-            coppia[0]= this.getEmail(accountId);
-            coppia[1]= this.getUsername(accountId);
-            return coppia;
-        }finally{
+            try {
+                coppia[0] = this.getEmail(accountId);
+            }catch (NullPointerException exc){
+                coppia[0]=null;
+            }
+            try{
+                coppia[1]= this.getUsername(accountId);
+            }catch (NullPointerException exc){
+                coppia[1]=null;
+            }
+        } finally{
             listLock.readLock().unlock();
         }
-
+        return coppia;
     }
 
 

@@ -45,7 +45,7 @@ public class Account {
      * @throws NullPointerException() se username o password corrispondono a null;gli altri possono essere passati come null
      */
     public Account(String userName, String plainPassword, ClientInterface stub, String publicKey,int accountId,String email)
-            throws NullPointerException, IllegalArgumentException {
+    throws  NullPointerException,IllegalArgumentException {
         if (userName == null || plainPassword == null ) {
             throw new NullPointerException("username o plainpassword  == null");
         } else {
