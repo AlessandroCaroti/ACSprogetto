@@ -347,7 +347,7 @@ public class AnonymousClient implements ClientInterface {
                 print.info("password successfully changed.");
                 return true;
             }else{
-                if(resp.getCodice()==ResponseCode.Codici.R510){
+                if (resp.getStatusCode() == ResponseCode.Codici.R510) {
                     print.info("invalid arguments.");
                 }else{
                     print.info("Unknown error.");
@@ -412,13 +412,13 @@ public class AnonymousClient implements ClientInterface {
     }
 
     protected boolean registered(ResponseCode response){
-        if(response == null || !response.getCodice().equals(ResponseCode.Codici.R100)) {     //Registrazione fallita
+        if (response == null || !response.getStatusCode().equals(ResponseCode.Codici.R100)) {     //Registrazione fallita
             print.error(response, "Server registration failed");
             return false;
         }
 
         //Registrazione avvenuta con successo
-        this.cookie = response.getMessaggioInfo();
+        this.cookie = response.getMessageInfo();
         print.info("Successfully registered on server "+serverName+".");
         return true;
     }

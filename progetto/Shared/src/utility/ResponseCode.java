@@ -21,7 +21,7 @@ import java.io.Serializable;
 
 /**
  * Messaggio di risposta ,utilizzare il costruttore per definire e creare il messaggio
- * Il response code contiene 3 campi:il codice,chi l'ha generato, un messaggio informativo
+ * Il response code contiene 3 campi:il statusCode,chi l'ha generato, un messaggio informativo
  */
 
 public class ResponseCode implements Serializable {
@@ -58,40 +58,57 @@ public class ResponseCode implements Serializable {
 
     }
 
-    private Codici codice;
-    private TipoClasse classeGeneratrice;
-    private String messaggioInfo;
+    final private Codici statusCode;
+    final private TipoClasse classeGeneratrice;
+    final private Object extraInfo;         //ex messageInfo
 
     /**
-     * Crea il codice di risposta
-     * @param codiceRisposta  deve essere diverso da null
+     * Crea il statusCode di risposta
+     *
+     * @param codiceRisposta             deve essere diverso da null
      * @param classeGeneratriceMessaggio deve essere diversi da null
-     * @param messaggioInformativo informativo può essere null
-     * @throws NullPointerException se codice o classegeneratrice corrispondono a null
+     * @param messaggioInformativo       informativo può essere null
+     * @throws NullPointerException se statusCode o classegeneratrice corrispondono a null
      */
 
     public ResponseCode(Codici codiceRisposta, TipoClasse classeGeneratriceMessaggio, String messaggioInformativo)
             throws NullPointerException {
         if (codiceRisposta == null) {
-            throw new NullPointerException("codice  == null");
+            throw new NullPointerException("statusCode  == null");
         }
         if (classeGeneratriceMessaggio == null) {
             throw new NullPointerException(" classeGeneratrice ==null");
         }
-        if (messaggioInformativo == null) {
-            this.messaggioInfo = "";
-        }
-        this.codice = codiceRisposta;
+        this.statusCode = codiceRisposta;
         this.classeGeneratrice = classeGeneratriceMessaggio;
-        this.messaggioInfo = messaggioInformativo;
+        this.extraInfo = messaggioInformativo;
     }
 
-    public Codici getCodice() {
-        return codice;
+    public ResponseCode(Codici codiceRisposta, TipoClasse classeGeneratriceMessaggio, Object extraInfo)
+            throws NullPointerException {
+        if (codiceRisposta == null) {
+            throw new NullPointerException("statusCode  == null");
+        }
+        if (classeGeneratriceMessaggio == null) {
+            throw new NullPointerException("classeGeneratrice ==null");
+        }
+        this.statusCode = codiceRisposta;
+        this.classeGeneratrice = classeGeneratriceMessaggio;
+        this.extraInfo = extraInfo;
     }
 
-    public String getMessaggioInfo() {
-        return messaggioInfo;
+    public Codici getStatusCode() {
+        return statusCode;
+    }
+
+    public String getMessageInfo() {
+        if (extraInfo instanceof String)
+            return (String) extraInfo;
+        return "";
+    }
+
+    public Object getExtraInfo() {
+        return extraInfo;
     }
 
     public TipoClasse getClasseGeneratrice() {
@@ -99,19 +116,16 @@ public class ResponseCode implements Serializable {
     }
 
     public boolean IsOK() {
-        if (codice == null) {
-            return false;
-        }
-        return Codici.R200 == codice ||
-                Codici.R210 == codice;
+        return Codici.R200 == statusCode ||
+                Codici.R210 == statusCode;
     }
 
     public boolean IsSetCookie() {
-        return Codici.R100 == codice;
+        return Codici.R100 == statusCode;
     }
 
     public String getStandardMessage() {
-        switch (this.codice) {
+        switch (this.statusCode) {
             case R100:
                 return "Set Cookie.";
             case R101:
@@ -141,7 +155,8 @@ public class ResponseCode implements Serializable {
             case R666:
                 return "ClientError - Invalid Cookies";
             default:
-                return "Message Of Code " + this.codice + " Not Supported";
+                return "Message Of Code " + this.statusCode + " Not Supported";
+
         }
     }
 }
