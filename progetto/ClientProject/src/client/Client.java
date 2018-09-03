@@ -35,9 +35,7 @@ import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
-import static utility.ResponseCode.Codici.R200;
 import static utility.ResponseCode.Codici.R220;
 
 
@@ -124,7 +122,7 @@ public class Client extends AnonymousClient {
             try {
                 if(this.getCookie()!=null) {
                     response = server_stub.retrieveAccountByCookie(this.getCookie(),this.plainPassword,this.skeleton);
-                    if (response.getCodice() == R220) {
+                    if (response.getStatusCode() == R220) {
                         print.info("Account successfully recovered.");
                         return true;
                     }else{
@@ -133,7 +131,7 @@ public class Client extends AnonymousClient {
                     }
                 }
                 response = server_stub.retrieveAccount(username, plainPassword, skeleton);
-                if (response.getCodice() == R220 && this.retrieveCookie()) {
+                if (response.getStatusCode() == R220 && this.retrieveCookie()) {
                     print.info("Account and cookie successfully recovered.");
                     return true;
                 }
@@ -319,7 +317,7 @@ public class Client extends AnonymousClient {
             ServerInterface server_stub = (ServerInterface) r.lookup(server);
             ResponseCode rc = server_stub.connect();
             if(rc.IsOK()) {
-                String pubKey_str = rc.getMessaggioInfo();
+                String pubKey_str = rc.getMessageInfo();
                 serverPublicKey_RSA = stringToPublicKey(pubKey_str);
                 return server_stub;
             }
@@ -335,11 +333,11 @@ public class Client extends AnonymousClient {
         try {
             if(connected()) {
                 ResponseCode response = server_stub.retrieveCookie(this.username, this.plainPassword);
-                if (response == null || !response.getCodice().equals(ResponseCode.Codici.R100)) {
+                if (response == null || !response.getStatusCode().equals(ResponseCode.Codici.R100)) {
                     //print.error(response, "cookie retrieve failed");
                     return false;
                 }
-                this.cookie = response.getMessaggioInfo();
+                this.cookie = response.getMessageInfo();
                 //print.info("Cookie successfully retrieved.");
                 return true;
             }else{

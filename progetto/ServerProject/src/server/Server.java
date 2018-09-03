@@ -831,8 +831,8 @@ public class Server implements ServerInterface {
         for (int i = MAXATTEMPTS; i >0 ; i--) {
             resp=stub.getCode(i);
             if (resp.IsOK()) {
-                print.pedanticInfo("the user has entered the code:"+resp.getMessaggioInfo()+";");
-                if(codice.equals(Integer.parseInt(resp.getMessaggioInfo()))||x.equals(Integer.parseInt(resp.getMessaggioInfo()))) {                              //todo remove backdoor (Integer.parseInt(resp.getMessaggioInfo())==-1) and var x
+                print.pedanticInfo("the user has entered the code:" + resp.getMessageInfo() + ";");
+                if (codice.equals(Integer.parseInt(resp.getMessageInfo())) || x.equals(Integer.parseInt(resp.getMessageInfo()))) {                              //todo remove backdoor (Integer.parseInt(resp.getMessageInfo())==-1) and var x
                     return true;
                 }
             }
@@ -852,7 +852,7 @@ public class Server implements ServerInterface {
         ResponseCode resp;
         for (int i = MAXATTEMPTS; i >0 ; i--) {
             resp=stub.getCode(i);
-            print.info("(antiAccountEnum)the user has entered the code:"+resp.getMessaggioInfo()+";");
+            print.info("(antiAccountEnum)the user has entered the code:" + resp.getMessageInfo() + ";");
         }
     }
 
