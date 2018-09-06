@@ -142,7 +142,7 @@ public interface AccountCollectionInterface {
 
      String getUsername(int accountId) ;
 
-     ClientInterface getStub(int accountId);//TODO guardare implementazione metodo nella classe AccountListMonitor (possibile bug)
+     ClientInterface getStub(int accountId);
 
      String getEmail(int accountId);
 
@@ -168,4 +168,6 @@ public interface AccountCollectionInterface {
      int getNumberOfAccount();
 
      int getMAXACCOUNTNUMBER();
+
+    int getMAXACCOUNTNUMBERDEFAULT();
 }
