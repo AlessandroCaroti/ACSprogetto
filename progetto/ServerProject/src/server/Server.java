@@ -121,7 +121,7 @@ public class Server implements ServerInterface {
 
         //Caricamento delle impostazioni del server memorizate su file
         print.pedanticInfo("Working Directory = " + System.getProperty("user.dir"));
-        
+
         loadSetting("./src/server/config.serverSettings");
         print.info("Server settings imported.");
 
@@ -271,7 +271,7 @@ public class Server implements ServerInterface {
             PublicKey clientPubKey = stub.publicKeyExchange(ECDH_pubKey_encrypted);
             byte[] shearedSecretKey = ECDH.sharedSecretKey(ECDH_privateKey, clientPubKey);
             secretAesKey = new SecretKeySpec(shearedSecretKey, "AES");
-            
+
             //test the key
             byte[] res_encrypted = stub.testSecretKey(messageTest);
             byte[] res = utility.cryptography.AES.decrypt(res_encrypted, secretAesKey);
@@ -395,8 +395,9 @@ public class Server implements ServerInterface {
                     accountList.setStub(clientStub, accountId);
                     print.pedanticInfo(username + " connected.");
                     serverStat.incrementClientNum();
-                    account.getTopicSubscribed();
-                    return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER, "login andato a buon fine");
+                    String[] topicsSubscribed = account.getTopicSubscribed();
+                    subscribeAll(accountId, topicsSubscribed);
+                    return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER, topicsSubscribed);
                 } else {
                     print.pedanticInfo(username + " invalid retrieve account.");
                     return ResponseCodeList.LoginFailed;
@@ -426,7 +427,9 @@ public class Server implements ServerInterface {
                     accountList.setStub(clientStub, account.getAccountId());
                     print.pedanticInfo(account.getUsername() + " connected.(cookie):"+cookie);
                     serverStat.incrementClientNum();
-                    return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER, "login andato a buon fine");
+                    String[] topicsSubscribed = account.getTopicSubscribed();
+                    subscribeAll(accountId, topicsSubscribed);
+                    return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER, topicsSubscribed);
                 }
             }else{
                 print.pedanticInfo("Invalid cookie.");
@@ -500,13 +503,14 @@ public class Server implements ServerInterface {
     //Il client che invia il messaggio riceverà una copia del suo stesso messaggio, questo lo gestiremo nel client e si può usare anche come conferma dell'invio tipo la spunta blu di whatsappp
     public ResponseCode publish(String cookie, Message msg) {
         try {
-            Integer accountId = getAccountId(cookie);
+            int accountId = getAccountId(cookie);
             String topicName  = msg.getTopic();
             ConcurrentLinkedQueue<Integer> subscribers = topicClientList.putIfAbsent(topicName, new ConcurrentLinkedQueue<>());
             if(subscribers == null){  //creazione di un nuovo topic //TODO bisogna chiamare su tutti gli account la newtopicNotification
                 print.pedanticInfo("User "+accountId + " has created a new topic named \'"+topicName+"\'.");
                 topicList.add(topicName);
                 (subscribers = topicClientList.get(topicName)).add(accountId);
+                accountList.addTopic(topicName, accountId);
                 serverStat.incrementTopicNum();
             }
             notifyAll(subscribers.iterator(), msg);
@@ -880,5 +884,17 @@ public class Server implements ServerInterface {
                 );
         emailController.sendMessage(message);
     }
+
+    private void subscribeAll(int accountId, String[] topics) {
+        ConcurrentSkipListMap<String, ConcurrentLinkedQueue<Integer>> list = topicClientList;
+        for (String topic : topics) {
+            ConcurrentLinkedQueue<Integer> subscribers = list.get(topic);
+            if (subscribers != null && !subscribers.contains(accountId)) {
+                print.pedanticInfo("User " + accountId + " subscribed to " + topic + ".");
+                subscribers.add(accountId);
+            }
+        }
+    }
+
 
 }

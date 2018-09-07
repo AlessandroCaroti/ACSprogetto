@@ -64,14 +64,14 @@ public class Client extends AnonymousClient {
      * @param plainPassword     password in chiaro
      * @param email             la mail associata all'account(può essere vuota)
      */
-    public Client(String username, String plainPassword, String email ) throws RemoteException
+    public Client(String username, String plainPassword, String email, boolean pedantic) throws RemoteException
     {
         super();
-        print = new LogFormatManager("CLIENT", true);
+        print = new LogFormatManager("CLIENT", pedantic);
         if(plainPassword==null)
             throw new NullPointerException();
-        this.plainPassword=plainPassword;
-        this.username     = username;
+        this.plainPassword = plainPassword;
+        this.username = username;
         this.email=email;
         this.className = "CLIENT";        //TODO serve ancora questo campo?
         try {
@@ -81,6 +81,10 @@ public class Client extends AnonymousClient {
             System.exit(1);
         }
 
+    }
+
+    public Client(String username, String plainPassword, String email) throws RemoteException {
+        this(username, plainPassword, email, true);
     }
 
 
@@ -124,6 +128,7 @@ public class Client extends AnonymousClient {
                     response = server_stub.retrieveAccountByCookie(this.getCookie(),this.plainPassword,this.skeleton);
                     if (response.getStatusCode() == R220) {
                         print.info("Account successfully recovered.");
+                        setTopicSubscribed(response.getExtraInfo());
                         return true;
                     }else{
                         this.cookie=null;
@@ -133,6 +138,7 @@ public class Client extends AnonymousClient {
                 response = server_stub.retrieveAccount(username, plainPassword, skeleton);
                 if (response.getStatusCode() == R220 && this.retrieveCookie()) {
                     print.info("Account and cookie successfully recovered.");
+                    setTopicSubscribed(response.getExtraInfo());
                     return true;
                 }
                 print.error(response, "Impossible to retrieve information.");
@@ -202,6 +208,10 @@ public class Client extends AnonymousClient {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String[] getTopicSubscribed() {
+        return topicsSubscribed.toArray(new String[0]);
     }
     // *************************************************************************************************************
     //PRIVATE METHOD
@@ -360,7 +370,10 @@ public class Client extends AnonymousClient {
         return chiavePubblicaRicostruitra;
     }
 
-
-
-
+    private void setTopicSubscribed(Object extraInfo) {
+        if (extraInfo instanceof String[]) {
+            String[] recoveredTopics = (String[]) extraInfo;
+            topicsSubscribed.addAll(Arrays.asList(recoveredTopics));
+        }
+    }
 }

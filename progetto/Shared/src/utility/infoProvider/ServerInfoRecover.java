@@ -80,7 +80,7 @@ public class ServerInfoRecover extends InfoProviderProtocol {
     private DatagramPacket findServerLocalNetwork() throws IOException {
         DatagramSocket socket = new MulticastSocket(broadcastPort);        //Socket in cui si riceverà l'ip del server
         DatagramPacket packet = new DatagramPacket(buf, buf.length);
-        print.pedanticInfo("Network scan searching for a server ...");
+        print.info("Network scan searching for a server ...");
         socket.setSoTimeout(this.timeOut);                             //Se dopo un tot di tempo nessun messaggio viene ricevuto significa che nessun sta trasmettendo
         socket.receive(packet);
         socket.close();

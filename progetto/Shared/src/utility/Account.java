@@ -35,7 +35,7 @@ public class Account {
     private String publicKey;       //todo cambiare il nome in secretKey e anche tutte le funzioni getter
     private int accountId;//l'indice dove si trova nella lista degli account
     private String email;//can be null for anonymous users
-    final private HashSet<String> topicsSubscibed = new HashSet<>();
+    final private HashSet<String> topicsSubscribed = new HashSet<>();
 
     /**
      * Crea un nuovo account
@@ -47,22 +47,19 @@ public class Account {
      * @param email l'email associata all'account
      * @throws NullPointerException() se username o password corrispondono a null;gli altri possono essere passati come null
      */
-    public Account(String userName, String plainPassword, ClientInterface stub, String publicKey,int accountId,String email)
-    throws  NullPointerException,IllegalArgumentException {
-        if (userName == null || plainPassword == null ) {
+    public Account(String userName, String plainPassword, ClientInterface stub, String publicKey, int accountId, String email)
+            throws NullPointerException, IllegalArgumentException {
+        if (userName == null || plainPassword == null)
             throw new NullPointerException("username o plainpassword  == null");
-        } else {
-            if(accountId<0)
-            {
-                throw new IllegalArgumentException("accountId < 0");
-            }
-            this.username = userName;
-            this.password = stringHash(plainPassword);
-            this.stub = stub;
-            this.publicKey = publicKey;
-            this.accountId=accountId;
-            this.email=email;
-        }
+        if (accountId < 0)
+            throw new IllegalArgumentException("accountId < 0");
+        this.username = userName;
+        this.password = stringHash(plainPassword);
+        this.stub = stub;
+        this.publicKey = publicKey;
+        this.accountId = accountId;
+        this.email = email;
+
     }
 
 
@@ -76,24 +73,18 @@ public class Account {
      * @param email l'email associata all'account
      * @throws NullPointerException() se username o password corrispondono a null;gli altri possono essere passati come null
      */
-    public Account(String userName, byte[] password, ClientInterface stub, String publicKey,int accountId,String email)
-            throws  NullPointerException,IllegalArgumentException {
-        if (userName == null) {
+    public Account(String userName, byte[] password, ClientInterface stub, String publicKey, int accountId, String email)
+            throws NullPointerException, IllegalArgumentException {
+        if (userName == null)
             throw new NullPointerException("username o email==null ");
-        } else {
-            if(accountId<0)
-            {
-                throw new IllegalArgumentException("accountId < 0");
-            }
-            this.username = userName;
-            this.password = password;
-            this.stub = stub;
-            this.publicKey = publicKey;
-            this.accountId=accountId;
-            this.email=email;
-        }
-
-
+        if (accountId < 0)
+            throw new IllegalArgumentException("accountId < 0");
+        this.username = userName;
+        this.password = password;
+        this.stub = stub;
+        this.publicKey = publicKey;
+        this.accountId = accountId;
+        this.email = email;
     }
 
 
@@ -112,7 +103,9 @@ public class Account {
         return compareHashAndString(this.password, plainPassword);
     }
 
-    /**getter**/
+    /**
+     * getter
+     **/
     public int getAccountId() {
         return accountId;
     }
@@ -136,10 +129,12 @@ public class Account {
     public String getEmail(){return email;}
 
     public String[] getTopicSubscribed() {
-        return topicsSubscibed.toArray(new String[0]);
+        return topicsSubscribed.toArray(new String[0]);
     }
 
-    /**setter*/
+    /**
+     * setter
+     */
     public void setAccountId(int accountId) {
         if(accountId<0)
         {
@@ -175,17 +170,20 @@ public class Account {
 
     public boolean addTopic(String topicName) {
         if (topicName == null) throw new IllegalArgumentException("topicName==null");
-        return topicsSubscibed.add(topicName);
+        return topicsSubscribed.add(topicName);
     }
 
     public boolean removeTopic(String topicName) {
         if (topicName == null) throw new IllegalArgumentException("topicName==null");
-        return topicsSubscibed.remove(topicName);
+        return topicsSubscribed.remove(topicName);
     }
 
 
-    public Account copy()  {
-        return new Account(username, password, stub, publicKey, accountId,email);
+    public Account copy() {
+        Account copy = new Account(username, password, stub, publicKey, accountId, email);
+        for (String topic : this.topicsSubscribed)       //inefficente ma è l'unico modo per avere un effetiva copia
+            copy.addTopic(topic);
+        return copy;
     }
 
 }

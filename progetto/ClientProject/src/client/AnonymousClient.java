@@ -65,12 +65,16 @@ public class AnonymousClient implements ClientInterface {
     /**
      * Anonymous user's constructor
      */
-    public AnonymousClient()throws RemoteException
+    public AnonymousClient(boolean pedantic) throws RemoteException
     {
-        print = new LogFormatManager("ANONYMOUS_CLIENT", true);
+        print = new LogFormatManager("ANONYMOUS_CLIENT", pedantic);
         this.skeleton     = (ClientInterface) UnicastRemoteObject.exportObject(this,0);
         topicsSubscribed  = new TreeSet<>();
         this.anonymousClientToClientEngine=new LinkedBlockingQueue<>();
+    }
+
+    public AnonymousClient() throws RemoteException {
+        this(true);
     }
 
 
@@ -304,6 +308,7 @@ public class AnonymousClient implements ClientInterface {
                 this.anonymousClientToClientEngine.offer(newMessage);
                 rc = new ResponseCode(R200, ResponseCode.TipoClasse.CLIENT,
                         "(+) OK il client ha ricevuto il messaggio");
+                System.out.println(m);      //todo rimmuovere stampa di debug
             }
             return rc;
         }catch (Exception exc){
