@@ -433,7 +433,7 @@ public class AccountListMonitor implements AccountCollectionInterface {
     }
 
     @Override
-    public boolean addTopic(String topicName, int accountId) {
+    public boolean addTopic(String topicName, int accountId) throws NullPointerException {
         testRange(accountId);
         listLock.writeLock().lock();
         try {
@@ -444,7 +444,7 @@ public class AccountListMonitor implements AccountCollectionInterface {
     }
 
     @Override
-    public boolean removeTopic(String topicName, int accountId) {
+    public boolean removeTopic(String topicName, int accountId) throws NullPointerException {
         testRange(accountId);
         listLock.writeLock().lock();
         try {
