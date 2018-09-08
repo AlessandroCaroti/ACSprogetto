@@ -36,8 +36,8 @@ final public class LogFormatManager {
     public void error(final ResponseCode r, final String msg) {
         System.out.flush();
         System.err.println("[" + className + "-ERROR]: " + msg);
-        System.err.println("\tError code: " + r.getCodice());
-        System.err.println("\tError message: " + r.getMessaggioInfo());
+        System.err.println("\tError code: " + r.getStatusCode());
+        System.err.println("\tError message: " + r.getMessageInfo());
     }
 
     public void warning(final Exception e, final String msg) {

@@ -65,12 +65,16 @@ public class AnonymousClient implements ClientInterface {
     /**
      * Anonymous user's constructor
      */
-    public AnonymousClient()throws RemoteException
+    public AnonymousClient(boolean pedantic) throws RemoteException
     {
-        print = new LogFormatManager("ANONYMOUS_CLIENT", true);
+        print = new LogFormatManager("ANONYMOUS_CLIENT", pedantic);
         this.skeleton     = (ClientInterface) UnicastRemoteObject.exportObject(this,0);
         topicsSubscribed  = new TreeSet<>();
         this.anonymousClientToClientEngine=new LinkedBlockingQueue<>();
+    }
+
+    public AnonymousClient() throws RemoteException {
+        this(true);
     }
 
 
@@ -304,6 +308,7 @@ public class AnonymousClient implements ClientInterface {
                 this.anonymousClientToClientEngine.offer(newMessage);
                 rc = new ResponseCode(R200, ResponseCode.TipoClasse.CLIENT,
                         "(+) OK il client ha ricevuto il messaggio");
+                System.out.println(m);      //todo rimmuovere stampa di debug
             }
             return rc;
         }catch (Exception exc){
@@ -347,7 +352,7 @@ public class AnonymousClient implements ClientInterface {
                 print.info("password successfully changed.");
                 return true;
             }else{
-                if(resp.getCodice()==ResponseCode.Codici.R510){
+                if (resp.getStatusCode() == ResponseCode.Codici.R510) {
                     print.info("invalid arguments.");
                 }else{
                     print.info("Unknown error.");
@@ -412,13 +417,13 @@ public class AnonymousClient implements ClientInterface {
     }
 
     protected boolean registered(ResponseCode response){
-        if(response == null || !response.getCodice().equals(ResponseCode.Codici.R100)) {     //Registrazione fallita
+        if (response == null || !response.getStatusCode().equals(ResponseCode.Codici.R100)) {     //Registrazione fallita
             print.error(response, "Server registration failed");
             return false;
         }
 
         //Registrazione avvenuta con successo
-        this.cookie = response.getMessaggioInfo();
+        this.cookie = response.getMessageInfo();
         print.info("Successfully registered on server "+serverName+".");
         return true;
     }

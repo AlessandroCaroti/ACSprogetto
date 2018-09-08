@@ -1,20 +1,19 @@
 /**
-    This file is part of ACSprogetto.
-
-    ACSprogetto is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    ACSprogetto is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with ACSprogetto.  If not, see <http://www.gnu.org/licenses/>.
-
-**/
+ * This file is part of ACSprogetto.
+ * <p>
+ * ACSprogetto is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * <p>
+ * ACSprogetto is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with ACSprogetto.  If not, see <http://www.gnu.org/licenses/>.
+ **/
 package utility;
 
 
@@ -22,93 +21,111 @@ import java.io.Serializable;
 
 /**
  * Messaggio di risposta ,utilizzare il costruttore per definire e creare il messaggio
- * Il response code contiene 3 campi:il codice,chi l'ha generato, un messaggio informativo
+ * Il response code contiene 3 campi:il statusCode,chi l'ha generato, un messaggio informativo
  */
 
-public  class ResponseCode implements Serializable {
-    public  enum TipoClasse implements Serializable  {
+public class ResponseCode implements Serializable {
+    public enum TipoClasse implements Serializable {
         SERVER,
         CLIENT,
         SERVER_CLIENT
     }
-     public enum Codici implements Serializable{
-         R100,//Set Cookie
-         R101,//pong message (nel messagge info è presente il tempo di delay
 
-         //I messaggi con 200 sono messaggi di successo
-         R200,  //OK
-         R210,  //"set public key" all'interno del massageinfo è presente la chiave pubblica del server
-         R220,  //account successfully retrieved(login a buon fine)
+    public enum Codici implements Serializable {
+        R100,//Set Cookie
+        R101,//pong message (nel messagge info è presente il tempo di delay
 
-         //I messaggi che iniziano per 500 sono di errore del server
-         R500,  //received null message
-         R505,  //Internal Server Error
-         R510, //sono stati passati argomenti invalidi (null ecc...)
+        //I messaggi con 200 sono messaggi di successo
+        R200,  //OK
+        R210,  //"set public key" all'interno del massageinfo è presente la chiave pubblica del server
+        R220,  //account successfully retrieved(login a buon fine)
+
+        //I messaggi che iniziano per 500 sono di errore del server
+        R500,  //received null message
+        R505,  //Internal Server Error
+        R510, //sono stati passati argomenti invalidi (null ecc...)
 
 
-         //I messaggi che iniziano per 600 sono di errore del client
-         R610,  //Registrazione account fallita
-         R620,  //Errore disconnessione
-         R630,  //Login senza successo
-         R640,  //Topic non esistente
-         R650,  //Codice validazione email inserito errato,Tentativi terminati
-         R660,  //Username per la registrazione già in uso,sceglierne un altro
-         R666,  //Formato cookie non valido
-         R670   //Internal client error
+        //I messaggi che iniziano per 600 sono di errore del client
+        R610,  //Registrazione account fallita
+        R620,  //Errore disconnessione
+        R630,  //Login senza successo
+        R640,  //Topic non esistente
+        R650,  //Codice validazione email inserito errato,Tentativi terminati
+        R660,  //Username per la registrazione già in uso,sceglierne un altro
+        R666,  //Formato cookie non valido
+        R670   //Internal client error
 
     }
 
-    private Codici codice;
-    private TipoClasse classeGeneratrice;
-    private String messaggioInfo;
+    final private Codici statusCode;
+    final private TipoClasse classeGeneratrice;
+    final private Object extraInfo;         //ex messageInfo
 
     /**
-     * Crea il codice di risposta
-     * @param codiceRisposta  deve essere diverso da null
+     * Crea il statusCode di risposta
+     *
+     * @param codiceRisposta             deve essere diverso da null
      * @param classeGeneratriceMessaggio deve essere diversi da null
-     * @param messaggioInformativo informativo può essere null
-     * @throws NullPointerException se codice o classegeneratrice corrispondono a null
+     * @param messaggioInformativo       informativo può essere null
+     * @throws NullPointerException se statusCode o classegeneratrice corrispondono a null
      */
 
     public ResponseCode(Codici codiceRisposta, TipoClasse classeGeneratriceMessaggio, String messaggioInformativo)
-            throws NullPointerException
-    {
-        if(codiceRisposta==null)
-        {
-            throw new NullPointerException("codice  == null");
+            throws NullPointerException {
+        if (codiceRisposta == null) {
+            throw new NullPointerException("statusCode  == null");
         }
-        if( classeGeneratriceMessaggio==null){
+        if (classeGeneratriceMessaggio == null) {
             throw new NullPointerException(" classeGeneratrice ==null");
         }
-        if(messaggioInformativo==null)
-        {
-            this.messaggioInfo="";
+        this.statusCode = codiceRisposta;
+        this.classeGeneratrice = classeGeneratriceMessaggio;
+        this.extraInfo = messaggioInformativo;
+    }
+
+    public ResponseCode(Codici codiceRisposta, TipoClasse classeGeneratriceMessaggio, Object extraInfo)
+            throws NullPointerException {
+        if (codiceRisposta == null) {
+            throw new NullPointerException("statusCode  == null");
         }
-        this.codice=codiceRisposta;
-        this.classeGeneratrice=classeGeneratriceMessaggio;
-        this.messaggioInfo=messaggioInformativo;
+        if (classeGeneratriceMessaggio == null) {
+            throw new NullPointerException("classeGeneratrice ==null");
+        }
+        this.statusCode = codiceRisposta;
+        this.classeGeneratrice = classeGeneratriceMessaggio;
+        this.extraInfo = extraInfo;
     }
 
-    public Codici getCodice() {
-        return codice;
+    public Codici getStatusCode() {
+        return statusCode;
     }
 
-    public String getMessaggioInfo() {
-        return messaggioInfo;
+    public String getMessageInfo() {
+        if (extraInfo instanceof String)
+            return (String) extraInfo;
+        return "";
     }
-    public TipoClasse getClasseGeneratrice()
-    {
+
+    public Object getExtraInfo() {
+        return extraInfo;
+    }
+
+    public TipoClasse getClasseGeneratrice() {
         return classeGeneratrice;
     }
-    public boolean IsOK(){
-        if(codice==null){return false;}
-        return Codici.R200==codice ||
-                Codici.R210==codice;
-    }
-    public boolean IsSetCookie(){ return Codici.R100==codice;}
 
-    public String getStandardMessage(){
-        switch (this.codice){
+    public boolean IsOK() {
+        return Codici.R200 == statusCode ||
+                Codici.R210 == statusCode;
+    }
+
+    public boolean IsSetCookie() {
+        return Codici.R100 == statusCode;
+    }
+
+    public String getStandardMessage() {
+        switch (this.statusCode) {
             case R100:
                 return "Set Cookie.";
             case R101:
@@ -138,7 +155,8 @@ public  class ResponseCode implements Serializable {
             case R666:
                 return "ClientError - Invalid Cookies";
             default:
-                return "Message Of Code "+this.codice+" Not Supported";
+                return "Message Of Code " + this.statusCode + " Not Supported";
+
         }
     }
 }

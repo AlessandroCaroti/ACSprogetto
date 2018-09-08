@@ -121,7 +121,7 @@ public class Server implements ServerInterface {
 
         //Caricamento delle impostazioni del server memorizate su file
         print.pedanticInfo("Working Directory = " + System.getProperty("user.dir"));
-        
+
         loadSetting("./src/server/config.serverSettings");
         print.info("Server settings imported.");
 
@@ -271,7 +271,7 @@ public class Server implements ServerInterface {
             PublicKey clientPubKey = stub.publicKeyExchange(ECDH_pubKey_encrypted);
             byte[] shearedSecretKey = ECDH.sharedSecretKey(ECDH_privateKey, clientPubKey);
             secretAesKey = new SecretKeySpec(shearedSecretKey, "AES");
-            
+
             //test the key
             byte[] res_encrypted = stub.testSecretKey(messageTest);
             byte[] res = utility.cryptography.AES.decrypt(res_encrypted, secretAesKey);
@@ -368,7 +368,7 @@ public class Server implements ServerInterface {
         try {
             int accountId = getAccountId(cookie);
             this.accountList.setStub(null, accountId);
-            //todo creare una funzione invalidateTemporantInfo() che imposta a null lo stub e la chiaveSegretaCondivisa
+            //todo creare una funzione invalidateTemporaryInfo() che imposta a null lo stub e la chiaveSegretaCondivisa
             print.pedanticInfo("User "+accountId + "  disconnected.");
             serverStat.decrementClientNum();
             return new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER,"disconnessione avvenuta con successo");
@@ -391,10 +391,13 @@ public class Server implements ServerInterface {
             Account account=accountList.getAccountCopyUsername(username);
             if(account!=null) {
                 if (account.cmpPassword(plainPassword)) {
-                    accountList.setStub(clientStub, account.getAccountId());
+                    int accountId = account.getAccountId();
+                    accountList.setStub(clientStub, accountId);
                     print.pedanticInfo(username + " connected.");
                     serverStat.incrementClientNum();
-                    return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER, "login andato a buon fine");
+                    String[] topicsSubscribed = account.getTopicSubscribed();
+                    subscribeAll(accountId, topicsSubscribed);
+                    return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER, topicsSubscribed);
                 } else {
                     print.pedanticInfo(username + " invalid retrieve account.");
                     return ResponseCodeList.LoginFailed;
@@ -424,7 +427,9 @@ public class Server implements ServerInterface {
                     accountList.setStub(clientStub, account.getAccountId());
                     print.pedanticInfo(account.getUsername() + " connected.(cookie):"+cookie);
                     serverStat.incrementClientNum();
-                    return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER, "login andato a buon fine");
+                    String[] topicsSubscribed = account.getTopicSubscribed();
+                    subscribeAll(accountId, topicsSubscribed);
+                    return new ResponseCode(ResponseCode.Codici.R220, ResponseCode.TipoClasse.SERVER, topicsSubscribed);
                 }
             }else{
                 print.pedanticInfo("Invalid cookie.");
@@ -456,6 +461,7 @@ public class Server implements ServerInterface {
             if(!subscribers.contains(accountId)){
                 print.pedanticInfo("User "+accountId + "  subscribed to "+topicName+".");
                 subscribers.add(accountId);
+                accountList.addTopic(topicName, accountId);
             }
             return new ResponseCode(ResponseCode.Codici.R200,ResponseCode.TipoClasse.SERVER,"iscrizione avvenuta con successo");
         } catch (BadPaddingException | IllegalBlockSizeException e) {
@@ -478,6 +484,7 @@ public class Server implements ServerInterface {
         try {
             int accountId = getAccountId(cookie);
             if (topicClientList.get(topicName).remove(accountId)) {   //todo se il topic non esiste? risposta -> non succede niente, la differenza si nota solo nel valore di ritorno
+                accountList.removeTopic(topicName, accountId);
                 print.pedanticInfo("User " + accountId + " unsubscribe from " + topicName + ".");
                 return new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER, "Disiscrizione avvenuta con successo.");
             }
@@ -496,13 +503,14 @@ public class Server implements ServerInterface {
     //Il client che invia il messaggio riceverà una copia del suo stesso messaggio, questo lo gestiremo nel client e si può usare anche come conferma dell'invio tipo la spunta blu di whatsappp
     public ResponseCode publish(String cookie, Message msg) {
         try {
-            Integer accountId = getAccountId(cookie);
+            int accountId = getAccountId(cookie);
             String topicName  = msg.getTopic();
             ConcurrentLinkedQueue<Integer> subscribers = topicClientList.putIfAbsent(topicName, new ConcurrentLinkedQueue<>());
             if(subscribers == null){  //creazione di un nuovo topic //TODO bisogna chiamare su tutti gli account la newtopicNotification
                 print.pedanticInfo("User "+accountId + " has created a new topic named \'"+topicName+"\'.");
                 topicList.add(topicName);
                 (subscribers = topicClientList.get(topicName)).add(accountId);
+                accountList.addTopic(topicName, accountId);
                 serverStat.incrementTopicNum();
             }
             notifyAll(subscribers.iterator(), msg);
@@ -831,8 +839,8 @@ public class Server implements ServerInterface {
         for (int i = MAXATTEMPTS; i >0 ; i--) {
             resp=stub.getCode(i);
             if (resp.IsOK()) {
-                print.pedanticInfo("the user has entered the code:"+resp.getMessaggioInfo()+";");
-                if(codice.equals(Integer.parseInt(resp.getMessaggioInfo()))||x.equals(Integer.parseInt(resp.getMessaggioInfo()))) {                              //todo remove backdoor (Integer.parseInt(resp.getMessaggioInfo())==-1) and var x
+                print.pedanticInfo("the user has entered the code:" + resp.getMessageInfo() + ";");
+                if (codice.equals(Integer.parseInt(resp.getMessageInfo())) || x.equals(Integer.parseInt(resp.getMessageInfo()))) {                              //todo remove backdoor (Integer.parseInt(resp.getMessageInfo())==-1) and var x
                     return true;
                 }
             }
@@ -852,7 +860,7 @@ public class Server implements ServerInterface {
         ResponseCode resp;
         for (int i = MAXATTEMPTS; i >0 ; i--) {
             resp=stub.getCode(i);
-            print.info("(antiAccountEnum)the user has entered the code:"+resp.getMessaggioInfo()+";");
+            print.info("(antiAccountEnum)the user has entered the code:" + resp.getMessageInfo() + ";");
         }
     }
 
@@ -876,5 +884,17 @@ public class Server implements ServerInterface {
                 );
         emailController.sendMessage(message);
     }
+
+    private void subscribeAll(int accountId, String[] topics) {
+        ConcurrentSkipListMap<String, ConcurrentLinkedQueue<Integer>> list = topicClientList;
+        for (String topic : topics) {
+            ConcurrentLinkedQueue<Integer> subscribers = list.get(topic);
+            if (subscribers != null && !subscribers.contains(accountId)) {
+                print.pedanticInfo("User " + accountId + " subscribed to " + topic + ".");
+                subscribers.add(accountId);
+            }
+        }
+    }
+
 
 }

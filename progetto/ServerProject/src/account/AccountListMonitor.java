@@ -305,6 +305,17 @@ public class AccountListMonitor implements AccountCollectionInterface {
         }
     }
 
+    @Override
+    public String[] getTopicSubscribed(int accountId) {
+        testRange(accountId);
+        listLock.readLock().lock();
+        try {
+            return accountList[accountId].getTopicSubscribed();
+        } finally {
+            listLock.readLock().unlock();
+        }
+    }
+
     public Account getAccountCopyUsername(String username){
         if(username==null)throw new IllegalArgumentException("username==null");
         listLock.readLock().lock();
@@ -417,6 +428,28 @@ public class AccountListMonitor implements AccountCollectionInterface {
             accountList[accountId].setEmail(email);
             return oldEmail;
         }finally{
+            listLock.writeLock().unlock();
+        }
+    }
+
+    @Override
+    public boolean addTopic(String topicName, int accountId) throws NullPointerException {
+        testRange(accountId);
+        listLock.writeLock().lock();
+        try {
+            return accountList[accountId].addTopic(topicName);
+        } finally {
+            listLock.writeLock().unlock();
+        }
+    }
+
+    @Override
+    public boolean removeTopic(String topicName, int accountId) throws NullPointerException {
+        testRange(accountId);
+        listLock.writeLock().lock();
+        try {
+            return accountList[accountId].removeTopic(topicName);
+        } finally {
             listLock.writeLock().unlock();
         }
     }
