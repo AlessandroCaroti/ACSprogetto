@@ -38,6 +38,24 @@ public interface AccountCollectionInterface {
      */
      int addAccount(Account account)throws MaxNumberAccountReached, AccountMonitorRuntimeException;
 
+    /**
+     * Aggiunge un nuovo topic alla lista delle iscrizioni
+     *
+     * @param topicName il nome del topic che si vuole aggiungere
+     * @param accountId posizione dell'account che si vuole modificare
+     * @return true se la lista è stata modificata(e' stato aggiunto un nuovo elemento), false altrimenti
+     */
+    boolean addTopic(String topicName, int accountId);
+
+    /**
+     * Rimmuove, se presente, un nuovo topic dalla lista delle iscrizioni
+     *
+     * @param topicName il nome del topic che si vuole rimmuovere
+     * @param accountId posizione dell'account che si vuole modificare
+     * @return true se la lista è stata modificata(e' stato rimosso un elemento), false altrimenti
+     */
+    boolean removeTopic(String topicName, int accountId);
+
 
     /**
      * Ritorna uno snapshot della classe account nella posizione id della lista degli account
@@ -71,7 +89,6 @@ public interface AccountCollectionInterface {
      * @throws NullPointerException se l'account passato è null
      * Nota:account.accountId viene settato automaticamente
      */
-
      Account addAccount(Account account,int accountId);
 
 
@@ -146,6 +163,8 @@ public interface AccountCollectionInterface {
 
      String getEmail(int accountId);
 
+    String[] getTopicSubscribed(int accountId);
+
     /**
      *Tutti i setter tornano il valore sovrascritto (null o qualcosa di definito) oppure una delle due eccezioni
      * @param accountId la posizione dove è salvato l'account da modificare
@@ -170,4 +189,5 @@ public interface AccountCollectionInterface {
      int getMAXACCOUNTNUMBER();
 
     int getMAXACCOUNTNUMBERDEFAULT();
+
 }
