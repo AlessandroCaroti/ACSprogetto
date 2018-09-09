@@ -504,14 +504,12 @@ public class Server implements ServerInterface {
         try {
             int accountId = getAccountId(cookie);
             String topicName  = msg.getTopic();
-//            ConcurrentSkipListSet<Integer> newSet = new ConcurrentSkipListSet<>();    //miglioramento performance - da testare
-//            ConcurrentSkipListSet<Integer> subscribers = topicClientList.putIfAbsent(topicName, newSet);
-            ConcurrentSkipListSet<Integer> subscribers = topicClientList.putIfAbsent(topicName, new ConcurrentSkipListSet<>());
-            if (subscribers == null) {  //Creazione di un nuovo topic //TODO bisogna chiamare su tutti gli account la newTopicNotification
+            ConcurrentSkipListSet<Integer> newSet = new ConcurrentSkipListSet<>();
+            ConcurrentSkipListSet<Integer> subscribers = topicClientList.putIfAbsent(topicName, newSet);
+            if (subscribers == null) {  //--> Creazione nuovo topic TODO chiamare su tutti gli account la newTopicNotification. Proposta(by Ale): perché invece di caricare il server non si aggiungere un timer al client che ogni tot. secondi, con il metodo getTopicList(), controlla se ci sono nuovi topic?
                 print.pedanticInfo("User "+accountId + " has created a new topic named \'"+topicName+"\'.");
                 topicList.add(topicName);
-                (subscribers = topicClientList.get(topicName)).add(accountId);
-//                newSet.add(accountId);
+                (subscribers = newSet).add(accountId);
                 accountList.addTopic(topicName, accountId);
                 serverStat.incrementTopicNum();
             }
