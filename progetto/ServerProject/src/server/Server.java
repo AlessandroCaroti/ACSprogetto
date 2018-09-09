@@ -48,12 +48,13 @@ import java.security.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Server implements ServerInterface {
 
     /* topic and message management fields */
-    private ConcurrentSkipListMap<String,ConcurrentLinkedQueue<Integer>> topicClientList;                 // topic -> lista idAccount
+    private ConcurrentSkipListMap<String, ConcurrentSkipListSet<Integer>> topicClientList;                 // topic -> lista idAccount
     private ConcurrentLinkedQueue<String> topicList;        //utilizzata per tenere traccia di tutti i topic e da utilizzare in getTopicList()
     private ConcurrentLinkedQueue<Integer> notificationList;
 
@@ -70,7 +71,6 @@ public class Server implements ServerInterface {
     final private String curveName = "prime192v1";
     private KeyPair RSA_kayPair;
     private KeyPair ECDH_kayPair;
-    final private PrivateKey RSA_privateKey;
     final private PrivateKey ECDH_privateKey;
     final private String     RSA_pubKey;
     final private byte[]     ECDH_pubKey_encrypted;
@@ -131,7 +131,7 @@ public class Server implements ServerInterface {
 
         //Creazione PKI del server
         setupPKI();
-        RSA_privateKey  = RSA_kayPair.getPrivate();
+        PrivateKey RSA_privateKey = RSA_kayPair.getPrivate();
         ECDH_privateKey = ECDH_kayPair.getPrivate();
         RSA_pubKey = new String(Base64.encode(RSA_kayPair.getPublic().getEncoded()).getBytes());
         ECDH_pubKey_encrypted = RSA.encrypt(RSA_privateKey, ECDH_kayPair.getPublic().getEncoded());
@@ -452,18 +452,17 @@ public class Server implements ServerInterface {
     @Override
     public ResponseCode subscribe(String cookie, String topicName)  {
         try {
-            Integer accountId=getAccountId(cookie);
-            if(!topicList.contains(topicName)){//topic inesistente
-                print.pedanticInfo("User "+accountId + " searched for "+topicName+".");
-                return new ResponseCode(ResponseCode.Codici.R640,ResponseCode.TipoClasse.SERVER,"topic inesistente");
+            Integer accountId = getAccountId(cookie);
+            if (!topicList.contains(topicName)) {//topic inesistente
+                print.pedanticInfo("User " + accountId + " searched for " + topicName + ".");
+                return ResponseCodeList.TopicNotFound;
             }
-            ConcurrentLinkedQueue<Integer>subscribers=topicClientList.get(topicName);
-            if(!subscribers.contains(accountId)){
+            ConcurrentSkipListSet<Integer> subscribers = topicClientList.get(topicName);
+            if (subscribers.add(accountId)) {
                 print.pedanticInfo("User "+accountId + "  subscribed to "+topicName+".");
-                subscribers.add(accountId);
                 accountList.addTopic(topicName, accountId);
             }
-            return new ResponseCode(ResponseCode.Codici.R200,ResponseCode.TipoClasse.SERVER,"iscrizione avvenuta con successo");
+            return new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER, "Iscrizione avvenuta con successo");
         } catch (BadPaddingException | IllegalBlockSizeException e) {
             print.warning(e,"subscribe() - error cookies not recognize");
             return ResponseCodeList.CookieNotFound;
@@ -500,16 +499,19 @@ public class Server implements ServerInterface {
 
     //todo bisognerebbe controllare che il field msg.autore sia uguale a quello ricavato dal cookie---> altrimenti "spoofing" sugli autori dei messaggi!
     @Override
-    //Il client che invia il messaggio riceverà una copia del suo stesso messaggio, questo lo gestiremo nel client e si può usare anche come conferma dell'invio tipo la spunta blu di whatsappp
+    //Il client che invia il messaggio riceverà una copia del suo stesso messaggio, questo lo gestiremo nel client e si può usare anche come conferma dell'invio tipo la spunta blu di WhatsApp
     public ResponseCode publish(String cookie, Message msg) {
         try {
             int accountId = getAccountId(cookie);
             String topicName  = msg.getTopic();
-            ConcurrentLinkedQueue<Integer> subscribers = topicClientList.putIfAbsent(topicName, new ConcurrentLinkedQueue<>());
-            if(subscribers == null){  //creazione di un nuovo topic //TODO bisogna chiamare su tutti gli account la newtopicNotification
+//            ConcurrentSkipListSet<Integer> newSet = new ConcurrentSkipListSet<>();    //miglioramento performance - da testare
+//            ConcurrentSkipListSet<Integer> subscribers = topicClientList.putIfAbsent(topicName, newSet);
+            ConcurrentSkipListSet<Integer> subscribers = topicClientList.putIfAbsent(topicName, new ConcurrentSkipListSet<>());
+            if (subscribers == null) {  //Creazione di un nuovo topic //TODO bisogna chiamare su tutti gli account la newTopicNotification
                 print.pedanticInfo("User "+accountId + " has created a new topic named \'"+topicName+"\'.");
                 topicList.add(topicName);
                 (subscribers = topicClientList.get(topicName)).add(accountId);
+//                newSet.add(accountId);
                 accountList.addTopic(topicName, accountId);
                 serverStat.incrementTopicNum();
             }
@@ -658,8 +660,8 @@ public class Server implements ServerInterface {
     void forwardMessage(Message msg) {
 
         String topicName = msg.getTopic();
-        ConcurrentLinkedQueue<Integer> subscribers = topicClientList.putIfAbsent(topicName, new ConcurrentLinkedQueue<Integer>());
-        if (subscribers == null) {  //creazione di un nuovo topic
+        ConcurrentSkipListSet<Integer> subscribers = topicClientList.putIfAbsent(topicName, new ConcurrentSkipListSet<>());
+        if (subscribers == null) {  //creazione di un nuovo topic   //TODO da controllare
             topicList.add(topicName);
         } else {
             notifyAll(subscribers.iterator(), msg);      //todo magari si potrebbe eseguire su un altro thread in modo da non bloccare questa funzione
@@ -885,14 +887,15 @@ public class Server implements ServerInterface {
         emailController.sendMessage(message);
     }
 
+
     private void subscribeAll(int accountId, String[] topics) {
-        ConcurrentSkipListMap<String, ConcurrentLinkedQueue<Integer>> list = topicClientList;
+        ConcurrentSkipListMap<String, ConcurrentSkipListSet<Integer>> list = topicClientList;
         for (String topic : topics) {
-            ConcurrentLinkedQueue<Integer> subscribers = list.get(topic);
-            if (subscribers != null && !subscribers.contains(accountId)) {
+            if (topic == null)   //todo controllare se è possibile che ci sia un valore nullo, se è impossibile che questo avvenga rimuovere il controllo
+                continue;
+            ConcurrentSkipListSet<Integer> subscribers = list.get(topic);
+            if (subscribers != null && subscribers.add(accountId))
                 print.pedanticInfo("User " + accountId + " subscribed to " + topic + ".");
-                subscribers.add(accountId);
-            }
         }
     }
 
