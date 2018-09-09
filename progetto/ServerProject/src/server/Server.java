@@ -54,8 +54,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Server implements ServerInterface {
 
     /* topic and message management fields */
-    private ConcurrentSkipListMap<String, ConcurrentSkipListSet<Integer>> topicClientList;                 // topic -> lista idAccount
-    private ConcurrentLinkedQueue<String> topicList;        //utilizzata per tenere traccia di tutti i topic e da utilizzare in getTopicList()
+    final private ConcurrentSkipListMap<String, ConcurrentSkipListSet<Integer>> topicClientList;                 // topic -> lista idAccount
+    final private ConcurrentLinkedQueue<String> topicList;        //utilizzata per tenere traccia di tutti i topic e da utilizzare in getTopicList()
     private ConcurrentLinkedQueue<Integer> notificationList;
 
     /* clients management fields */
@@ -248,7 +248,7 @@ public class Server implements ServerInterface {
      *************************************************************************************************************/
 
     @Override
-    //Usato per stabilire la connesione tra server e client
+    //Usato per stabilire la connessione tra server e client
     public ResponseCode connect() {
         try {
             print.pedanticInfo("A new client has connected.");
@@ -357,10 +357,10 @@ public class Server implements ServerInterface {
         return ResponseCodeList.InternalError;
     }
 
-    /** Pemette il recupero dell'account(cioè il settare la corrispondenza stub->account) tramite username
+    /** Segnala al server che il client identificato dal cookie passato non è più attivo
      * @param cookie dell'account
      * @return R200 se la disconnessione è andata a buon fine
-     * @return R620 altrimenti
+     *         R620 altrimenti
      */
 
     @Override
@@ -368,7 +368,6 @@ public class Server implements ServerInterface {
         try {
             int accountId = getAccountId(cookie);
             this.accountList.setStub(null, accountId);
-            //todo creare una funzione invalidateTemporaryInfo() che imposta a null lo stub e la chiaveSegretaCondivisa
             print.pedanticInfo("User "+accountId + "  disconnected.");
             serverStat.decrementClientNum();
             return new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER,"disconnessione avvenuta con successo");
@@ -380,10 +379,10 @@ public class Server implements ServerInterface {
     /** Pemette il recupero dell'account(cioè il settare la corrispondenza stub->account) tramite username
      * @param username dell'account
      * @param plainPassword dell'account
-     * @param clientStub
-     * @return R220 se il login è andato a buon fine
-     * @return LoginFailed se il cookie non è valido
-     * @return InternalError se avviene un errore non identificato
+     * @param clientStub nuovo stub del client
+     * @return R220 se il login è andato a buon fine, altrimenti
+     *         LoginFailed se il cookie non è valido
+     *         InternalError se avviene un errore non identificato
      */
     @Override
     public ResponseCode retrieveAccount(String username,String plainPassword,ClientInterface clientStub){
@@ -412,9 +411,9 @@ public class Server implements ServerInterface {
     /** Pemette il recupero dell'account(cioè il settare la corrispondenza stub->account) tramite cookie
      * @param cookie dell'account
      * @param plainPassword dell'account
-     * @param clientStub
+     * @param clientStub nuovo stub del client
      * @return R220 se il login è andato a buon fine
-     * @return LoginFailed se il cookie non è valido
+     *         LoginFailed se il cookie non è valido
      *         InternalError se avviene un errore non identificato
      */
     @Override
@@ -444,10 +443,11 @@ public class Server implements ServerInterface {
 
     /**Permette al client iscriversi al topic passato
      * @param cookie dell'account
-     * @param topicName
-     * @return R640 se il topic non esiste
-     * @return R200 se op. andata a buon fine
-     * @return InternalError se avviene un errore non identificato
+     * @param topicName a cui ci si vuole iscrivere
+     * @return R200 se op. andata a buon fine altrimenti
+     *         TopicNotFound se il topic non esiste all'interno del server
+     *         CookieNotFound se il cookie passato non è valido
+     *         InternalError se avviene un errore non identificato
      */
     @Override
     public ResponseCode subscribe(String cookie, String topicName)  {
@@ -542,7 +542,7 @@ public class Server implements ServerInterface {
      * @param username dell'account da recuperare
      * @param plainPassword la pssaword dell'account
      * @return R100 (set cookie) se la password e l'username sono corretti, LoginFailed altrimenti
-     * @return InteralError se avviene un errore imprevisto
+     * @return InternalError se avviene un errore imprevisto
      */
     @Override
     public ResponseCode retrieveCookie(String username,String plainPassword){
@@ -597,9 +597,9 @@ public class Server implements ServerInterface {
      * @param newPassword la nuova password
      * @param repeatPassword per controllare la corretta digitazione di newPassword
      * @param stubCurrentHost lo stub del client che stà tentando la recoverPassword().
-     * @return  R510 se uno dei campi passati non è valido
-     * @return WRONGCODEVALIDATION se il codice inserito è errato
-     * @return INTERNALERROR se avviene un errore sconosciuto
+     * @return R510 se uno dei campi passati non è valido,
+     *          WRONGCODEVALIDATION se il codice inserito è errato,
+     *          INTERNALERROR se avviene un errore sconosciuto
      */
     @Override
     public ResponseCode recoverPassword(String email,String newPassword,String repeatPassword,ClientInterface stubCurrentHost){//il current host potrebbe essere diverso da quello salvtao nella classe account
@@ -772,10 +772,10 @@ public class Server implements ServerInterface {
      *************************************************************************************************************/
 
     /**Trasforma accountId nel cookie corrispondente.
-     * @param accountId
+     * @param accountId posizione dell'account che si vuole occultare
      * @return il cookie corrispondente
-     * @throws BadPaddingException
-     * @throws IllegalBlockSizeException
+     * @throws BadPaddingException errore durante la trasformazione
+     * @throws IllegalBlockSizeException errore durante la trasformazione
      */
 
     private String getCookie(int accountId) throws BadPaddingException, IllegalBlockSizeException {
@@ -784,10 +784,10 @@ public class Server implements ServerInterface {
 
     /**Trasforma il cookie nel accountId corrispondente
      *
-     * @param cookie
+     * @param cookie _
      * @return l'accountId corrispondente
-     * @throws BadPaddingException
-     * @throws IllegalBlockSizeException
+     * @throws BadPaddingException errore durante la trasformazione
+     * @throws IllegalBlockSizeException errore durante la trasformazione
      */
     private int getAccountId(String cookie) throws BadPaddingException, IllegalBlockSizeException {
         return Integer.parseInt(aesCipher.decrypt(cookie));
@@ -869,7 +869,7 @@ public class Server implements ServerInterface {
     /** Invia una mail che notifica il tentativo di registrazione di un account con la mail passata
      * @param email del client
      * @param username del client
-     * @throws MessagingException
+     * @throws MessagingException _
      */
     private void sendEmailAccountInfo(String email,String username) throws MessagingException {
 
