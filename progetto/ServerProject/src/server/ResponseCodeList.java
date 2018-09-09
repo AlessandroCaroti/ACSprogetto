@@ -12,5 +12,6 @@ class ResponseCodeList {
     final static ResponseCode WrongCodeValidation = new ResponseCode(ResponseCode.Codici.R650, ResponseCode.TipoClasse.SERVER, "The entered code is incorrect! Attempts terminated, repeat the procedure.");
     final static ResponseCode InvalidUsername = new ResponseCode(ResponseCode.Codici.R660, ResponseCode.TipoClasse.SERVER, "Username already in use! Repeat the procedure.");
     final static ResponseCode CookieNotFound = new ResponseCode(ResponseCode.Codici.R666, ResponseCode.TipoClasse.SERVER, "Cookies not recognize.");
+    final static ResponseCode TopicNotFound = new ResponseCode(ResponseCode.Codici.R666, ResponseCode.TipoClasse.SERVER, "Topic do not exist in the server.");
     final static ResponseCode BrokenConnection = null;
 }
