@@ -659,10 +659,12 @@ public class Server implements ServerInterface {
 
         String topicName = msg.getTopic();
         ConcurrentSkipListSet<Integer> subscribers = topicClientList.putIfAbsent(topicName, new ConcurrentSkipListSet<>());
-        if (subscribers == null) {  //creazione di un nuovo topic   //TODO da controllare
+        if (subscribers == null) {  //creazione di un nuovo topic
             topicList.add(topicName);
+            serverStat.incrementTopicNum();
         } else {
             notifyAll(subscribers.iterator(), msg);      //todo magari si potrebbe eseguire su un altro thread in modo da non bloccare questa funzione
+            serverStat.incrementPostNum();
         }
     }
 
