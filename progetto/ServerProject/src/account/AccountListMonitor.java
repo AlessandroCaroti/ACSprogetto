@@ -27,6 +27,8 @@ import utility.Account;
 
 /* *
  * Implementazione con multiple reader single writer lock
+ * Il testing è effettuato nella classe accountMonitorTest_2 nel pkg
+ *  ServerProject/src/test/accountMonitorTest_2
  */
 public class AccountListMonitor implements AccountCollectionInterface {
 
