@@ -368,8 +368,7 @@ public class Server implements ServerInterface {
         try {
             int accountId = getAccountId(cookie);
             this.accountList.setStub(null, accountId);
-            print.pedanticInfo("User "+accountId + "  disconnected.");
-            serverStat.decrementClientNum();
+            disconnect(accountId);
             return new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER,"disconnessione avvenuta con successo");
         }catch (BadPaddingException | IllegalBlockSizeException exc){
             return new ResponseCode(ResponseCode.Codici.R620, ResponseCode.TipoClasse.SERVER,"errore disconnessione");
@@ -798,18 +797,18 @@ public class Server implements ServerInterface {
      * @param msg il messaggio da inviare
      */
     private void notifyAll(Iterator<Integer> accounts, Message msg){
-
-            accounts.forEachRemaining(accountId -> {
-                try {
-                    ClientInterface stub = accountList.getStub(accountId);
+        accounts.forEachRemaining(accountId -> {
+            try {
+                ClientInterface stub = accountList.getStub(accountId);
+                if (stub != null)
                     stub.notify(msg);
-                } catch (RemoteException e) {
-                    print.warning(e, "Client unreachable.");
-                    this.accountList.setStub(null, accountId);
-                }catch (NullPointerException e){
-                    print.warning(e, "The client has just disconnected.");
-                }
-            });
+            } catch (RemoteException e) {
+                print.warning(e, "Client unreachable.");
+                disconnect(accountId);
+            } catch (Exception e) {
+                print.error(e, "Unexpected error.");
+            }
+        });
     }
 
 
@@ -897,6 +896,11 @@ public class Server implements ServerInterface {
             if (subscribers != null && subscribers.add(accountId))
                 print.pedanticInfo("User " + accountId + " subscribed to " + topic + ".");
         }
+    }
+
+    private void disconnect(int accountId) {
+        this.accountList.setStub(null, accountId);
+        serverStat.decrementClientNum();
     }
 
 
