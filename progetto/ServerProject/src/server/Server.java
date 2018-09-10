@@ -474,19 +474,20 @@ public class Server implements ServerInterface {
     /**Permette al client disiscriversi al topic passato
      * @param cookie dell'account
      * @param topicName nome del topic
-     * @return R200 se op. andata a buon fine
+     * @return R200 se op. andata a buon fine altrimenti
+     *         TopicNotFound se non esiste il topic
      *         InternalError se avviene un errore non identificato
      */
     @Override
     public ResponseCode unsubscribe(String cookie,String topicName)  {
         try {
             int accountId = getAccountId(cookie);
-            if (topicClientList.get(topicName).remove(accountId)) {   //todo se il topic non esiste? risposta -> non succede niente, la differenza si nota solo nel valore di ritorno
-                accountList.removeTopic(topicName, accountId);
-                print.pedanticInfo("User " + accountId + " unsubscribe from " + topicName + ".");
-                return new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER, "Disiscrizione avvenuta con successo.");
-            }
-            return new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER, "Il topic richiesto non esiste.");
+            if (!topicList.contains(topicName)) //test esistenza del topic
+                return ResponseCodeList.TopicNotFound;
+            topicClientList.get(topicName).remove(accountId);
+            accountList.removeTopic(topicName, accountId);
+            print.pedanticInfo("User " + accountId + " unsubscribe from " + topicName + ".");
+            return new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER, "Disiscrizione avvenuta con successo.");
         }catch (BadPaddingException| IllegalBlockSizeException e){
             print.warning(e,"subscribe() - error cookies not recognize");
             return ResponseCodeList.CookieNotFound;
@@ -506,11 +507,11 @@ public class Server implements ServerInterface {
             ConcurrentSkipListSet<Integer> newSet = new ConcurrentSkipListSet<>();
             ConcurrentSkipListSet<Integer> subscribers = topicClientList.putIfAbsent(topicName, newSet);
             if (subscribers == null) {  //--> Creazione nuovo topic TODO chiamare su tutti gli account la newTopicNotification. Proposta(by Ale): perché invece di caricare il server non si aggiungere un timer al client che ogni tot. secondi, con il metodo getTopicList(), controlla se ci sono nuovi topic?
-                print.pedanticInfo("User "+accountId + " has created a new topic named \'"+topicName+"\'.");
-                topicList.add(topicName);
                 (subscribers = newSet).add(accountId);
+                topicList.add(topicName);
                 accountList.addTopic(topicName, accountId);
                 serverStat.incrementTopicNum();
+                print.pedanticInfo("User " + accountId + " has created a new topic named \'" + topicName + "\'.");
             }
             notifyAll(subscribers.iterator(), msg);
             serverStat.incrementPostNum();
