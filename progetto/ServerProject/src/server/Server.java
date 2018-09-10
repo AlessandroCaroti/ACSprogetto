@@ -899,8 +899,9 @@ public class Server implements ServerInterface {
     }
 
     private void disconnect(int accountId) {
-        this.accountList.setStub(null, accountId);
-        serverStat.decrementClientNum();
+        ClientInterface prevStub = accountList.setStub(null, accountId);
+        if (prevStub != null)
+            serverStat.decrementClientNum();
     }
 
 
