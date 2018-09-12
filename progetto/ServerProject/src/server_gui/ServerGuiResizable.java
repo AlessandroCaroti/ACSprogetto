@@ -1,7 +1,7 @@
 package server_gui;
 
 import keeptoo.KGradientPanel;
-import server.StreamRedirector;
+import server.utility.StreamRedirector;
 import utility.AddressIp;
 import utility.gui.MyScrollBar;
 import utility.gui.MyScrollPaneLayout;

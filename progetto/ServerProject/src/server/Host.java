@@ -1,5 +1,6 @@
 package server;
 
+import server.utility.StreamRedirector;
 import server_gui.ServerGuiResizable;
 import server_gui.ServerStatistic;
 import utility.infoProvider.ServerInfoProvider;

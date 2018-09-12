@@ -1,4 +1,4 @@
-import server.AES;
+import server.utility.AES;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;

@@ -1,4 +1,4 @@
-package server;
+package server.utility;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -32,5 +32,11 @@ public class ListCleaner {
 
         }
         accountOffline.clear();
+    }
+
+    public void stop(){
+        cleanList();
+        timer.cancel();
+        timer.purge();
     }
 }

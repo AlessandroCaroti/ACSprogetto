@@ -1,7 +1,7 @@
 import account.AccountCollectionInterface;
 import account.AccountListMonitor;
 import customException.MaxNumberAccountReached;
-import server.RandomString;
+import server.utility.RandomString;
 import utility.Account;
 
 import java.util.Random;
