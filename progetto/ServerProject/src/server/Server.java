@@ -367,7 +367,6 @@ public class Server implements ServerInterface {
     public ResponseCode disconnect(String cookie) {
         try {
             int accountId = getAccountId(cookie);
-            this.accountList.setStub(null, accountId);
             disconnect(accountId);
             return new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER,"disconnessione avvenuta con successo");
         }catch (BadPaddingException | IllegalBlockSizeException exc){
@@ -390,7 +389,16 @@ public class Server implements ServerInterface {
             if(account!=null) {
                 if (account.cmpPassword(plainPassword)) {
                     int accountId = account.getAccountId();
-                    accountList.setStub(clientStub, accountId);
+                    ClientInterface prevStub = accountList.setStub(clientStub, accountId);    //Se lo stub precedente e' diverso da null allora non viene cambiato
+                    if(prevStub!=null){ //E' possibile che qualcun altro sià già connesso con l'account richiesto
+                        try {
+                            prevStub.isAlive();
+                            return ResponseCodeList.MultiAccessUnsupported;//Account ancora in uso da qualcun altro -> rifiutata richiesta di log-in
+                        }catch (RemoteException e){//L'account non è più in uso quindi si può procedere con la sostituzione dello stub
+                            disconnect(accountId);
+                            accountList.setStub(clientStub, accountId);
+                        }
+                    }
                     print.pedanticInfo(username + " connected.");
                     serverStat.incrementClientNum();
                     String[] topicsSubscribed = account.getTopicSubscribed();
@@ -422,7 +430,16 @@ public class Server implements ServerInterface {
             Account account=accountList.getAccountCopy(accountId);
             if(account!=null){
                 if(account.cmpPassword(plainPassword)){
-                    accountList.setStub(clientStub, account.getAccountId());
+                    ClientInterface prevStub = accountList.setStub(clientStub, accountId);  //Se lo stub precedente e' diverso da null allora non viene cambiato
+                    if(prevStub!=null){ //E' possibile che qualcun altro sià già connesso con l'account richiesto
+                        try {
+                            prevStub.isAlive();
+                            return ResponseCodeList.MultiAccessUnsupported;//Account ancora in uso da qualcun altro -> rifiutata richiesta di log-in
+                        }catch (RemoteException e){//L'account non è più in uso quindi si può procedere con la sostituzione dello stub
+                            disconnect(accountId);
+                            accountList.setStub(clientStub, accountId);
+                        }
+                    }
                     print.pedanticInfo(account.getUsername() + " connected.(cookie):"+cookie);
                     serverStat.incrementClientNum();
                     String[] topicsSubscribed = account.getTopicSubscribed();
@@ -900,7 +917,7 @@ public class Server implements ServerInterface {
     }
 
     private void disconnect(int accountId) {
-        ClientInterface prevStub = accountList.setStub(null, accountId);
+        ClientInterface prevStub = accountList.setStub(null, accountId, true);
         if (prevStub != null)
             serverStat.decrementClientNum();
     }
