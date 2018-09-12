@@ -181,6 +181,8 @@ public interface AccountCollectionInterface {
 
      ClientInterface setStub(ClientInterface clientStub,int accountId);
 
+     ClientInterface setStub(ClientInterface clientStub, int accountId, boolean force);
+
      String setEmail(String email,int accountId);
 
      /**semplici getter**/
