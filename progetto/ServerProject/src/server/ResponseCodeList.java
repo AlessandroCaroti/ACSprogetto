@@ -13,5 +13,6 @@ class ResponseCodeList {
     final static ResponseCode InvalidUsername = new ResponseCode(ResponseCode.Codici.R660, ResponseCode.TipoClasse.SERVER, "Username already in use! Repeat the procedure.");
     final static ResponseCode CookieNotFound = new ResponseCode(ResponseCode.Codici.R666, ResponseCode.TipoClasse.SERVER, "Cookies not recognize.");
     final static ResponseCode TopicNotFound = new ResponseCode(ResponseCode.Codici.R666, ResponseCode.TipoClasse.SERVER, "Topic do not exist in the server.");
+    final static ResponseCode MultiAccessUnsupported = new ResponseCode(ResponseCode.Codici.R670, ResponseCode.TipoClasse.SERVER, "The current account is already in use by someone else. Multi-access is not supported.");
     final static ResponseCode BrokenConnection = null;
 }

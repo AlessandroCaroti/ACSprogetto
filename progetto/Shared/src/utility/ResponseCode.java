@@ -54,7 +54,8 @@ public class ResponseCode implements Serializable {
         R650,  //Codice validazione email inserito errato,Tentativi terminati
         R660,  //Username per la registrazione già in uso,sceglierne un altro
         R666,  //Formato cookie non valido
-        R670   //Internal client error
+        R670,  //Tentativo di accesso già in uso
+        R699   //Internal client error
 
     }
 
@@ -152,8 +153,12 @@ public class ResponseCode implements Serializable {
                 return "ClientError - Wrong Code, Attempts Terminated";
             case R660:
                 return "ClientError - Username already in use";
+            case R670:
+                return "ClientError - Account already in use(multi-access not supported)";
             case R666:
                 return "ClientError - Invalid Cookies";
+            case R699:
+                return "ClientError";
             default:
                 return "Message Of Code " + this.statusCode + " Not Supported";
 

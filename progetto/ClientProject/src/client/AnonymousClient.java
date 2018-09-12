@@ -8,6 +8,7 @@ import interfaces.ServerInterface;
 import utility.LogFormatManager;
 import utility.Message;
 import utility.ResponseCode;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -21,7 +22,7 @@ import java.util.TreeSet;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import static utility.ResponseCode.Codici.R200;
-import static utility.ResponseCode.Codici.R670;
+import static utility.ResponseCode.Codici.R699;
 
 
 public class AnonymousClient implements ClientInterface {
@@ -295,7 +296,7 @@ public class AnonymousClient implements ClientInterface {
      * @param m il messaggio inviato dal server
      * @return R500(messaggio vuoto) se il mess è vuoto ;D
      * @return R200 (OK) se il mess è valido
-     * @return R670 (InternalError) se avviene un errore non identificabile
+     * @return R699 (InternalError) se avviene un errore non identificabile
      */
     public ResponseCode notify(Message m) {
         try {
@@ -314,7 +315,7 @@ public class AnonymousClient implements ClientInterface {
         }catch (Exception exc){
             exc.printStackTrace();
         }
-        return new ResponseCode(R670,ResponseCode.TipoClasse.CLIENT,
+        return new ResponseCode(R699,ResponseCode.TipoClasse.CLIENT,
                 "(-) Internal client error");
     }
 
@@ -333,7 +334,7 @@ public class AnonymousClient implements ClientInterface {
         } catch (IOException e) {
             print.error(e, "Unable to read user input");
         }
-        return new ResponseCode(R670,ResponseCode.TipoClasse.CLIENT,
+        return new ResponseCode(R699,ResponseCode.TipoClasse.CLIENT,
                 "(-) Internal client error");
     }
 
