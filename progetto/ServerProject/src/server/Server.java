@@ -55,6 +55,7 @@ public class Server implements ServerInterface {
 
     /* topic and message management fields */
     final private ConcurrentSkipListMap<String, ConcurrentSkipListSet<Integer>> topicClientList;                 // topic -> lista idAccount
+    final private ListCleaner listCleaner;
     final private ConcurrentLinkedQueue<String> topicList;        //utilizzata per tenere traccia di tutti i topic e da utilizzare in getTopicList()
     private ConcurrentLinkedQueue<Integer> notificationList;
 
@@ -118,6 +119,7 @@ public class Server implements ServerInterface {
         topicList        = new ConcurrentLinkedQueue<>();
         notificationList = new ConcurrentLinkedQueue<>();
         topicClientList  = new ConcurrentSkipListMap<>();
+        listCleaner      = new ListCleaner(topicClientList);
 
         //Caricamento delle impostazioni del server memorizate su file
         print.pedanticInfo("Working Directory = " + System.getProperty("user.dir"));
@@ -918,6 +920,7 @@ public class Server implements ServerInterface {
 
     private void disconnect(int accountId) {
         ClientInterface prevStub = accountList.setStub(null, accountId, true);
+        listCleaner.addClientOffline(accountId);
         if (prevStub != null)
             serverStat.decrementClientNum();
     }
