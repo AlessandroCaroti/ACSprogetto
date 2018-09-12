@@ -283,6 +283,11 @@ public class AnonymousClient implements ClientInterface {
     }
 
 
+    public ClientInterface getSkeleton() {
+        return skeleton;
+    }
+
+
 
 
 
