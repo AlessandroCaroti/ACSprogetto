@@ -123,7 +123,6 @@ public class Server implements ServerInterface {
         topicList        = new ConcurrentLinkedQueue<>();
         notificationList = new ConcurrentLinkedQueue<>();
         topicClientList  = new ConcurrentSkipListMap<>();
-        listCleaner      = new ListCleaner(topicClientList);
 
         //Caricamento delle impostazioni del server memorizate su file
         print.pedanticInfo("Working Directory = " + System.getProperty("user.dir"));
@@ -133,6 +132,7 @@ public class Server implements ServerInterface {
 
         //Creazione del gestore degli account
         accountList = createAccountManager();
+        listCleaner = new ListCleaner(topicClientList, accountList);
         print.info("Account monitor created.");
 
         //Creazione PKI del server
