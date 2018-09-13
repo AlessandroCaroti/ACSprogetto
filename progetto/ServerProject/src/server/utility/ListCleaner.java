@@ -56,9 +56,9 @@ public class ListCleaner {
                 list.get(topic).remove(accountId);
             }
             accountList.setStub(null, accountId, true);
+            accountOffline.remove(accountId);
 //            Thread.yield();
         }
-        accountOffline.clear();
         print.info("...clean finished");
     }
 

@@ -72,7 +72,7 @@ public class Host {
         }
 
         //Creazione del server
-        server = new Server(serverStat);
+        server = new Server(serverStat, true);
 
         initGui();
         //todo creazione di sClient
