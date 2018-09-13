@@ -3,6 +3,7 @@ package server.utility;
 import account.AccountCollectionInterface;
 import client.AnonymousClient;
 import interfaces.ClientInterface;
+import utility.LogFormatManager;
 
 import java.rmi.RemoteException;
 import java.util.Objects;
@@ -17,6 +18,7 @@ public class ListCleaner {
     final private AccountCollectionInterface accountList;
     final private Timer timer;
     final private AnonymousClient fakeClient;
+    final private LogFormatManager print = new LogFormatManager("LIST_CLEANER", false);
 
     public ListCleaner(ConcurrentSkipListMap<String, ConcurrentSkipListSet<Integer>> list, AccountCollectionInterface accountList) throws RemoteException {
         Objects.requireNonNull(this.list = list);
@@ -28,7 +30,11 @@ public class ListCleaner {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                cleanList();
+                try {
+                    clean();
+                }catch (Exception e){
+                    print.error(e, "Cleaning list failed.");
+                }
             }
         }, 15*60*1000L,5*60*1000);
     }
@@ -37,14 +43,14 @@ public class ListCleaner {
         accountOffline.add(accountId);
     }
 
-    public void cleanList() {
+    public void clean() {
+        print.info("Clean started...");
         Thread.currentThread().setPriority(4);
         ClientInterface fakeStub = fakeClient.getSkeleton();
         for (Integer accountId : accountOffline) {
             ClientInterface prev = accountList.setStub(fakeStub, accountId);
             if (prev != null)   //account in utilizzo
                 continue;
-            //todo rimuovere l'account corrente dalle varie liste
             String[] topicSubscribed = accountList.getTopicSubscribed(accountId);
             for (String topic: topicSubscribed){
                 list.get(topic).remove(accountId);
@@ -53,10 +59,11 @@ public class ListCleaner {
 //            Thread.yield();
         }
         accountOffline.clear();
+        print.info("...clean finished");
     }
 
     public void stop(){
-        cleanList();
+        clean();
         timer.cancel();
         timer.purge();
     }

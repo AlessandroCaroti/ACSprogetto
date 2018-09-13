@@ -221,7 +221,6 @@ public class Server implements ServerInterface {
     public void stop(){
         if(registry==null)  //Nothing to do
             return;
-
         print.pedanticInfo("Stopping server ...");
         try {
             registry.unbind(serverName);
@@ -233,6 +232,10 @@ public class Server implements ServerInterface {
         }
         registry = null;
         print.info("***** SERVER OFFLINE! *****");
+    }
+
+    public void clean(){
+        listCleaner.clean();
     }
 
     /*METOGI GETTER*/
