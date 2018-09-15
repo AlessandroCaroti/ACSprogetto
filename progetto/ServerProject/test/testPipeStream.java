@@ -1,4 +1,4 @@
-import server.StreamRedirector;
+import server.utility.StreamRedirector;
 
 import java.io.IOException;
 import java.io.OutputStream;

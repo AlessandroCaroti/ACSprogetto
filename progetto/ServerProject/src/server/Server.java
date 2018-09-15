@@ -25,6 +25,10 @@ import email.EmailController;
 import email.EmailHandlerTLS;
 import interfaces.ClientInterface;
 import interfaces.ServerInterface;
+import server.utility.AES;
+import server.utility.ListCleaner;
+import server.utility.RandomString;
+import server.utility.ResponseCodeList;
 import server_gui.ServerStatistic;
 import utility.*;
 import utility.cryptography.ECDH;
@@ -55,6 +59,7 @@ public class Server implements ServerInterface {
 
     /* topic and message management fields */
     final private ConcurrentSkipListMap<String, ConcurrentSkipListSet<Integer>> topicClientList;                 // topic -> lista idAccount
+    final private ListCleaner listCleaner;
     final private ConcurrentLinkedQueue<String> topicList;        //utilizzata per tenere traccia di tutti i topic e da utilizzare in getTopicList()
     private ConcurrentLinkedQueue<Integer> notificationList;
 
@@ -127,6 +132,7 @@ public class Server implements ServerInterface {
 
         //Creazione del gestore degli account
         accountList = createAccountManager();
+        listCleaner = new ListCleaner(topicClientList, accountList);
         print.info("Account monitor created.");
 
         //Creazione PKI del server
@@ -215,7 +221,6 @@ public class Server implements ServerInterface {
     public void stop(){
         if(registry==null)  //Nothing to do
             return;
-
         print.pedanticInfo("Stopping server ...");
         try {
             registry.unbind(serverName);
@@ -227,6 +232,10 @@ public class Server implements ServerInterface {
         }
         registry = null;
         print.info("***** SERVER OFFLINE! *****");
+    }
+
+    public void clean(){
+        listCleaner.clean();
     }
 
     /*METOGI GETTER*/
@@ -367,7 +376,6 @@ public class Server implements ServerInterface {
     public ResponseCode disconnect(String cookie) {
         try {
             int accountId = getAccountId(cookie);
-            this.accountList.setStub(null, accountId);
             disconnect(accountId);
             return new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER,"disconnessione avvenuta con successo");
         }catch (BadPaddingException | IllegalBlockSizeException exc){
@@ -390,7 +398,16 @@ public class Server implements ServerInterface {
             if(account!=null) {
                 if (account.cmpPassword(plainPassword)) {
                     int accountId = account.getAccountId();
-                    accountList.setStub(clientStub, accountId);
+                    ClientInterface prevStub = accountList.setStub(clientStub, accountId);    //Se lo stub precedente e' diverso da null allora non viene cambiato
+                    if(prevStub!=null){ //E' possibile che qualcun altro sià già connesso con l'account richiesto
+                        try {
+                            prevStub.isAlive();
+                            return ResponseCodeList.MultiAccessUnsupported;//Account ancora in uso da qualcun altro -> rifiutata richiesta di log-in
+                        }catch (RemoteException e){//L'account non è più in uso quindi si può procedere con la sostituzione dello stub
+                            disconnect(accountId);
+                            accountList.setStub(clientStub, accountId);
+                        }
+                    }
                     print.pedanticInfo(username + " connected.");
                     serverStat.incrementClientNum();
                     String[] topicsSubscribed = account.getTopicSubscribed();
@@ -422,7 +439,16 @@ public class Server implements ServerInterface {
             Account account=accountList.getAccountCopy(accountId);
             if(account!=null){
                 if(account.cmpPassword(plainPassword)){
-                    accountList.setStub(clientStub, account.getAccountId());
+                    ClientInterface prevStub = accountList.setStub(clientStub, accountId);  //Se lo stub precedente e' diverso da null allora non viene cambiato
+                    if(prevStub!=null){ //E' possibile che qualcun altro sià già connesso con l'account richiesto
+                        try {
+                            prevStub.isAlive();
+                            return ResponseCodeList.MultiAccessUnsupported;//Account ancora in uso da qualcun altro -> rifiutata richiesta di log-in
+                        }catch (RemoteException e){//L'account non è più in uso quindi si può procedere con la sostituzione dello stub
+                            disconnect(accountId);
+                            accountList.setStub(clientStub, accountId);
+                        }
+                    }
                     print.pedanticInfo(account.getUsername() + " connected.(cookie):"+cookie);
                     serverStat.incrementClientNum();
                     String[] topicsSubscribed = account.getTopicSubscribed();
@@ -474,19 +500,20 @@ public class Server implements ServerInterface {
     /**Permette al client disiscriversi al topic passato
      * @param cookie dell'account
      * @param topicName nome del topic
-     * @return R200 se op. andata a buon fine
+     * @return R200 se op. andata a buon fine altrimenti
+     *         TopicNotFound se non esiste il topic
      *         InternalError se avviene un errore non identificato
      */
     @Override
     public ResponseCode unsubscribe(String cookie,String topicName)  {
         try {
             int accountId = getAccountId(cookie);
-            if (topicClientList.get(topicName).remove(accountId)) {   //todo se il topic non esiste? risposta -> non succede niente, la differenza si nota solo nel valore di ritorno
-                accountList.removeTopic(topicName, accountId);
-                print.pedanticInfo("User " + accountId + " unsubscribe from " + topicName + ".");
-                return new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER, "Disiscrizione avvenuta con successo.");
-            }
-            return new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER, "Il topic richiesto non esiste.");
+            if (!topicList.contains(topicName)) //test esistenza del topic
+                return ResponseCodeList.TopicNotFound;
+            topicClientList.get(topicName).remove(accountId);
+            accountList.removeTopic(topicName, accountId);
+            print.pedanticInfo("User " + accountId + " unsubscribe from " + topicName + ".");
+            return new ResponseCode(ResponseCode.Codici.R200, ResponseCode.TipoClasse.SERVER, "Disiscrizione avvenuta con successo.");
         }catch (BadPaddingException| IllegalBlockSizeException e){
             print.warning(e,"subscribe() - error cookies not recognize");
             return ResponseCodeList.CookieNotFound;
@@ -506,11 +533,11 @@ public class Server implements ServerInterface {
             ConcurrentSkipListSet<Integer> newSet = new ConcurrentSkipListSet<>();
             ConcurrentSkipListSet<Integer> subscribers = topicClientList.putIfAbsent(topicName, newSet);
             if (subscribers == null) {  //--> Creazione nuovo topic TODO chiamare su tutti gli account la newTopicNotification. Proposta(by Ale): perché invece di caricare il server non si aggiungere un timer al client che ogni tot. secondi, con il metodo getTopicList(), controlla se ci sono nuovi topic?
-                print.pedanticInfo("User "+accountId + " has created a new topic named \'"+topicName+"\'.");
-                topicList.add(topicName);
                 (subscribers = newSet).add(accountId);
+                topicList.add(topicName);
                 accountList.addTopic(topicName, accountId);
                 serverStat.incrementTopicNum();
+                print.pedanticInfo("User " + accountId + " has created a new topic named \'" + topicName + "\'.");
             }
             notifyAll(subscribers.iterator(), msg);
             serverStat.incrementPostNum();
@@ -899,8 +926,10 @@ public class Server implements ServerInterface {
     }
 
     private void disconnect(int accountId) {
-        this.accountList.setStub(null, accountId);
-        serverStat.decrementClientNum();
+        ClientInterface prevStub = accountList.setStub(null, accountId, true);
+        listCleaner.addClientOffline(accountId);
+        if (prevStub != null)
+            serverStat.decrementClientNum();
     }
 
 

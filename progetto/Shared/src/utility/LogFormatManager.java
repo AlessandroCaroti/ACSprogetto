@@ -21,7 +21,7 @@ final public class LogFormatManager {
         System.err.println(this.className + "-ERROR]");
         System.err.println("\tException type: " + e.getClass().getSimpleName());
         System.err.println("\tException message: " + e.getMessage());
-        if (pedantic)
+//        if (pedantic)
             e.printStackTrace();
     }
 
@@ -29,7 +29,7 @@ final public class LogFormatManager {
         System.err.println(this.className + "-ERROR]: " + msg);
         System.err.println("\tException type: " + e.getClass().getSimpleName());
         System.err.println("\tException message: " + e.getMessage());
-        if (pedantic)
+//        if (pedantic)
             e.printStackTrace();
     }
 

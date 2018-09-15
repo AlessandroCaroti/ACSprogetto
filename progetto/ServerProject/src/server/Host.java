@@ -1,5 +1,6 @@
 package server;
 
+import server.utility.StreamRedirector;
 import server_gui.ServerGuiResizable;
 import server_gui.ServerStatistic;
 import utility.infoProvider.ServerInfoProvider;
@@ -29,6 +30,7 @@ public class Host {
             "\t\t?/help\n" +
             "\t\tstart [server/infoProvider/all]\n" +
             "\t\tstop [server/infoProvider/gui]\n" +
+            "\t\tforce clean\n"+
             "\t\tshutdown\n" +
             "\t\tinfo\n" +
             "\t\tshow topic\n" +
@@ -70,7 +72,7 @@ public class Host {
         }
 
         //Creazione del server
-        server = new Server(serverStat);
+        server = new Server(serverStat, true);
 
         initGui();
         //todo creazione di sClient
@@ -109,6 +111,9 @@ public class Host {
                         break;
                     case "stop gui":
                         stopGui();
+                        break;
+                    case "force clean":
+                        clean();
                         break;
                     case "shutdown":
                         shutdownServer();
@@ -299,6 +304,11 @@ public class Host {
         System.err.println("[SERVER-ERROR]: Impossible to create the graphic user interface!");
         System.err.println("\tException type: " + e.getClass().getSimpleName());
         System.err.println("\tException message: " + e.getMessage());
+    }
+
+    private void clean(){
+        server.clean();
+        System.gc();
     }
 
 }

@@ -17,12 +17,13 @@
 
 package account;
 
+import customException.MaxNumberAccountReached;
+import interfaces.ClientInterface;
+import utility.Account;
+
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
-import java.util.concurrent.locks.*;
-import interfaces.ClientInterface;
-import customException.*;
-import utility.Account;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
 /* *
@@ -410,12 +411,17 @@ public class AccountListMonitor implements AccountCollectionInterface {
     }
 
     public ClientInterface setStub(ClientInterface clientStub, int accountId) {
+        return setStub(clientStub, accountId, false);
+    }
+
+    public ClientInterface setStub(ClientInterface clientStub, int accountId, boolean force) {
         testRange(accountId);
 
         listLock.writeLock().lock();
         try {
             ClientInterface prev = accountList[accountId].getStub();
-            accountList[accountId].setStub(clientStub);
+            if (prev == null || force)
+                accountList[accountId].setStub(clientStub);
             return prev;
         } finally {
             this.listLock.writeLock().unlock();

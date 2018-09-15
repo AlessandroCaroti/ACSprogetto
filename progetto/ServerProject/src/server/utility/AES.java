@@ -15,7 +15,7 @@
     along with ACSprogetto.  If not, see <http://www.gnu.org/licenses/>.
 
 **/
-package server;
+package server.utility;
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import java.io.UnsupportedEncodingException;

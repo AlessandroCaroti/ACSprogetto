@@ -1,4 +1,4 @@
-package server;
+package server.utility;
 
 import java.security.SecureRandom;
 import java.util.Locale;
