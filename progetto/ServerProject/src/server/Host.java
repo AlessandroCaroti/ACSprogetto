@@ -11,16 +11,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Host {
 
-    private Server server;
-    private boolean started;
-    private ServerStatistic serverStat;
-    private ServerGuiResizable gui;
+    final private Server server;
+    final private ServerStatistic serverStat;
+    final private SClient sClient;
     private ServerInfoProvider infoProvider = null;
+    private ServerGuiResizable gui;
+
     private boolean stopAll = false;
+    private boolean started;
+
 
     private InputStream  fromStdOut = null;        //stream su cui ricevere la roba scritta su System.out
     private InputStream  fromStdErr = null;        //stream su cui ricevere la roba scritta su System.err
@@ -74,8 +78,12 @@ public class Host {
         //Creazione del server
         server = new Server(serverStat, true);
 
+        //Inizializzazione della gui se necessario
         initGui();
-        //todo creazione di sClient
+
+        //Creazione interconnessione tra server
+        sClient = new SClient(new ArrayList(), server);
+        sClient.init();
     }
 
 
@@ -233,7 +241,6 @@ public class Host {
         //todo stopSClient();
         stopGui();
         stopServer();
-        server = null;
         stopAll = true;
 
     }
