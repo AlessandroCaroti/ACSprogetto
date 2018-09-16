@@ -16,14 +16,17 @@
 
 **/
 package server;
+
 import utility.LogFormatManager;
 import utility.ResponseCode;
 import utility.ServerInfo;
 import utility.infoProvider.ServerInfoRecover;
+
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
 import static java.util.Objects.requireNonNull;
 
 
@@ -31,7 +34,7 @@ public class SClient  {
     private List<AnonymousClientExtended> clients;
     private List<ServerInfo> serverList;
 
-    private Server myServer;
+    final private Server myServer;
     final private LogFormatManager print;
 
     public SClient(List serverList,Server myServer)  {

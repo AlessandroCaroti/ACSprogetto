@@ -82,7 +82,7 @@ public class Host {
         initGui();
 
         //Creazione interconnessione tra server
-        sClient = new SClient(new ArrayList(), server);
+        sClient = new SClient(new ArrayList(), server, true);
         sClient.init();
     }
 
