@@ -47,6 +47,9 @@ public class SClient  {
         {
             throw new NullPointerException("passing null argument to SClient constructor");
         }
+        if(!(serverList instanceof ServerInfo)){
+            throw new IllegalArgumentException("passing serverInfo with type "+serverList.getClass().getSimpleName()+"  instead of type ServerInfo.");
+        }
         this.serverList=serverList;
         this.myServer=requireNonNull(myServer);
         this.print = new LogFormatManager("SCLIENT", pedantic);
@@ -71,7 +74,8 @@ public class SClient  {
             return (curr = addServerConnection(serverInfo)) != null
                     && registerOnServer(curr)
                     && subscribeForNotifications(curr)
-                    && subscribeToAllTopics(curr);
+                    && subscribeToAllTopics(curr)
+                    && this.serverList.add(serverInfo);
         }catch (Exception exc){
             print.error(exc,"Error while adding server:"+serverInfo.regHost);
         }
@@ -111,6 +115,17 @@ public class SClient  {
         }
         return true;
     }
+
+
+    public void diconnectFromAllServers(){
+        for(AnonymousClientExtended it:clients){
+            it.disconnect();
+        }
+        clients.clear();
+        serverList.clear();
+    }
+
+
 
 
     //PRIVATE METHODS
