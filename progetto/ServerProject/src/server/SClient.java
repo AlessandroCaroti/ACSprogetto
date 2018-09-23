@@ -25,6 +25,7 @@ import utility.infoProvider.ServerInfoRecover;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import static java.util.Objects.requireNonNull;
@@ -37,20 +38,24 @@ public class SClient  {
     final private Server myServer;
     final private LogFormatManager print;
 
-    public SClient(List serverList,Server myServer)  {
+    public SClient(List<ServerInfo> serverList,Server myServer)  {
         this(serverList, myServer, false);
 
     }
 
-    public SClient(List serverList,Server myServer, boolean pedantic)  {
-        if(serverList==null )
+    public SClient(Server myServer,boolean pedantic)  {
+        this(null, myServer, pedantic);
+
+    }
+
+
+    public SClient(List<ServerInfo> serverList,Server myServer, boolean pedantic)  {
+        if(serverList==null)
         {
-            throw new NullPointerException("passing null argument to SClient constructor");
+            this.serverList=new LinkedList<>();
+        }else {
+            this.serverList = serverList;
         }
-        if(!(serverList instanceof ServerInfo)){
-            throw new IllegalArgumentException("passing serverInfo with type "+serverList.getClass().getSimpleName()+"  instead of type ServerInfo.");
-        }
-        this.serverList=serverList;
         this.myServer=requireNonNull(myServer);
         this.print = new LogFormatManager("SCLIENT", pedantic);
 
@@ -75,7 +80,7 @@ public class SClient  {
                     && registerOnServer(curr)
                     && subscribeForNotifications(curr)
                     && subscribeToAllTopics(curr)
-                    && this.serverList.add(serverInfo);
+                    && serverList.add(serverInfo);
         }catch (Exception exc){
             print.error(exc,"Error while adding server:"+serverInfo.regHost);
         }
