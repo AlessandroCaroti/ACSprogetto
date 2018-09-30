@@ -18,7 +18,7 @@ public class Host {
 
     final private Server server;
     final private ServerStatistic serverStat;
-    final private SClient sClient;
+    //final private SClient sClient;
     private ServerInfoProvider infoProvider = null;
     private ServerGuiResizable gui;
 
@@ -82,8 +82,8 @@ public class Host {
         initGui();
 
         //Creazione interconnessione tra server
-        sClient = new SClient(new ArrayList(), server, true);
-        sClient.init();
+        //sClient = new SClient(new ArrayList(), server, true);
+        //sClient.init();
     }
 
 

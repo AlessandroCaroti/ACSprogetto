@@ -331,7 +331,7 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         lblProgettoPcad = new JLabel("PCAD Project - Server alpha 0.4.2");
         lblProgettoPcad.setFont(new Font("Tahoma", Font.PLAIN, 15));
         lblProgettoPcad.setForeground(Color.WHITE);
-        lblProgettoPcad.setBounds(12, 0, 221, 32);
+        lblProgettoPcad.setBounds(12, 0, 288, 32);
         panel_12.add(lblProgettoPcad);
 
         side_panel = new JPanel();
@@ -673,7 +673,7 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
 
         JLabel label_3 = new JLabel("General information:");
         label_3.setFont(new Font("Tahoma", Font.PLAIN, 37));
-        label_3.setBounds(30, 0, 345, 70);
+        label_3.setBounds(30, 0, 431, 70);
         panel_7.add(label_3);
 
         KGradientPanel gradientPanel_1 = new KGradientPanel();
@@ -719,7 +719,7 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
 
         JLabel label_9 = new JLabel("Network informatons:");
         label_9.setFont(new Font("Tahoma", Font.PLAIN, 37));
-        label_9.setBounds(30, 0, 361, 70);
+        label_9.setBounds(30, 0, 452, 70);
         panel_8.add(label_9);
 
         JPanel panel_11 = new JPanel();
@@ -811,7 +811,7 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
 
         JLabel label_27 = new JLabel("Topics:");
         label_27.setFont(new Font("Tahoma", Font.PLAIN, 37));
-        label_27.setBounds(30, 0, 123, 70);
+        label_27.setBounds(30, 0, 302, 70);
         panel_13.add(label_27);
 
         JPanel panel_23 = new JPanel();
@@ -840,7 +840,7 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         lblServerName = new JLabel("");
         lblServerName.setVerticalAlignment(SwingConstants.TOP);
         lblServerName.setFont(new Font("Tahoma", Font.PLAIN, 18));
-        lblServerName.setBounds(238, 76, 275, 29);
+        lblServerName.setBounds(238, 76, 484, 29);
         panel_7.add(lblServerName);
 
         label_22 = new JLabel("00:00:00");
@@ -852,7 +852,7 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
 
         JLabel label_24 = new JLabel("Clients:");
         label_24.setFont(new Font("Tahoma", Font.PLAIN, 37));
-        label_24.setBounds(30, 0, 132, 70);
+        label_24.setBounds(30, 0, 302, 70);
         panel_23.add(label_24);
 
         JLabel label_25 = new JLabel("Client online:");
