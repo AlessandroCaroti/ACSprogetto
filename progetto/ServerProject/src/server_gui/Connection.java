@@ -39,15 +39,13 @@ public class Connection extends JFrame {
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					Connection frame = new Connection("");
-					frame.setTitle("Connection Manager");
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+		EventQueue.invokeLater(() -> {
+			try {
+				Connection frame = new Connection("");
+				frame.setTitle("Connection Manager");
+				frame.setVisible(true);
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		});
 	}
@@ -208,7 +206,7 @@ public class Connection extends JFrame {
 		private JLabel lblServername;
 		
 		
-		public ServerInfoPanel(String name, ServerInfo info) {
+		ServerInfoPanel(String name, ServerInfo info) {
 			addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent e) {
@@ -253,9 +251,9 @@ public class Connection extends JFrame {
 	private class ServerSearchWorker extends SwingWorker<HashMap<String, String[]>, Void>{
 		
 		@Override
-		protected HashMap<String, String[]> doInBackground() throws Exception {
+		protected HashMap<String, String[]> doInBackground() {
 			btnUpdate.setEnabled(false);
-			btnUpdate.setText("Serching");				
+			btnUpdate.setText("Searching");
 			
 			//RIMOZIONE DEI VECCHI SERVER
 	        ServerList_panel.removeAll();
@@ -276,7 +274,7 @@ public class Connection extends JFrame {
 			btnUpdate.setText("Update");
 			btnUpdate.setEnabled(true);		
 	        
-	        //VISUALIZAZIONE DEI SERVER TROVATI
+	        //VISUALIZZAZIONE DEI SERVER TROVATI
 	        try {
 				HashMap<String, String[]> servers = get();
 				if(servers==null)
