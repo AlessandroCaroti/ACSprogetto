@@ -1,0 +1,6 @@
+#serverSettings
+maxaccountnumber=300
+serveremail=acsgroup.unige@gmail.com
+emailpassword=Evvivaladroga@
+smtpPort=587
+smtpProvider=smtp.gmail.com
