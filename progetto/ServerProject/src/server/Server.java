@@ -179,7 +179,7 @@ public class Server implements ServerInterface {
         try {
             //Importing the security policy and ...
             System.setProperty("java.security.policy","file:./src/server/sec.policy");
-            System.setProperty("java.rmi.server.hostname",AddressIp.getExternalAddress());
+            System.setProperty("java.rmi.server.hostname",AddressIp.getLocalAddress());
             print.info("Policy and codebase setted.");
 
             //Creating and Installing a Security Manager

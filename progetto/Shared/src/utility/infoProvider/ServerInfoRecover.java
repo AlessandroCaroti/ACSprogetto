@@ -54,6 +54,16 @@ public class ServerInfoRecover extends InfoProviderProtocol {
         return getServerInfo(serverAddress, tcpPort);
     }
 
+    public String[] getServerInfo (InetAddress serverAddress) throws IOException{
+        InetAddress packetAddress;
+        DatagramPacket packet;
+        do{
+            packet=findServerLocalNetwork();
+        }while(!((packetAddress=packet.getAddress()).toString().equals(serverAddress.toString())));//todo check se si può eliminare la connversione a strimga e usare subito equals()
+        int tcpPort = Integer.parseInt(new String(Arrays.copyOf(packet.getData(), packet.getLength()), StandardCharsets.UTF_8));
+        return getServerInfo(packetAddress, tcpPort);
+    }
+
     public String[] getServerInfo(InetAddress serverAddress, int tcpPort) throws IOException {
         ArrayList<String> serverInfo = new ArrayList<>();       //Array che conterra i dati per accedere allo stub del server (se tutto va bene)
         String fromServer;
