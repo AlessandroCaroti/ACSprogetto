@@ -153,7 +153,7 @@ public class ClientEngine implements Callable<Integer> {
                             try {
                                 client = new Client(((NewAccountWindow) current).getUsername(), ((NewAccountWindow) current).getPassword(), ((NewAccountWindow) current).getEmail());
                                 String[] a = infoServer.getServerInfo(
-                                        InetAddress.getByName(((NewAccountWindow) current).getServerAddress()), 6000
+                                        InetAddress.getByName(((NewAccountWindow) current).getServerAddress()), 41393
                                 );
                                 client.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
                                 if (client.register()) {
