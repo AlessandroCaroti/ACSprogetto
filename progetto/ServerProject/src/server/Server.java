@@ -172,13 +172,14 @@ public class Server implements ServerInterface {
      */
     public void start(){
         print.pedanticInfo("Starting server ...");
-        System.setProperty("java.rmi.server.hostname","192.168.43.194");
+
         ServerInterface stub = null;
         Registry r = null;
 
         try {
             //Importing the security policy and ...
             System.setProperty("java.security.policy","file:./src/server/sec.policy");
+            System.setProperty("java.rmi.server.hostname","192.168.43.194");    //todo rendere + generico
             print.info("Policy and codebase setted.");
 
             //Creating and Installing a Security Manager
