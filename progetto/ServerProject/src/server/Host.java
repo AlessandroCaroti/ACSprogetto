@@ -3,6 +3,7 @@ package server;
 import server.utility.StreamRedirector;
 import server_gui.ServerGuiResizable;
 import server_gui.ServerStatistic;
+import utility.ServerInfo;
 import utility.infoProvider.ServerInfoProvider;
 
 import javax.swing.*;
@@ -11,7 +12,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Host {
@@ -38,6 +38,7 @@ public class Host {
             "\t\tshutdown\n" +
             "\t\tinfo\n" +
             "\t\tshow topic\n" +
+            "\t\tadd broker\n"+
             "***********************************************";
 
 
@@ -82,7 +83,7 @@ public class Host {
         initGui();
 
         //Creazione interconnessione tra server
-        sClient = new SClient(new ArrayList(), server, true);
+        sClient = new SClient(null, server, true);
         sClient.init();
     }
 
@@ -135,6 +136,9 @@ public class Host {
                     case "show topic":
                         showTopic(server.getTopicList());
                         break;
+                    case "add broker":
+                        addBroker();
+                        break;
                     case "FATAL_ERROR":
                         fatalError_occurred(sc);
                         break;
@@ -149,7 +153,15 @@ public class Host {
         sc.close();
     }
 
-
+    private void addBroker(){
+        Scanner sc = new Scanner(System.in);
+        String line;
+        int port;
+        String regHost;
+        System.out.print("brokerIp:");
+        sc.nextLine();
+        sClient.addServer(new ServerInfo(regHost,port));
+    }
 
 
     private void startServer() {
