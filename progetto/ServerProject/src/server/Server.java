@@ -172,6 +172,7 @@ public class Server implements ServerInterface {
      */
     public void start(){
         print.pedanticInfo("Starting server ...");
+        System.setProperty("java.rmi.server.hostname","192.168.43.194");
         ServerInterface stub = null;
         Registry r = null;
 
