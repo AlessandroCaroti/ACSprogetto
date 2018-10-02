@@ -160,7 +160,9 @@ public class Host {
         int port;
         String regHost;
         System.out.print("brokerIp:");
-        sc.nextLine();
+        regHost=sc.nextLine();
+        System.out.print("brokerPort:");
+        port=Integer.parseInt(sc.nextLine());
         sClient.addServer(new ServerInfo(regHost,port));
     }
 
