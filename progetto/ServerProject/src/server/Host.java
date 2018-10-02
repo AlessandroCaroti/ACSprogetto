@@ -138,7 +138,7 @@ public class Host {
                         showTopic(server.getTopicList());
                         break;
                     case "add broker":
-                        addBroker();
+                        addBroker(sc);
                         break;
                     case "FATAL_ERROR":
                         fatalError_occurred(sc);
@@ -154,15 +154,17 @@ public class Host {
         sc.close();
     }
 
-    private void addBroker(){
-        Scanner sc = new Scanner(System.in);
-        String line;
+    private void addBroker(Scanner sc){
+        if(!started)
+            return;
         int port;
-        String regHost;
-        System.out.print("brokerIp:");
-        regHost=sc.nextLine();
-        System.out.print("brokerPort:");
-        port=Integer.parseInt(sc.nextLine());
+        String regHost, serverName;
+        System.out.print("Insert brokerName:");
+        serverName = sc.nextLine();
+        System.out.print("Insert brokerIp:");
+        regHost = sc.nextLine();
+        System.out.print("Insert brokerPort:");
+        port = Integer.parseInt(sc.nextLine());
         sClient.addServer(new ServerInfo(regHost,port));
     }
 

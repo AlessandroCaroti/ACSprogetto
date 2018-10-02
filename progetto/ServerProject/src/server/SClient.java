@@ -34,6 +34,7 @@ import static java.util.Objects.requireNonNull;
 public class SClient  {
     private List<AnonymousClientExtended> clients;
     private List<ServerInfo> serverList;
+    private List<String> serverList_;
 
     final private Server myServer;
     final private LogFormatManager print;
@@ -87,6 +88,20 @@ public class SClient  {
         return false;
     }
 
+    public boolean addServer(String regHost,int regPort, String brokerName){
+        try {
+            AnonymousClientExtended curr;
+            ServerInfo serverInfo = new ServerInfo(regHost, regPort);
+            return (curr = addServerConnection(regHost,regPort,brokerName)) != null
+                    && registerOnServer(curr)
+                    && subscribeForNotifications(curr)
+                    && subscribeToAllTopics(curr)
+                    && serverList.add(serverInfo);
+        }catch (Exception exc){
+            print.error(exc,"Error while adding server:"+brokerName);
+        }
+        return false;
+    }
 
 
     /**Inizializza la connessione, la registrazione, la sottoscrizione alle notifiche
@@ -159,9 +174,21 @@ public class SClient  {
     private AnonymousClientExtended addServerConnection(ServerInfo serverInfo){
         try {
             ServerInfoRecover infoServer = new ServerInfoRecover();
-            AnonymousClientExtended anonymousClient = new AnonymousClientExtended(this.myServer);
             String[] a = infoServer.getServerInfo(InetAddress.getByName(serverInfo.regHost)/*, serverInfo.regPort*/);
-            anonymousClient.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
+            //AnonymousClientExtended anonymousClient = new AnonymousClientExtended(this.myServer);
+            return addServerConnection(a[0], Integer.valueOf(a[1]), a[2]);
+            //anonymousClient.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
+            //return clients.add(anonymousClient)?anonymousClient:null;
+        }catch (Exception exc){
+            print.warning(exc,"Unable to add server!");
+        }
+        return null;
+    }
+
+    private AnonymousClientExtended addServerConnection(String regHost,int regPort, String brokerName){
+        try {
+            AnonymousClientExtended anonymousClient = new AnonymousClientExtended(this.myServer);
+            anonymousClient.setServerInfo(regHost,regPort,brokerName);
             return clients.add(anonymousClient)?anonymousClient:null;
         }catch (Exception exc){
             print.warning(exc,"Unable to add server!");
