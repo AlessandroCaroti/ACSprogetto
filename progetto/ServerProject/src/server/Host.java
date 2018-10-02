@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Host {
@@ -83,7 +84,7 @@ public class Host {
         initGui();
 
         //Creazione interconnessione tra server
-        sClient = new SClient(null, server, true);
+        sClient = new SClient(null , server, true);
         sClient.init();
     }
 
