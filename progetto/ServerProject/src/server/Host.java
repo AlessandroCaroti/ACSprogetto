@@ -141,6 +141,10 @@ public class Host {
                         showTopic(server.getTopicList());
                         break;
                     case "add broker":
+                        if(!started) {
+                            System.out.println("Server offline!!");
+                            break;
+                        }
                         System.out.println("Vuoi cercarlo nella Lan[Y/N]?");
                         switch (sc.nextLine()){
                             case"Y":
