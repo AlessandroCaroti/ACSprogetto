@@ -51,40 +51,17 @@ public class ClientBot extends Client {
 
     static private void findServer() {
         ServerInfoRecover infoServer;
-        HashMap<String, String[]> servers;
-        int numServer;
-
+        String[] serverChosen;
         //RICERCA DEI SERVER DISPONIBILI NELLA RETE LOCALE
         try {
             infoServer = new ServerInfoRecover(false);
+            serverChosen = infoServer.pickServerOnLan(new Scanner(System.in));
         } catch (IOException e) {
             System.err.println("ERRORE DURANTE LA CREAZIONE DELL'INFO_RECOVER");
             return;
         }
-        System.out.println("Local network scan looking for servers ...");
-        servers = infoServer.findAllServerOnLan();
-        numServer = servers.size();
-        if (numServer == 0) {
-            System.err.println("... no server found on the local network!");
-            System.exit(1);
-        }
-
-        //STAMPA DEI SERVER TROVATI
-        System.out.println("\n\n\n\nFound " + numServer + " Servers:");
-        String[] serverFound = servers.keySet().toArray(new String[0]);
-        for (int i = 0; i < numServer; i++) {
-            System.out.println("  " + i + ") " + serverFound[i]);
-        }
-
-        //SCELTA DEL SERVER A CUI CONNETERSI
-        int serverToConnect = 0;
-        if (numServer != 1) {
-            System.out.println("\nConnect to server number: ");
-            Scanner sc = new Scanner(System.in);
-            serverToConnect = sc.nextInt();
-        }
-        String[] serverChosen = servers.get(serverFound[serverToConnect]);
-        setServerInfoForBot(serverChosen[0], serverChosen[2], Integer.parseInt(serverChosen[1]));
+        if(serverChosen!=null)
+            setServerInfoForBot(serverChosen[0], serverChosen[2], Integer.parseInt(serverChosen[1]));
     }
 
     static private void setServerInfoForBot(String regHost_, String serverName_, int regPort_) {

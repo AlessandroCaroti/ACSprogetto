@@ -1,10 +1,12 @@
 package server;
 
+import Events.NewAccountWindow;
 import server.utility.StreamRedirector;
 import server_gui.ServerGuiResizable;
 import server_gui.ServerStatistic;
 import utility.ServerInfo;
 import utility.infoProvider.ServerInfoProvider;
+import utility.infoProvider.ServerInfoRecover;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -138,7 +141,25 @@ public class Host {
                         showTopic(server.getTopicList());
                         break;
                     case "add broker":
-                        addBroker();
+                        System.out.println("Vuoi cercarlo nella Lan[Y/N]?");
+                        switch (sc.nextLine()){
+                            case"Y":
+                            case "y":
+                                addBroker(sc);
+                                break;
+                            case "N":
+                            case "n":
+                                System.out.print("Insert brokerName:");
+                                String serverName = sc.nextLine();
+                                System.out.print("Insert registry ip:");
+                                String regHost = sc.nextLine();
+                                System.out.print("Insert registry port:");
+                                int port = Integer.parseInt(sc.nextLine());
+                                addBroker(regHost,port,serverName);
+                                break;
+                            default:
+                                System.out.println("Opzione non valida");
+                        }
                         break;
                     case "FATAL_ERROR":
                         fatalError_occurred(sc);
@@ -154,17 +175,26 @@ public class Host {
         sc.close();
     }
 
-    private void addBroker(){
-        Scanner sc = new Scanner(System.in);
-        String line;
-        int port;
-        String regHost;
-        System.out.print("brokerIp:");
-        regHost=sc.nextLine();
-        System.out.print("brokerPort:");
-        port=Integer.parseInt(sc.nextLine());
-        sClient.addServer(new ServerInfo(regHost,port));
+    private void addBroker(Scanner sc){
+        if(!started)
+            return;
+        ServerInfoRecover infoServer = null;
+        try {
+            infoServer = new ServerInfoRecover(false);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        String[] serverChosen = infoServer.pickServerOnLan(sc);
+        if(serverChosen==null)
+            return;
+        sClient.addServer(serverChosen[0], Integer.parseInt(serverChosen[1]), serverChosen[2]);
     }
+
+    private void addBroker(String regHost, int regPort, String serverName){
+        sClient.addServer(regHost, regPort, serverName);
+    }
+
+
 
 
     private void startServer() {
