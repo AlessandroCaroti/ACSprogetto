@@ -853,30 +853,33 @@ public class Server implements ServerInterface {
      */
 
     private boolean emailValidation(String email,ClientInterface stub) throws MessagingException, RemoteException {
+        try {
+            Integer x=-1;
+            String temp;
+            StringTokenizer tokenizer=new StringTokenizer(email);
+            temp=tokenizer.nextToken();
+            if(temp.equalsIgnoreCase("test"))return true;//TODO REMOVE 4 LINES up (sono per il testing)
 
-        Integer x=-1;
-        String temp;
-        StringTokenizer tokenizer=new StringTokenizer(email);
-        temp=tokenizer.nextToken();
-        if(temp.equalsIgnoreCase("test"))return true;//TODO REMOVE 4 LINES up (sono per il testing)
-
-        final int MAXATTEMPTS = 3;
-        ResponseCode resp;
-        Integer codice = (int) (Math.random() * 1000000);
-        emailController.sendMessage(emailController.createEmailMessage(email, "EMAIL VALIDATION",
-                "Codice verifica:" + Integer.toString(codice)
-        ));
-        print.info("Message to: "+email+"; added to queue code: "+Integer.toString(codice)+".");
-        for (int i = MAXATTEMPTS; i >0 ; i--) {
-            resp=stub.getCode(i);
-            if (resp.IsOK()) {
-                print.pedanticInfo("the user has entered the code:" + resp.getMessageInfo() + ";");
-                if (codice.equals(Integer.parseInt(resp.getMessageInfo())) || x.equals(Integer.parseInt(resp.getMessageInfo()))) {                              //todo remove backdoor (Integer.parseInt(resp.getMessageInfo())==-1) and var x
-                    return true;
+            final int MAXATTEMPTS = 3;
+            ResponseCode resp;
+            Integer codice = (int) (Math.random() * 1000000);
+            emailController.sendMessage(emailController.createEmailMessage(email, "EMAIL VALIDATION",
+                    "Codice verifica:" + Integer.toString(codice)
+            ));
+            print.info("Message to: "+email+"; added to queue code: "+Integer.toString(codice)+".");
+            for (int i = MAXATTEMPTS; i >0 ; i--) {
+                resp=stub.getCode(i);
+                if (resp.IsOK()) {
+                    print.pedanticInfo("the user has entered the code:" + resp.getMessageInfo() + ";");
+                    if (codice.equals(Integer.parseInt(resp.getMessageInfo())) || x.equals(Integer.parseInt(resp.getMessageInfo()))) {                              //todo remove backdoor (Integer.parseInt(resp.getMessageInfo())==-1) and var x
+                        return true;
+                    }
                 }
             }
+            return false;
+        }catch (NumberFormatException e){
+            return false;
         }
-        return false;
     }
 
 
