@@ -40,6 +40,10 @@ final public class LogFormatManager {
         System.err.println("\tError message: " + r.getMessageInfo());
     }
 
+    public void warning(final String msg) {
+        System.out.println(this.className + "-WARNING]: " + msg);
+    }
+
     public void warning(final Exception e, final String msg) {
         System.err.println(this.className + "-WARNING]: " + msg);
         System.err.println("\tException type: " + e.getClass().getSimpleName());
