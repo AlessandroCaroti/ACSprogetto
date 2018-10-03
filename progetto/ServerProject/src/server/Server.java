@@ -687,27 +687,27 @@ public class Server implements ServerInterface {
     void forwardMessage(Message msg) {
 
         String topicName = msg.getTopic();
-        ConcurrentSkipListSet<Integer> subscribers = topicClientList.putIfAbsent(topicName, new ConcurrentSkipListSet<>());
-        if (subscribers == null) {  //creazione di un nuovo topic
-            topicList.add(topicName);
-            serverStat.incrementTopicNum();
-        } else {
+        ConcurrentSkipListSet<Integer> subscribers = topicClientList.get(topicName);
+        if(subscribers!=null){
             notifyAll(subscribers.iterator(), msg);      //todo magari si potrebbe eseguire su un altro thread in modo da non bloccare questa funzione
             serverStat.incrementPostNum();
-        }
+        }else
+            print.warning("InternalError: topic not found");
     }
 
 
     void addTopic(String topic){
          if(topic==null) throw new NullPointerException("topic==null");
          if(topic.isEmpty()) throw new IllegalArgumentException("topic is empty");
-         synchronized (topicList){
-             if(!topicList.contains(topic)){
-                 topicList.add(topic);
-             }
-         }
+
+        ConcurrentSkipListSet<Integer> subscribers = topicClientList.putIfAbsent(topic, new ConcurrentSkipListSet<>());
+        if(subscribers==null){
+            topicList.add(topic);
+            serverStat.incrementTopicNum();
+        }
     }
 
+    @Deprecated
     void removeTopic(String topic){
         if(topic==null||topic.isEmpty()) return;
         synchronized (topicList){
