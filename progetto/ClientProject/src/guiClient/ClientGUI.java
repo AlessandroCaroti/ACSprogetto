@@ -134,17 +134,20 @@ public class ClientGUI extends JFrame {
     private ImageIcon user;
     private ImageIcon err;
 	private JTextField txtusername;
+	private JLabel lblEmailDoesNot;
 	
     private ConcurrentLinkedQueue<Event> clientEngineToGui;
     private ConcurrentLinkedQueue<Event> guiToClient;
 	private JTextField textField_1;
 	private JLabel lblSubmit_1;
 	private JLabel lblNewLabel_23;
+    private JLabel label_13;
     
     
 	private static final Color BLACKBLUE = new Color(23, 35, 51);
 
-	/**
+
+    /**
 	 * Launch the application.
 	 */
 	/**
@@ -237,8 +240,14 @@ public class ClientGUI extends JFrame {
 	                        forgot.setVisible(true);
 	                        if(((ForgotPasswordWindow)current).isErr())
 	                        {
-
+                                lblEmailDoesNot.setVisible(true);
+                                lblServerNotFound.setVisible(true);
 	                        }
+	                        else
+	                            {
+	                                lblEmailDoesNot.setVisible(false);
+	                                lblEmailDoesNot.setVisible(false);
+                                }
 	                        break;
 	                }
 	            }
@@ -343,7 +352,7 @@ public class ClientGUI extends JFrame {
         jLabel6.setForeground(Color.WHITE);
         jLabel6.setText("Login");
         
-//--------------------- Login form --------------------------------------------        
+/**--------------------- Login form --------------------------------------------**/
         
         jPanel1.add(login, "card2");
         login.setLayout(null);
@@ -705,7 +714,10 @@ public class ClientGUI extends JFrame {
     });
     **/
         
-//------------------------------ Loader Form -------------------------------------------------------------        
+/**------------------------------ Loader Form -------------------------------------------------------------
+ Form dedicato alla fase di caricamento per il cambio di form (da login a forum, oppure dopo la richiesta di
+ registrazione, recupero password).
+ **/
         
         loader.setBackground(BLACKBLUE);
 
@@ -749,7 +761,7 @@ public class ClientGUI extends JFrame {
         );
         getContentPane().setLayout(layout);
         
-//------------------------- Registration Form -------------------------------------------------  
+/**------------------------- Registration Form -------------------------------------------------**/
  
         registration.setBackground(new java.awt.Color(23, 35, 51));
         
@@ -1127,7 +1139,9 @@ public class ClientGUI extends JFrame {
         );
         getContentPane().setLayout(layout2);
         
-//-------------------------- Forgot password Form -------------------------------------------------------        
+/**-------------------------- Forgot password Form -------------------------------------------------------
+ Form dedicato al recupero della password
+ **/
         
         forgot.setBackground(new java.awt.Color(23, 35, 51));
         
@@ -1284,12 +1298,12 @@ public class ClientGUI extends JFrame {
         separator_11.setBounds(215, 450, 277, 12);
         forgot.add(separator_11);
         
-        JLabel label_13 = new JLabel("");
+        label_13 = new JLabel("");
         label_13.setIcon(ok);
         label_13.setBounds(504, 180, 29, 34);
         forgot.add(label_13);
         
-        JLabel lblEmailDoesNot = new JLabel("Email does not exist");
+        lblEmailDoesNot = new JLabel("Email does not exist");
         lblEmailDoesNot.setFont(new Font("Tahoma", Font.PLAIN, 13));
         lblEmailDoesNot.setForeground(Color.RED);
         lblEmailDoesNot.setIcon(notOk);
@@ -1435,7 +1449,7 @@ public class ClientGUI extends JFrame {
 			}
         });
         
-//---------------------- Forum Form --------------------------------------------------------------        
+/**---------------------- Forum Form --------------------------------------------------------------**/
         
         jPanel1.add(forum, "card6");
         forum.setBackground(BLACKBLUE);
@@ -1771,9 +1785,9 @@ public class ClientGUI extends JFrame {
 				label_22.setIcon(minW);
 			}
         });
-        
-//------------------------ AnonymousForum Form ----------------------------------------------------
-        
+
+/**------------------------ AnonymousForum Form ----------------------------------------------------**/
+
         jPanel1.add(Anonymousforum, "card7");
         Anonymousforum.setBackground(Color.BLACK);
         Anonymousforum.setLayout(null);
@@ -1996,8 +2010,10 @@ public class ClientGUI extends JFrame {
         		panel_20.setVisible(true);
         	}
         });
-        
-//--------------------------RecoveryCode form-----------------
+
+/**--------------------------RecoveryCode form-----------------
+ Form adibito all'inserimento del codice di autenticazione
+ **/
         jPanel1.add(RecoveryCode, "card8");
         RecoveryCode.setLayout(null);
         RecoveryCode.setBackground(BLACKBLUE);
@@ -2045,7 +2061,10 @@ public class ClientGUI extends JFrame {
         lblSubmit_1.setIcon(loginW);
         panel_6.add(lblSubmit_1);
         
-//-------------------------Error form-------------------------------------------
+/**-------------------------Error form-------------------------------------------
+* form adibito alla segnalazione di eventuali errori
+ **/
+
         jPanel1.add(error, "card9");
         error.setLayout(null);
         error.setBackground(BLACKBLUE);
@@ -2066,7 +2085,14 @@ public class ClientGUI extends JFrame {
         pack(); 
     }
 
+/**------------------------Methods-------------------------------------------------**/
 
+    /**
+     * Questo metodo provvede a far apparire (se possibile) il forum form dopo che
+     * il client ha premuto il bottone di accesso;
+     * Vengono passate le credenziali che verranno analizzate, in caso di successo
+     * il forum form appare.
+      **/
     private void btn_loginMousePressed(MouseEvent evt) {
 		login.setVisible(false);
 		btn_login.setVisible(false);
@@ -2083,7 +2109,24 @@ public class ClientGUI extends JFrame {
 		TimerTask task=new MyTask();
 		t.schedule(task,5000);
     }
-    
+
+    private void data_forum()
+    {
+        /**TODO metodo per aggiornare i dati del forum
+         **/
+    }
+
+    private void data_Aforum()
+    {
+        /** TODO metodo per aggiornare i dati del forum anonimo
+         **/
+    }
+
+    /**
+     * Metodo che hai il compito di registrare il nuovo cliente, passando le
+     * credenziali al sistema dopo che lo stesso cliente attiva l'evento
+     * cliccando sul bottone di registrazione
+     */
     private void signUp_Registration(MouseEvent evt)
     {
         NewAccountWindow e=new NewAccountWindow();
@@ -2093,7 +2136,13 @@ public class ClientGUI extends JFrame {
         e.setServerAddress(txtServerIpAddress.getText());
         this.guiToClient.offer(e);
     }
-    
+
+    /**
+     * Questo metodo provvede a far apparire (se possibile) il forum anonimo form dopo che
+     * il client ha premuto il bottone di accesso;
+     * Vengono passate le credenziali che verranno analizzate, in caso di successo
+     * il forum form appare.
+     **/
     private void btn_loginMousePressed3(MouseEvent evt) {
 		login.setVisible(false);
 		btn_login.setVisible(false);
@@ -2104,21 +2153,33 @@ public class ClientGUI extends JFrame {
 		TimerTask task=new MyTask2();
 		t.schedule(task,5000);
     }
-    
+
+    /**
+     * Metodo che rende visibile il forum form
+     */
     private void lblAccedi_loginMousePressed(MouseEvent evt) {
     		loader.setVisible(false);
     		registration.setVisible(false);
     		forgot.setVisible(false);
     		login.setVisible(true);
     }
-    
+
+    /**
+     * Metodo che rende visibile il forgot form (recovery password)
+     */
     private void forgot_loginMousePressed(MouseEvent evt) {
     		loader.setVisible(false);
     		registration.setVisible(false);
     		login.setVisible(false);
     		forgot.setVisible(true);
     }
-    
+
+    /**
+     * Metodo che provvede a fornire i dati rilevanti al cliente che
+     * ha dimenticato la password, se tutto va bene fa apparire la
+     * Recovery code form per inserire il codice di autenticazione
+     * ricevuto dallo stesso cliente
+     */
     private void recovery_submitMousePressed(MouseEvent evt) {
 
 	    ForgotPasswordWindow event=new ForgotPasswordWindow();
@@ -2143,7 +2204,12 @@ public class ClientGUI extends JFrame {
         this.guiToClient.offer(e);
          **/
     }
-    
+
+
+    /**
+     * Metodo che si occupa della chiusura del programma qunado il cliente
+     * preme il pulsante di spegnimento
+     */
     private void lbl_closeMousePressed(java.awt.event.MouseEvent evt)
     {
         ShutDown event=new ShutDown();

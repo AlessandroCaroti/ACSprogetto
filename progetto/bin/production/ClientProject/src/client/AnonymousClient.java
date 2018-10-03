@@ -423,10 +423,15 @@ public class AnonymousClient implements ClientInterface {
     }
 
     protected boolean registered(ResponseCode response){
-        if (response == null || !response.getStatusCode().equals(ResponseCode.Codici.R100)) {     //Registrazione fallita
+        if (response == null ) {     //Registrazione fallita
+            print.error("Server registration failed");
+            return false;
+        }
+        if (!response.getStatusCode().equals(ResponseCode.Codici.R100)) {     //Registrazione fallita
             print.error(response, "Server registration failed");
             return false;
         }
+
 
         //Registrazione avvenuta con successo
         this.cookie = response.getMessageInfo();

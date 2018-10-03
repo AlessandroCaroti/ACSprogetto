@@ -134,7 +134,7 @@ public class ClientEngine implements Callable<Integer> {
 
                                 client = new Client(((AccountLoginWindow) current).getUsername(), ((AccountLoginWindow) current).getPassword(), null);
                                 String[] a = infoServer.getServerInfo(
-                                        InetAddress.getByName(((AnonymousLoginWindow) current).getServerAddress()), 6000);    //todo agiongere la ricerca della porta - quella base è 6000 ma se ci sono più server nella stessa macchina potrebbe essere diversa
+                                        InetAddress.getByName(((AnonymousLoginWindow) current).getServerAddress()));
                                 client.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
                                 if ( client.retrieveAccount()) {
                                     temp = new ForumWindow();
@@ -153,7 +153,7 @@ public class ClientEngine implements Callable<Integer> {
                             try {
                                 client = new Client(((NewAccountWindow) current).getUsername(), ((NewAccountWindow) current).getPassword(), ((NewAccountWindow) current).getEmail());
                                 String[] a = infoServer.getServerInfo(
-                                        InetAddress.getByName(((NewAccountWindow) current).getServerAddress()), 41393
+                                        InetAddress.getByName(((NewAccountWindow) current).getServerAddress())
                                 );
                                 client.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
                                 if (client.register()) {
@@ -173,7 +173,7 @@ public class ClientEngine implements Callable<Integer> {
                             try {
                                 client = new AnonymousClient();
                                 String[] a = infoServer.getServerInfo(
-                                        InetAddress.getByName(((AnonymousLoginWindow) current).getServerAddress()), 6000
+                                        InetAddress.getByName(((AnonymousLoginWindow) current).getServerAddress())
                                 );
                                 client.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
                                 if (client.register()) {
@@ -192,7 +192,7 @@ public class ClientEngine implements Callable<Integer> {
                             try {
                                 client = new AnonymousClient();
                                 String[] a = infoServer.getServerInfo(
-                                        InetAddress.getByName(((ForgotPasswordWindow) current).getServerAddress()), 6000
+                                        InetAddress.getByName(((ForgotPasswordWindow) current).getServerAddress())
                                 );
                                 client.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
                                 if (client.recoverPassword(((ForgotPasswordWindow) current).getEmail(), ((ForgotPasswordWindow) current).getNewPassword(), ((ForgotPasswordWindow) current).getRepeatPassword())) {
