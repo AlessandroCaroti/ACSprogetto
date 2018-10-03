@@ -20,7 +20,6 @@ package client;
 import java.io.IOException;
 import java.util.concurrent.*;
 import Events.*;
-import utility.AddressIp;
 //import guiClient.ClientGUI;
 
 
@@ -52,7 +51,6 @@ public class ClientHost {
         this.guiActivated=usingUserInterface;
         clientEngine=new ClientEngine(clientEngineToGUI,guiToClientEngine);
         clientThread = Executors.newSingleThreadExecutor();
-        System.setProperty("java.rmi.server.hostname",AddressIp.getLocalAddress());
         if(guiActivated) {
             //userInterface = new ClientGUI(clientEngineToGUI, guiToClientEngine);
 

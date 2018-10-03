@@ -5,6 +5,7 @@ import Events.NewMessage;
 import Events.NewTopicNotification;
 import interfaces.ClientInterface;
 import interfaces.ServerInterface;
+import utility.AddressIp;
 import utility.LogFormatManager;
 import utility.Message;
 import utility.ResponseCode;
@@ -72,6 +73,7 @@ public class AnonymousClient implements ClientInterface {
         this.skeleton     = (ClientInterface) UnicastRemoteObject.exportObject(this,0);
         topicsSubscribed  = new TreeSet<>();
         this.anonymousClientToClientEngine=new LinkedBlockingQueue<>();
+        System.setProperty("java.rmi.server.hostname",AddressIp.getLocalAddress());
     }
 
     public AnonymousClient() throws RemoteException {

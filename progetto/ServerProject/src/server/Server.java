@@ -539,6 +539,7 @@ public class Server implements ServerInterface {
                 topicList.add(topicName);
                 accountList.addTopic(topicName, accountId);
                 serverStat.incrementTopicNum();
+                this.notifyNewTopic(topicName);
                 print.pedanticInfo("User " + accountId + " has created a new topic named \'" + topicName + "\'.");
             }
             notifyAll(subscribers.iterator(), msg);
@@ -932,6 +933,19 @@ public class Server implements ServerInterface {
         listCleaner.addClientOffline(accountId);
         if (prevStub != null)
             serverStat.decrementClientNum();
+    }
+
+    private void notifyNewTopic(String topic){
+        for (int i = 0; i<accountList.getMAXACCOUNTNUMBER();i++){
+            ClientInterface currStub = accountList.getStub(i);
+            try {
+                if(currStub!=null)
+                    currStub.newTopicNotification(topic);
+            } catch (RemoteException e) {
+                print.pedanticInfo("Client "+i+" is not connected.");
+            }
+        }
+
     }
 
 

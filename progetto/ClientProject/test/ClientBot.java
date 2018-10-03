@@ -1,4 +1,5 @@
 import client.Client;
+import utility.AddressIp;
 import utility.Message;
 import utility.ResponseCode;
 import utility.infoProvider.ServerInfoRecover;
@@ -18,6 +19,7 @@ public class ClientBot extends Client {
 
     public static void main(String[] args) throws RemoteException {
         //System.out.println("args [numBot] <[regHost] [serverName] [regPort]>");
+        System.setProperty("java.rmi.server.hostname", AddressIp.getLocalAddress());
 
         //SET NUMBER OF BOT
         int numBot = 10;
@@ -40,8 +42,12 @@ public class ClientBot extends Client {
                 System.err.println("Can not connect to the server");
                 System.exit(-1);
             }
-            bot.register();
-            bots[i] = bot;
+            if(bot.register())
+                bots[i] = bot;
+            else {
+                System.out.println("REGISTRAZIONE BOT " + i + " FALLITA!!");
+                i--;
+            }
         }
         for(ClientBot bot : bots){
             bot.start();
@@ -95,7 +101,7 @@ public class ClientBot extends Client {
     public boolean publish(String topic, String title, String text) {
         if (connected()) {
             try {
-                Message msg = new Message(title, this.username, "", topic);
+                Message msg = new Message(title, this.username, "_", topic);
                 server_stub.publish(this.cookie, msg);
                 return true;
             } catch (Exception e) {
@@ -150,6 +156,8 @@ public class ClientBot extends Client {
                 else if (k < 20) {
                     try {
                         String[] allTopics = server_stub.getTopicList();
+                        if(allTopics.length<1)
+                            continue;
                         this.subscribe(allTopics[random.nextInt(allTopics.length)]);
                     } catch (RemoteException e) {
                         flag = false;
