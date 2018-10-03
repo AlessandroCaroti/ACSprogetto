@@ -937,11 +937,12 @@ public class Server implements ServerInterface {
 
     private void notifyNewTopic(String topic){
         for (int i = 0; i<accountList.getMAXACCOUNTNUMBER();i++){
-            ClientInterface currStub = accountList.getStub(i);
             try {
+                ClientInterface currStub = accountList.getStub(i);
                 if(currStub!=null)
                     currStub.newTopicNotification(topic);
-            } catch (RemoteException e) {
+            }catch (NullPointerException e){ }
+            catch (RemoteException e) {
                 print.pedanticInfo("Client "+i+" is not connected.");
             }
         }
