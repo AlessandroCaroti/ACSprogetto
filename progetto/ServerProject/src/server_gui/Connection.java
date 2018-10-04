@@ -30,7 +30,6 @@ import java.util.concurrent.ExecutionException;
 public class Connection extends JFrame {
 
 	private JPanel contentPane;
-	private JPanel ServerList_panel;
 	private JTextField textField_port;
 	private JTextField textField_address;
 	private JTextField textField_name;
@@ -55,6 +54,7 @@ public class Connection extends JFrame {
 	 */
 	final private String myName;
 	private JButton btnUpdate;
+	private JPanel ServerList_panel;
 	
 	public Connection(String myName) {
 		Objects.requireNonNull(this.myName = myName);
@@ -124,10 +124,15 @@ public class Connection extends JFrame {
 					.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 217, Short.MAX_VALUE))
 		);
 		
+		JPanel panel_2 = new JPanel();
+		panel_2.setBackground(Color.WHITE);
+		scrollPane.setViewportView(panel_2);
+		panel_2.setLayout(new BorderLayout(0, 0));
+		
 		ServerList_panel = new JPanel();
 		ServerList_panel.setBackground(Color.WHITE);
-		scrollPane.setViewportView(ServerList_panel);
-		ServerList_panel.setLayout(new GridLayout(0, 1, 5, 0));
+		panel_2.add(ServerList_panel, BorderLayout.NORTH);
+		ServerList_panel.setLayout(new GridLayout(0, 1, 0, 0));
 		panel_1.setLayout(gl_panel_1);
 		
 		JLabel lblServerIp = new JLabel("Server Addres:");
@@ -216,6 +221,7 @@ public class Connection extends JFrame {
 						textField_name.setText(name);
 						return;
 					}
+					
 					java.awt.Component[] components = ServerList_panel.getComponents();
 					for(java.awt.Component c: components) {
 						if(c instanceof ServerInfoPanel) {
@@ -226,6 +232,7 @@ public class Connection extends JFrame {
 					}
 					lblServername.setBackground(Color.white);
 					e.getComponent().setBackground(Color.CYAN);
+					
 				}
 			});
 			setPreferredSize(new Dimension(10, 40));

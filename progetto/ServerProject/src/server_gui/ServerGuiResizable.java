@@ -96,6 +96,7 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
     private Thread readerStdErr;
     private boolean quit;
     private JTextPane textPane;
+    private JPopupMenu popupMenu;
 
     /**
      * Launch the application.
@@ -1081,9 +1082,24 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         panel_5.setLayout(null);
 
         JLabel label_29 = new JLabel("");
+        label_29.addMouseListener(new MouseAdapter() {
+        	@Override
+        	public void mouseClicked(MouseEvent e) {
+        		popupMenu.pack();
+        		Point pos = new Point();
+        		Dimension size = popupMenu.getPreferredSize();
+        		pos.x = (label_29.getWidth() / 4) - size.width + 2;
+        		pos.y = (label_29.getHeight() / 4) - size.height + 2;
+        		popupMenu.show(label_29, pos.x, pos.y);
+        	}
+        });
         label_29.setIcon(new ImageIcon(Objects.requireNonNull(classLoader.getResource("Settings_22px.png"))));
         label_29.setBounds(167, 1, 22, 22);
         panel_5.add(label_29);
+        
+        popupMenu = new JPopupMenu();
+        popupMenu.add("Connect to...");
+        addPopup(label_29, popupMenu);
 
         JPanel panel_17 = new JPanel();
         panel_17.setBackground(Color.DARK_GRAY);
@@ -1318,4 +1334,21 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         }
 
     }
+	private static void addPopup(Component component, final JPopupMenu popup) {
+		component.addMouseListener(new MouseAdapter() {
+			public void mousePressed(MouseEvent e) {
+				if (e.isPopupTrigger()) {
+					showMenu(e);
+				}
+			}
+			public void mouseReleased(MouseEvent e) {
+				if (e.isPopupTrigger()) {
+					showMenu(e);
+				}
+			}
+			private void showMenu(MouseEvent e) {
+				popup.show(e.getComponent(), e.getX(), e.getY());
+			}
+		});
+	}
 }
