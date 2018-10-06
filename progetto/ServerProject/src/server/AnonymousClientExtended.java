@@ -38,13 +38,13 @@ public class AnonymousClientExtended extends AnonymousClient {
 
     @Override
     public void newTopicNotification(String topicName){
-
-        server.addTopic(topicName);
         try {
-            this.server_stub.subscribe(this.getCookie(), topicName);
+            ResponseCode rc = this.server_stub.subscribe(this.getCookie(), topicName);
+            if(rc.IsOK())
+                server.addTopic(topicName);
         }catch (Exception exc){//se fallisce rimuovo il topic dalla lista del mio server
             exc.printStackTrace();
-            server.removeTopic(topicName);
+//            server.removeTopic(topicName);
         }
     }
 

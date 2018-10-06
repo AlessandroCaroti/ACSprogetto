@@ -51,7 +51,6 @@ public class ClientHost {
         this.guiActivated=usingUserInterface;
         clientEngine=new ClientEngine(clientEngineToGUI,guiToClientEngine);
         clientThread = Executors.newSingleThreadExecutor();
-
         if(guiActivated) {
             //userInterface = new ClientGUI(clientEngineToGUI, guiToClientEngine);
 

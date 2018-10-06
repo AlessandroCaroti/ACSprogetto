@@ -11,10 +11,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 public class ServerInfoRecover extends InfoProviderProtocol {
 
@@ -52,6 +49,16 @@ public class ServerInfoRecover extends InfoProviderProtocol {
 
         //Connesione al socket tcp da cui si riceverà le informazioni per poter connetersi al server
         return getServerInfo(serverAddress, tcpPort);
+    }
+
+    public String[] getServerInfo (InetAddress serverAddress) throws IOException{
+        InetAddress packetAddress;
+        DatagramPacket packet;
+        do{
+            packet=findServerLocalNetwork();
+        }while(!((packetAddress=packet.getAddress()).toString().equals(serverAddress.toString())));//todo check se si può eliminare la connversione a strimga e usare subito equals()
+        int tcpPort = Integer.parseInt(new String(Arrays.copyOf(packet.getData(), packet.getLength()), StandardCharsets.UTF_8));
+        return getServerInfo(packetAddress, tcpPort);
     }
 
     public String[] getServerInfo(InetAddress serverAddress, int tcpPort) throws IOException {
@@ -110,4 +117,32 @@ public class ServerInfoRecover extends InfoProviderProtocol {
         return servers;
     }
 
+    public String[] pickServerOnLan(Scanner sc) {
+        HashMap<String, String[]> servers;
+        int numServer;
+
+        //RICERCA DEI SERVER DISPONIBILI NELLA RETE LOCALE
+        print.pedanticInfo("Local network scan looking for servers ...");
+        servers = this.findAllServerOnLan();
+        numServer = servers.size();
+        if (numServer == 0) {
+            print.info("... no server found on the local network!");
+            return null;
+        }
+
+        //STAMPA DEI SERVER TROVATI
+        print.pedanticInfo("\n\n\n\nFound " + numServer + " Servers:");
+        String[] serverFound = servers.keySet().toArray(new String[0]);
+        for (int i = 0; i < numServer; i++) {
+            System.out.println("  " + i + ") " + serverFound[i]);
+        }
+
+        //SCELTA DEL SERVER A CUI CONNETTERSI
+        int serverToConnect ;
+        System.out.println("\nConnect to server number: ");
+        serverToConnect = sc.nextInt();
+        if(serverToConnect<0||serverToConnect>servers.size())
+            print.info("Number not valid");
+        return servers.get(serverFound[serverToConnect]);
+    }
 }

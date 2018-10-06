@@ -1,4 +1,5 @@
 import client.Client;
+import utility.AddressIp;
 import utility.Message;
 import utility.ResponseCode;
 import utility.infoProvider.ServerInfoRecover;
@@ -18,6 +19,7 @@ public class ClientBot extends Client {
 
     public static void main(String[] args) throws RemoteException {
         //System.out.println("args [numBot] <[regHost] [serverName] [regPort]>");
+        System.setProperty("java.rmi.server.hostname", AddressIp.getLocalAddress());
 
         //SET NUMBER OF BOT
         int numBot = 10;
@@ -40,8 +42,12 @@ public class ClientBot extends Client {
                 System.err.println("Can not connect to the server");
                 System.exit(-1);
             }
-            bot.register();
-            bots[i] = bot;
+            if(bot.register())
+                bots[i] = bot;
+            else {
+                System.out.println("REGISTRAZIONE BOT " + i + " FALLITA!!");
+                i--;
+            }
         }
         for(ClientBot bot : bots){
             bot.start();
@@ -51,40 +57,17 @@ public class ClientBot extends Client {
 
     static private void findServer() {
         ServerInfoRecover infoServer;
-        HashMap<String, String[]> servers;
-        int numServer;
-
+        String[] serverChosen;
         //RICERCA DEI SERVER DISPONIBILI NELLA RETE LOCALE
         try {
             infoServer = new ServerInfoRecover(false);
+            serverChosen = infoServer.pickServerOnLan(new Scanner(System.in));
         } catch (IOException e) {
             System.err.println("ERRORE DURANTE LA CREAZIONE DELL'INFO_RECOVER");
             return;
         }
-        System.out.println("Local network scan looking for servers ...");
-        servers = infoServer.findAllServerOnLan();
-        numServer = servers.size();
-        if (numServer == 0) {
-            System.err.println("... no server found on the local network!");
-            System.exit(1);
-        }
-
-        //STAMPA DEI SERVER TROVATI
-        System.out.println("\n\n\n\nFound " + numServer + " Servers:");
-        String[] serverFound = servers.keySet().toArray(new String[0]);
-        for (int i = 0; i < numServer; i++) {
-            System.out.println("  " + i + ") " + serverFound[i]);
-        }
-
-        //SCELTA DEL SERVER A CUI CONNETERSI
-        int serverToConnect = 0;
-        if (numServer != 1) {
-            System.out.println("\nConnect to server number: ");
-            Scanner sc = new Scanner(System.in);
-            serverToConnect = sc.nextInt();
-        }
-        String[] serverChosen = servers.get(serverFound[serverToConnect]);
-        setServerInfoForBot(serverChosen[0], serverChosen[2], Integer.parseInt(serverChosen[1]));
+        if(serverChosen!=null)
+            setServerInfoForBot(serverChosen[0], serverChosen[2], Integer.parseInt(serverChosen[1]));
     }
 
     static private void setServerInfoForBot(String regHost_, String serverName_, int regPort_) {
@@ -118,7 +101,7 @@ public class ClientBot extends Client {
     public boolean publish(String topic, String title, String text) {
         if (connected()) {
             try {
-                Message msg = new Message(title, this.username, "", topic);
+                Message msg = new Message(title, this.username, "_", topic);
                 server_stub.publish(this.cookie, msg);
                 return true;
             } catch (Exception e) {
@@ -173,6 +156,8 @@ public class ClientBot extends Client {
                 else if (k < 20) {
                     try {
                         String[] allTopics = server_stub.getTopicList();
+                        if(allTopics.length<1)
+                            continue;
                         this.subscribe(allTopics[random.nextInt(allTopics.length)]);
                     } catch (RemoteException e) {
                         flag = false;

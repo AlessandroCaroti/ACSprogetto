@@ -1,6 +1,11 @@
 grant {
      	permission java.security.AllPermission;
   };
+
 // Info policy:
 //      https://docs.oracle.com/javase/7/docs/technotes/guides/security/permissions.html
 //permission java.security.AllPermission;
+
+//permission java.net.SocketPermission   "*:1025-", "connect, accept, listen,resolve";
+    //permission java.lang.RuntimePermission "accessClassInPackage.sun.rmi.*";
+    //permission java.io.FilePermission      ".rrrbindings", "read, write,delete";

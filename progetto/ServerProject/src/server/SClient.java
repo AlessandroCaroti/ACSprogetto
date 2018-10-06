@@ -25,6 +25,7 @@ import utility.infoProvider.ServerInfoRecover;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import static java.util.Objects.requireNonNull;
@@ -33,24 +34,29 @@ import static java.util.Objects.requireNonNull;
 public class SClient  {
     private List<AnonymousClientExtended> clients;
     private List<ServerInfo> serverList;
+    private List<String> serverList_;
 
     final private Server myServer;
     final private LogFormatManager print;
 
-    public SClient(List serverList,Server myServer)  {
+    public SClient(List<ServerInfo> serverList,Server myServer)  {
         this(serverList, myServer, false);
 
     }
 
-    public SClient(List serverList,Server myServer, boolean pedantic)  {
-        if(serverList==null )
+    public SClient(Server myServer,boolean pedantic)  {
+        this(null, myServer, pedantic);
+
+    }
+
+
+    public SClient(List<ServerInfo> serverList,Server myServer, boolean pedantic)  {
+        if(serverList==null)
         {
-            throw new NullPointerException("passing null argument to SClient constructor");
+            this.serverList=new LinkedList<>();
+        }else {
+            this.serverList = serverList;
         }
-        if(!(serverList instanceof ServerInfo)){
-            throw new IllegalArgumentException("passing serverInfo with type "+serverList.getClass().getSimpleName()+"  instead of type ServerInfo.");
-        }
-        this.serverList=serverList;
         this.myServer=requireNonNull(myServer);
         this.print = new LogFormatManager("SCLIENT", pedantic);
 
@@ -75,13 +81,27 @@ public class SClient  {
                     && registerOnServer(curr)
                     && subscribeForNotifications(curr)
                     && subscribeToAllTopics(curr)
-                    && this.serverList.add(serverInfo);
+                    && serverList.add(serverInfo);
         }catch (Exception exc){
             print.error(exc,"Error while adding server:"+serverInfo.regHost);
         }
         return false;
     }
 
+    public boolean addServer(String regHost,int regPort, String brokerName){
+        try {
+            AnonymousClientExtended curr;
+            ServerInfo serverInfo = new ServerInfo(regHost, regPort);
+            return (curr = addServerConnection(regHost,regPort,brokerName)) != null
+                    && registerOnServer(curr)
+                    && subscribeForNotifications(curr)
+                    && subscribeToAllTopics(curr)
+                    && serverList.add(serverInfo);
+        }catch (Exception exc){
+            print.error(exc,"Error while adding server:"+brokerName);
+        }
+        return false;
+    }
 
 
     /**Inizializza la connessione, la registrazione, la sottoscrizione alle notifiche
@@ -154,9 +174,21 @@ public class SClient  {
     private AnonymousClientExtended addServerConnection(ServerInfo serverInfo){
         try {
             ServerInfoRecover infoServer = new ServerInfoRecover();
+            String[] a = infoServer.getServerInfo(InetAddress.getByName(serverInfo.regHost)/*, serverInfo.regPort*/);
+            //AnonymousClientExtended anonymousClient = new AnonymousClientExtended(this.myServer);
+            return addServerConnection(a[0], Integer.valueOf(a[1]), a[2]);
+            //anonymousClient.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
+            //return clients.add(anonymousClient)?anonymousClient:null;
+        }catch (Exception exc){
+            print.warning(exc,"Unable to add server!");
+        }
+        return null;
+    }
+
+    private AnonymousClientExtended addServerConnection(String regHost,int regPort, String brokerName){
+        try {
             AnonymousClientExtended anonymousClient = new AnonymousClientExtended(this.myServer);
-            String[] a = infoServer.getServerInfo(InetAddress.getByName(serverInfo.regHost), 6000); //todo vedi todo clientEngine
-            anonymousClient.setServerInfo(a[0], Integer.valueOf(a[1]), a[2]);
+            anonymousClient.setServerInfo(regHost,regPort,brokerName);
             return clients.add(anonymousClient)?anonymousClient:null;
         }catch (Exception exc){
             print.warning(exc,"Unable to add server!");

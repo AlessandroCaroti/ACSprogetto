@@ -172,12 +172,14 @@ public class Server implements ServerInterface {
      */
     public void start(){
         print.pedanticInfo("Starting server ...");
+
         ServerInterface stub = null;
         Registry r = null;
 
         try {
             //Importing the security policy and ...
             System.setProperty("java.security.policy","file:./src/server/sec.policy");
+            System.setProperty("java.rmi.server.hostname",AddressIp.getLocalAddress());
             print.info("Policy and codebase setted.");
 
             //Creating and Installing a Security Manager
@@ -537,6 +539,7 @@ public class Server implements ServerInterface {
                 topicList.add(topicName);
                 accountList.addTopic(topicName, accountId);
                 serverStat.incrementTopicNum();
+                this.notifyNewTopic(topicName);
                 print.pedanticInfo("User " + accountId + " has created a new topic named \'" + topicName + "\'.");
             }
             notifyAll(subscribers.iterator(), msg);
@@ -684,27 +687,27 @@ public class Server implements ServerInterface {
     void forwardMessage(Message msg) {
 
         String topicName = msg.getTopic();
-        ConcurrentSkipListSet<Integer> subscribers = topicClientList.putIfAbsent(topicName, new ConcurrentSkipListSet<>());
-        if (subscribers == null) {  //creazione di un nuovo topic
-            topicList.add(topicName);
-            serverStat.incrementTopicNum();
-        } else {
+        ConcurrentSkipListSet<Integer> subscribers = topicClientList.get(topicName);
+        if(subscribers!=null){
             notifyAll(subscribers.iterator(), msg);      //todo magari si potrebbe eseguire su un altro thread in modo da non bloccare questa funzione
             serverStat.incrementPostNum();
-        }
+        }else
+            print.warning("InternalError: topic not found");
     }
 
 
     void addTopic(String topic){
          if(topic==null) throw new NullPointerException("topic==null");
          if(topic.isEmpty()) throw new IllegalArgumentException("topic is empty");
-         synchronized (topicList){
-             if(!topicList.contains(topic)){
-                 topicList.add(topic);
-             }
-         }
+
+        ConcurrentSkipListSet<Integer> subscribers = topicClientList.putIfAbsent(topic, new ConcurrentSkipListSet<>());
+        if(subscribers==null){
+            topicList.add(topic);
+            serverStat.incrementTopicNum();
+        }
     }
 
+    @Deprecated
     void removeTopic(String topic){
         if(topic==null||topic.isEmpty()) return;
         synchronized (topicList){
@@ -850,30 +853,33 @@ public class Server implements ServerInterface {
      */
 
     private boolean emailValidation(String email,ClientInterface stub) throws MessagingException, RemoteException {
+        try {
+            Integer x=-1;
+            String temp;
+            StringTokenizer tokenizer=new StringTokenizer(email);
+            temp=tokenizer.nextToken();
+            if(temp.equalsIgnoreCase("test"))return true;//TODO REMOVE 4 LINES up (sono per il testing)
 
-        Integer x=-1;
-        String temp;
-        StringTokenizer tokenizer=new StringTokenizer(email);
-        temp=tokenizer.nextToken();
-        if(temp.equalsIgnoreCase("test"))return true;//TODO REMOVE 4 LINES up (sono per il testing)
-
-        final int MAXATTEMPTS = 3;
-        ResponseCode resp;
-        Integer codice = (int) (Math.random() * 1000000);
-        emailController.sendMessage(emailController.createEmailMessage(email, "EMAIL VALIDATION",
-                "Codice verifica:" + Integer.toString(codice)
-        ));
-        print.info("Message to: "+email+"; added to queue code: "+Integer.toString(codice)+".");
-        for (int i = MAXATTEMPTS; i >0 ; i--) {
-            resp=stub.getCode(i);
-            if (resp.IsOK()) {
-                print.pedanticInfo("the user has entered the code:" + resp.getMessageInfo() + ";");
-                if (codice.equals(Integer.parseInt(resp.getMessageInfo())) || x.equals(Integer.parseInt(resp.getMessageInfo()))) {                              //todo remove backdoor (Integer.parseInt(resp.getMessageInfo())==-1) and var x
-                    return true;
+            final int MAXATTEMPTS = 3;
+            ResponseCode resp;
+            Integer codice = (int) (Math.random() * 1000000);
+            emailController.sendMessage(emailController.createEmailMessage(email, "EMAIL VALIDATION",
+                    "Codice verifica:" + Integer.toString(codice)
+            ));
+            print.info("Message to: "+email+"; added to queue code: "+Integer.toString(codice)+".");
+            for (int i = MAXATTEMPTS; i >0 ; i--) {
+                resp=stub.getCode(i);
+                if (resp.IsOK()) {
+                    print.pedanticInfo("the user has entered the code:" + resp.getMessageInfo() + ";");
+                    if (codice.equals(Integer.parseInt(resp.getMessageInfo())) || x.equals(Integer.parseInt(resp.getMessageInfo()))) {                              //todo remove backdoor (Integer.parseInt(resp.getMessageInfo())==-1) and var x
+                        return true;
+                    }
                 }
             }
+            return false;
+        }catch (NumberFormatException e){
+            return false;
         }
-        return false;
     }
 
 
@@ -930,6 +936,20 @@ public class Server implements ServerInterface {
         listCleaner.addClientOffline(accountId);
         if (prevStub != null)
             serverStat.decrementClientNum();
+    }
+
+    private void notifyNewTopic(String topic){
+        for (int i = 0; i<accountList.getMAXACCOUNTNUMBER();i++){
+            try {
+                ClientInterface currStub = accountList.getStub(i);
+                if(currStub!=null)
+                    currStub.newTopicNotification(topic);
+            }catch (NullPointerException e){ }
+            catch (RemoteException e) {
+                print.pedanticInfo("Client "+i+" is not connected.");
+            }
+        }
+
     }
 
 
