@@ -17,12 +17,16 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
@@ -40,7 +44,7 @@ public class Connection extends JFrame {
 	public static void main(String[] args) {
 		EventQueue.invokeLater(() -> {
 			try {
-				Connection frame = new Connection("");
+				Connection frame = new Connection("", System.out);
 				frame.setTitle("Connection Manager");
 				frame.setVisible(true);
 			} catch (Exception e) {
@@ -55,9 +59,12 @@ public class Connection extends JFrame {
 	final private String myName;
 	private JButton btnUpdate;
 	private JPanel ServerList_panel;
+	final private OutputStream executor;
 	
-	public Connection(String myName) {
+	public Connection(String myName, OutputStream executor) {
 		Objects.requireNonNull(this.myName = myName);
+		this.executor = Objects.requireNonNull(executor);
+
 		setMinimumSize(new Dimension(390, 340));
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 390, 446);
@@ -73,6 +80,20 @@ public class Connection extends JFrame {
 		panel_1.setBorder(new TitledBorder(new LineBorder(new Color(0, 0, 0), 2, true), "Server List:", TitledBorder.LEADING, TitledBorder.TOP, null, Color.BLACK));
 		
 		JButton btnNewButton_1 = new JButton("CONNECT");
+		btnNewButton_1.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+
+				try {
+					executor.write("DA IMPLEMENTARE\n".getBytes(StandardCharsets.UTF_8));
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+				JFrame frame = (JFrame) SwingUtilities.windowForComponent(e.getComponent());
+				frame.setVisible(false);
+				frame.dispose();
+			}
+		});
 		GroupLayout gl_contentPane = new GroupLayout(contentPane);
 		gl_contentPane.setHorizontalGroup(
 			gl_contentPane.createParallelGroup(Alignment.LEADING)

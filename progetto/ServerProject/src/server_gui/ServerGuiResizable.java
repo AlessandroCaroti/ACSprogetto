@@ -21,9 +21,11 @@ import java.awt.event.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.MissingResourceException;
 import java.util.Objects;
 import java.util.Scanner;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ServerGuiResizable extends JFrame implements ActionListener, Runnable {
 
@@ -105,6 +107,7 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         SwingUtilities.invokeLater(() -> {
             try {
                 ServerStatistic serverStat = new ServerStatistic();
+                serverStat.setServerInfo("tesr", new ConcurrentLinkedQueue<>(), "test", 0);
                 ServerGuiResizable frame = new ServerGuiResizable(serverStat, System.out, null, null);
                 frame.setMinimumSize(new Dimension(780, 420));
                 frame.setUndecorated(true);
@@ -225,7 +228,7 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
             public void mouseClicked(MouseEvent arg0) {
                 SwingUtilities.invokeLater(() -> {
                     try {
-                        executor.write("shutdown\n".getBytes());
+                        executor.write("shutdown\n".getBytes(StandardCharsets.UTF_8));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -1098,8 +1101,24 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         panel_5.add(label_29);
         
         popupMenu = new JPopupMenu();
-        popupMenu.add("Connect to...");
         addPopup(label_29, popupMenu);
+        
+        JMenuItem mntmConnectTo = new JMenuItem("Connect to...");
+        mntmConnectTo.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		try {
+            		Connection frame = new Connection(serverStat.getServerName(), executor);
+            		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    				frame.setTitle("Connection Manager");
+    				frame.setVisible(true);
+        		}catch(Exception e1) {
+        			System.err.println("[GUI-ERROR]: error duiring the creation of COnnectionTo form.");
+        			System.err.println("\tException type: " + e1.getClass().getSimpleName());
+        	        System.err.println("\tException message: " + e1.getMessage());
+        		}
+        	}
+        });
+        popupMenu.add(mntmConnectTo);
 
         JPanel panel_17 = new JPanel();
         panel_17.setBackground(Color.DARK_GRAY);
@@ -1189,22 +1208,19 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         textField = new JTextField();
         textField.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
         textField.setAlignmentX(0.1f);
-        textField.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                String command = textField.getText() + "\n";
-                if (!command.isEmpty()) {
-                    SwingUtilities.invokeLater(() -> {
-                        appendToPane(">: " + command, attributeInput);
-                        textField.setText("");
-
-                        try {
-                            executor.write(command.getBytes());
-                        } catch (IOException e) {
-                            appendToPane("\n[GUI-ERROR] Console reports an Internal error on stdIn The error is: " + e + ". Resetting it to the initial stream\n",attributeError);
-                            StreamRedirector.resetStdIn();
-                        }
-                    });
-                }
+        textField.addActionListener(arg0 -> {
+            String command = textField.getText() + "\n";
+            if (!command.isEmpty()) {
+                SwingUtilities.invokeLater(() -> {
+                    appendToPane(">: " + command, attributeInput);
+                    textField.setText("");
+                    try {
+                        executor.write(command.getBytes(StandardCharsets.UTF_8));
+                    } catch (IOException e) {
+                        appendToPane("\n[GUI-ERROR] Console reports an Internal error on stdIn The error is: " + e + ". Resetting it to the initial stream\n",attributeError);
+                        StreamRedirector.resetStdIn();
+                    }
+                });
             }
         });
         textField.setMargin(new Insets(2, 0, 2, 2));

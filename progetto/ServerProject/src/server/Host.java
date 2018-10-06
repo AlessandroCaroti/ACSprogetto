@@ -184,6 +184,7 @@ public class Host {
                     ServerGuiResizable frame = new ServerGuiResizable(serverStat, toStdIn, fromStdOut, fromStdErr);
                     frame.setMinimumSize(new Dimension(780, 420));
                     frame.setUndecorated(true);
+                    frame.setTitle("ACS - server gui");
                     frame.update();
                     frame.setVisible(true);
                     serverStat.setGui(frame);
