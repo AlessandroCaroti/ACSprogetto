@@ -1214,12 +1214,9 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
     }
 
     private void updateServerStat() {
-        System.out.println(SwingUtilities.isEventDispatchThread());
-        SwingUtilities.invokeLater(() -> {
             lblClientOnline.setText(String.valueOf(serverStat.getClientNumber()));
             lblPostNumber.setText(String.valueOf(serverStat.getPostNumber()));
             lblTopicNumber.setText(String.valueOf(serverStat.getTopicNumber()));
-        });
     }
 
     public void setServerName() {

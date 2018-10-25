@@ -34,11 +34,12 @@ public class Host {
             "\t\t?/help\n" +
             "\t\tstart [server/infoProvider/all]\n" +
             "\t\tstop [server/infoProvider/gui]\n" +
-            "\t\tforce clean\n"+
+            "\t\tforce clean\n" +
             "\t\tshutdown\n" +
             "\t\tinfo\n" +
             "\t\tshow topic\n" +
-            "\t\tadd broker\n"+
+            "\t\tadd broker\n" +
+            "\t\tget serverConnected\n" +
             "***********************************************";
 
 
@@ -156,6 +157,10 @@ public class Host {
                             default:
                                 System.out.println("Opzione non valida");
                         }
+                        break;
+                    case "get serverConnected":
+
+
                         break;
                     case "FATAL_ERROR":
                         fatalError_occurred(sc);
@@ -288,7 +293,7 @@ public class Host {
      */
     private void shutdownServer() {
         stopInfoProvider();
-        //todo stopSClient();
+        sClient.diconnectFromAllServers();
         stopGui();
         stopServer();
         stopAll = true;
@@ -301,12 +306,28 @@ public class Host {
     private void showInfo() {
         String statusGui = "Graphic Interface: " + (gui != null ? "active" : "inactive");
         String statusInfoProvider = "InfoProvider: " + (infoProvider != null ? "active" : "inactive");
+        String serverConnected = this.brokerConnected();
+
+        sClient.getServerNameList();
         System.out.println("---------------------------------------\n" +
                 serverStat.getGeneralServerStat() + "\n" +
                 statusGui + "\n" +
                 statusInfoProvider + "\n" +
+                serverConnected + "\n" +
                 "---------------------------------------");
     }
+
+    private String brokerConnected(){
+        String[] brokerList = sClient.getServerNameList();
+        String serverConnected ="Server Connected("+brokerList.length+"):";
+
+        for (String b: brokerList){
+            serverConnected = serverConnected.concat("\n\t-"+b);
+        }
+        serverConnected = serverConnected.concat("\n");
+        return serverConnected;
+    }
+
 
     /**
      * Stampa della lista passata
