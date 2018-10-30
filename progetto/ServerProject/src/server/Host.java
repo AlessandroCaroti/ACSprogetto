@@ -1,10 +1,8 @@
 package server;
 
-import Events.NewAccountWindow;
 import server.utility.StreamRedirector;
 import server_gui.ServerGuiResizable;
 import server_gui.ServerStatistic;
-import utility.ServerInfo;
 import utility.infoProvider.ServerInfoProvider;
 import utility.infoProvider.ServerInfoRecover;
 
@@ -14,8 +12,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Host {
@@ -38,11 +34,12 @@ public class Host {
             "\t\t?/help\n" +
             "\t\tstart [server/infoProvider/all]\n" +
             "\t\tstop [server/infoProvider/gui]\n" +
-            "\t\tforce clean\n"+
+            "\t\tforce clean\n" +
             "\t\tshutdown\n" +
             "\t\tinfo\n" +
             "\t\tshow topic\n" +
-            "\t\tadd broker\n"+
+            "\t\tadd broker\n" +
+            "\t\tget serverConnected\n" +
             "***********************************************";
 
 
@@ -141,10 +138,6 @@ public class Host {
                         showTopic(server.getTopicList());
                         break;
                     case "add broker":
-                        if(!started) {
-                            System.out.println("Server offline!!");
-                            break;
-                        }
                         System.out.println("Vuoi cercarlo nella Lan[Y/N]?");
                         switch (sc.nextLine()){
                             case"Y":
@@ -158,12 +151,16 @@ public class Host {
                                 System.out.print("Insert registry ip:");
                                 String regHost = sc.nextLine();
                                 System.out.print("Insert registry port:");
-                                int port = Integer.parseInt(sc.nextLine());
+                                String port = sc.nextLine();
                                 addBroker(regHost,port,serverName);
                                 break;
                             default:
                                 System.out.println("Opzione non valida");
                         }
+                        break;
+                    case "get serverConnected":
+
+
                         break;
                     case "FATAL_ERROR":
                         fatalError_occurred(sc);
@@ -180,22 +177,30 @@ public class Host {
     }
 
     private void addBroker(Scanner sc){
-        if(!started)
+        if(!started) {
+            System.out.println("Server offline!!");
             return;
-        ServerInfoRecover infoServer = null;
-        try {
-            infoServer = new ServerInfoRecover(false);
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-        String[] serverChosen = infoServer.pickServerOnLan(sc);
-        if(serverChosen==null)
-            return;
-        sClient.addServer(serverChosen[0], Integer.parseInt(serverChosen[1]), serverChosen[2]);
+        try {
+            ServerInfoRecover infoServer = new ServerInfoRecover(false);
+            String[] serverChosen = infoServer.pickServerOnLan(sc);
+            if(serverChosen!=null)
+                sClient.addServer(serverChosen[0], Integer.parseInt(serverChosen[1]), serverChosen[2]);
+        } catch (IOException e) {
+            System.err.println("Error crea");
+        }
     }
 
-    private void addBroker(String regHost, int regPort, String serverName){
-        sClient.addServer(regHost, regPort, serverName);
+    private void addBroker(String regHost, String regPort, String serverName){
+        if(!started) {
+            System.out.println("Server offline!!");
+            return;
+        }
+        try {
+            sClient.addServer(regHost, Integer.parseInt(regPort), serverName);
+        }catch (NumberFormatException e){
+            System.err.println("\'"+regPort + "\' is not valid as a port value.");
+        }
     }
 
 
@@ -233,6 +238,7 @@ public class Host {
                     ServerGuiResizable frame = new ServerGuiResizable(serverStat, toStdIn, fromStdOut, fromStdErr);
                     frame.setMinimumSize(new Dimension(780, 420));
                     frame.setUndecorated(true);
+                    frame.setTitle("ACS - server gui");
                     frame.update();
                     frame.setVisible(true);
                     serverStat.setGui(frame);
@@ -287,7 +293,7 @@ public class Host {
      */
     private void shutdownServer() {
         stopInfoProvider();
-        //todo stopSClient();
+        sClient.diconnectFromAllServers();
         stopGui();
         stopServer();
         stopAll = true;
@@ -300,12 +306,28 @@ public class Host {
     private void showInfo() {
         String statusGui = "Graphic Interface: " + (gui != null ? "active" : "inactive");
         String statusInfoProvider = "InfoProvider: " + (infoProvider != null ? "active" : "inactive");
+        String serverConnected = this.brokerConnected();
+
+        sClient.getServerNameList();
         System.out.println("---------------------------------------\n" +
                 serverStat.getGeneralServerStat() + "\n" +
                 statusGui + "\n" +
                 statusInfoProvider + "\n" +
+                serverConnected + "\n" +
                 "---------------------------------------");
     }
+
+    private String brokerConnected(){
+        String[] brokerList = sClient.getServerNameList();
+        String serverConnected ="Server Connected("+brokerList.length+"):";
+
+        for (String b: brokerList){
+            serverConnected = serverConnected.concat("\n\t-"+b);
+        }
+        serverConnected = serverConnected.concat("\n");
+        return serverConnected;
+    }
+
 
     /**
      * Stampa della lista passata

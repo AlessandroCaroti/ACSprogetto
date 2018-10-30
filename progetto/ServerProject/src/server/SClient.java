@@ -34,7 +34,7 @@ import static java.util.Objects.requireNonNull;
 public class SClient  {
     private List<AnonymousClientExtended> clients;
     private List<ServerInfo> serverList;
-    private List<String> serverList_;
+    final private List<String> serverNameList;
 
     final private Server myServer;
     final private LogFormatManager print;
@@ -57,6 +57,7 @@ public class SClient  {
         }else {
             this.serverList = serverList;
         }
+        this.serverNameList = new LinkedList<>();
         this.myServer=requireNonNull(myServer);
         this.print = new LogFormatManager("SCLIENT", pedantic);
 
@@ -189,8 +190,10 @@ public class SClient  {
         try {
             AnonymousClientExtended anonymousClient = new AnonymousClientExtended(this.myServer);
             anonymousClient.setServerInfo(regHost,regPort,brokerName);
+            serverNameList.add(brokerName);
             return clients.add(anonymousClient)?anonymousClient:null;
         }catch (Exception exc){
+            serverNameList.remove(brokerName);
             print.warning(exc,"Unable to add server!");
         }
         return null;
@@ -242,4 +245,7 @@ public class SClient  {
         return exitStat;
     }
 
+    public String[] getServerNameList() {
+        return serverNameList.toArray(new String[0]);
+    }
 }

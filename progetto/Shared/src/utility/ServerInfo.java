@@ -5,7 +5,7 @@ public class ServerInfo {
     public String regHost;
     public int regPort;
 
-    public ServerInfo(String regHost,int regPort){
+	public ServerInfo(String regHost,int regPort){
         if(regHost==null){
             throw new NullPointerException("regHost ==null");
         }
@@ -16,4 +16,11 @@ public class ServerInfo {
         this.regPort=regPort;
     }
 
+	public String getRegHost() {
+		return regHost;
+	}
+
+    public int getRegPort() {
+		return regPort;
+	}
 }

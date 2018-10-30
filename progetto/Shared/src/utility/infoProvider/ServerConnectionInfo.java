@@ -18,13 +18,13 @@ public class ServerConnectionInfo {
         try {
             validatePort(Integer.parseInt(port));
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException(port + " is not valid as a port value.");
+            throw new IllegalArgumentException("\'"+port + "\' is not valid as a port value.");
         }
     }
 
     static public void validatePort(final int port) throws IllegalArgumentException {
         if (port < 1024 || port > 65535)
-            throw new IllegalArgumentException(port + " is not valid as a port value.");
+            throw new IllegalArgumentException("\'"+port + "\' is not valid as a port value.");
     }
 
     static public void validateIPAddress(final String ipAddress) throws IllegalArgumentException {
@@ -33,7 +33,7 @@ public class ServerConnectionInfo {
 
         String[] tokens = ipAddress.split("\\.");
         if (tokens.length != 4) {
-            throw new IllegalArgumentException(ipAddress + " is not valid as a ipAddress value.");
+            throw new IllegalArgumentException("\'"+ipAddress + "\' is not valid as a ipAddress value.");
         }
         for (String str : tokens) {
             int i = Integer.parseInt(str);

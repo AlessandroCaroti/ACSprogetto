@@ -21,9 +21,11 @@ import java.awt.event.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.MissingResourceException;
 import java.util.Objects;
 import java.util.Scanner;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ServerGuiResizable extends JFrame implements ActionListener, Runnable {
 
@@ -96,6 +98,7 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
     private Thread readerStdErr;
     private boolean quit;
     private JTextPane textPane;
+    private JPopupMenu popupMenu;
 
     /**
      * Launch the application.
@@ -104,9 +107,11 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         SwingUtilities.invokeLater(() -> {
             try {
                 ServerStatistic serverStat = new ServerStatistic();
+                serverStat.setServerInfo("test", new ConcurrentLinkedQueue<>(), "test", 0);
                 ServerGuiResizable frame = new ServerGuiResizable(serverStat, System.out, null, null);
                 frame.setMinimumSize(new Dimension(780, 420));
                 frame.setUndecorated(true);
+                frame.setTitle("TEST");
                 frame.update();
                 frame.setVisible(true);
             } catch (Exception e) {
@@ -167,34 +172,28 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         top_panel.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent arg0) {
-                SwingUtilities.invokeLater(() -> {
                     Point p = ServerGuiResizable.this.getLocationOnScreen();
                     p.x = p.x + arg0.getX() - xx;
                     p.y = p.y + arg0.getY() - xy;
                     ServerGuiResizable.this.setLocation(p);
-                });
+
             }
         });
         top_panel.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent arg0) {
-                SwingUtilities.invokeLater(() -> {
                     xx = arg0.getX();
                     xy = arg0.getY();
-                });
-
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                SwingUtilities.invokeLater(() -> {
                     Point p = ServerGuiResizable.this.getLocationOnScreen();
                     if (Math.abs(p.x) < 12)
                         p.x = 0;
                     if (Math.abs(p.y) < 12)
                         p.y = 0;
                     ServerGuiResizable.this.setLocation(p);
-                });
             }
         });
         top_panel.setAlignmentY(Component.TOP_ALIGNMENT);
@@ -222,27 +221,21 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         btn_shdw.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent arg0) {
-                SwingUtilities.invokeLater(() -> {
                     try {
-                        executor.write("shutdown\n".getBytes());
+                        executor.write("shutdown\n".getBytes(StandardCharsets.UTF_8));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                });
             }
 
             @Override
             public void mouseEntered(MouseEvent e) {
-                SwingUtilities.invokeLater(() -> {
                     btn_shdw.setIcon(shdwnR);
-                });
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                SwingUtilities.invokeLater(() -> {
                     btn_shdw.setIcon(shdwnL);
-                });
             }
         });
         btn_shdw.setIcon(shdwnL);
@@ -256,25 +249,19 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         btn_exit.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                SwingUtilities.invokeLater(() -> {
                     System.exit(0);
-                });
             }
 
             @Override
             public void mouseEntered(MouseEvent e) {
-                SwingUtilities.invokeLater(() -> {
                     btn_exit.setOpaque(true);
                     btn_exit.setIcon(clsB);
-                });
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                SwingUtilities.invokeLater(() -> {
                     btn_exit.setOpaque(false);
                     btn_exit.setIcon(clsL);
-                });
             }
         });
         btn_exit.setIcon(clsL);
@@ -288,25 +275,19 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         btn_minze.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent arg0) {
-                SwingUtilities.invokeLater(() -> {
                     ServerGuiResizable.this.setState(Frame.ICONIFIED);
-                });
             }
 
             @Override
             public void mouseEntered(MouseEvent e) {
-                SwingUtilities.invokeLater(() -> {
                     btn_minze.setOpaque(true);
                     btn_minze.setIcon(minB);
-                });
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                SwingUtilities.invokeLater(() -> {
                     btn_minze.setOpaque(false);
                     btn_minze.setIcon(minL);
-                });
             }
         });
         btn_minze.setIcon(minL);
@@ -331,7 +312,7 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         lblProgettoPcad = new JLabel("PCAD Project - Server alpha 0.4.2");
         lblProgettoPcad.setFont(new Font("Tahoma", Font.PLAIN, 15));
         lblProgettoPcad.setForeground(Color.WHITE);
-        lblProgettoPcad.setBounds(12, 0, 221, 32);
+        lblProgettoPcad.setBounds(12, 0, 288, 32);
         panel_12.add(lblProgettoPcad);
 
         side_panel = new JPanel();
@@ -361,7 +342,6 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         sideBtn_1.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                SwingUtilities.invokeLater(() -> {
                     if (section == 1)
                         return;
                     section = 1;
@@ -369,7 +349,6 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
                     ind_1.setOpaque(true);
                     resetColor(new JPanel[]{sideBtn_2, sideBtn_3, sideBtn_4}, new JPanel[]{ind_2, ind_3, ind_4});
                     cl.show(main_panel, "serverInfo");
-                });
             }
         });
         sideBtn_1.setLayout(null);
@@ -397,7 +376,6 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         sideBtn_2.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                SwingUtilities.invokeLater(() -> {
                     if (section == 2)
                         return;
                     section = 2;
@@ -405,7 +383,6 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
                     ind_2.setOpaque(true);
                     resetColor(new JPanel[]{sideBtn_1, sideBtn_3, sideBtn_4}, new JPanel[]{ind_1, ind_3, ind_4});
                     cl.show(main_panel, "clientInfo");
-                });
             }
         });
         sideBtn_2.setLayout(null);
@@ -434,7 +411,6 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         sideBtn_3.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                SwingUtilities.invokeLater(() -> {
                     if (section == 3)
                         return;
                     section = 3;
@@ -442,7 +418,6 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
                     ind_3.setOpaque(true);
                     resetColor(new JPanel[]{sideBtn_1, sideBtn_2, sideBtn_4}, new JPanel[]{ind_1, ind_2, ind_4});
                     cl.show(main_panel, "topicInfo");
-                });
             }
         });
         sideBtn_3.setLayout(null);
@@ -481,8 +456,6 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         sideBtn_4.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent arg0) {
-
-                SwingUtilities.invokeLater(() -> {
                     if (section == 4)
                         return;
                     section = 4;
@@ -490,7 +463,6 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
                     ind_4.setOpaque(true);
                     resetColor(new JPanel[]{sideBtn_1, sideBtn_2, sideBtn_3}, new JPanel[]{ind_1, ind_2, ind_3});
                     cl.show(main_panel, "console");
-                });
             }
         });
         sideBtn_4.setLayout(null);
@@ -527,7 +499,6 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         label_30.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent arg0) {
-                SwingUtilities.invokeLater(() -> {
                     Dimension d = side_panel.getSize();
                     d.width = 60;
                     side_panel.setPreferredSize(d);
@@ -545,11 +516,11 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
                     label_1.setVisible(true);
                     conteiner_btn.setLocation(0, 62);
                     lblProgettoPcad.setLocation(60, 0);
-                });
             }
 
             @Override
             public void mouseEntered(MouseEvent e) {
+                System.out.println(SwingUtilities.isEventDispatchThread());
                 SwingUtilities.invokeLater(() -> {
                     label_30.setIcon(reduceWhite);
                 });
@@ -557,9 +528,7 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
 
             @Override
             public void mouseExited(MouseEvent e) {
-                SwingUtilities.invokeLater(() -> {
                     label_30.setIcon(reduceGray);
-                });
             }
         });
         label_30.setFont(new Font("High Tower Text", Font.BOLD, 26));
@@ -571,7 +540,6 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         label_1.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                SwingUtilities.invokeLater(() -> {
                     Dimension d = side_panel.getSize();
                     d.width = size_sidePnl;
                     side_panel.setPreferredSize(d);
@@ -590,21 +558,16 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
                     label.setVisible(true);
                     conteiner_btn.setLocation(0, 159);
                     lblProgettoPcad.setLocation(12, 0);
-                });
             }
 
             @Override
             public void mouseEntered(MouseEvent e) {
-                SwingUtilities.invokeLater(() -> {
                     label_1.setIcon(growWhite);
-                });
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                SwingUtilities.invokeLater(() -> {
                     label_1.setIcon(growGray);
-                });
             }
         });
         label_1.setVisible(false);
@@ -620,19 +583,15 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         border_right.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent arg0) {
-                SwingUtilities.invokeLater(() -> {
                     int x = arg0.getX() - Px;
                     Dimension d = ServerGuiResizable.this.getSize();
                     ServerGuiResizable.this.setSize(d.width + x, d.height);
-                });
             }
         });
         border_right.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent arg0) {
-                SwingUtilities.invokeLater(() -> {
                     Px = arg0.getX();
-                });
             }
         });
         border_right.setPreferredSize(new Dimension(3, 10));
@@ -673,7 +632,7 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
 
         JLabel label_3 = new JLabel("General information:");
         label_3.setFont(new Font("Tahoma", Font.PLAIN, 37));
-        label_3.setBounds(30, 0, 345, 70);
+        label_3.setBounds(30, 0, 431, 70);
         panel_7.add(label_3);
 
         KGradientPanel gradientPanel_1 = new KGradientPanel();
@@ -719,7 +678,7 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
 
         JLabel label_9 = new JLabel("Network informatons:");
         label_9.setFont(new Font("Tahoma", Font.PLAIN, 37));
-        label_9.setBounds(30, 0, 361, 70);
+        label_9.setBounds(30, 0, 452, 70);
         panel_8.add(label_9);
 
         JPanel panel_11 = new JPanel();
@@ -811,7 +770,7 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
 
         JLabel label_27 = new JLabel("Topics:");
         label_27.setFont(new Font("Tahoma", Font.PLAIN, 37));
-        label_27.setBounds(30, 0, 123, 70);
+        label_27.setBounds(30, 0, 302, 70);
         panel_13.add(label_27);
 
         JPanel panel_23 = new JPanel();
@@ -840,7 +799,7 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         lblServerName = new JLabel("");
         lblServerName.setVerticalAlignment(SwingConstants.TOP);
         lblServerName.setFont(new Font("Tahoma", Font.PLAIN, 18));
-        lblServerName.setBounds(238, 76, 275, 29);
+        lblServerName.setBounds(238, 76, 484, 29);
         panel_7.add(lblServerName);
 
         label_22 = new JLabel("00:00:00");
@@ -852,7 +811,7 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
 
         JLabel label_24 = new JLabel("Clients:");
         label_24.setFont(new Font("Tahoma", Font.PLAIN, 37));
-        label_24.setBounds(30, 0, 132, 70);
+        label_24.setBounds(30, 0, 302, 70);
         panel_23.add(label_24);
 
         JLabel label_25 = new JLabel("Client online:");
@@ -973,19 +932,15 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         panel.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent arg0) {
-                SwingUtilities.invokeLater(() -> {
                     int y = arg0.getY() - Py;
                     Dimension d = ServerGuiResizable.this.getSize();
                     ServerGuiResizable.this.setSize(d.width, d.height + y);
-                });
             }
         });
         panel.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent arg0) {
-                SwingUtilities.invokeLater(() -> {
                     Py = arg0.getY();
-                });
             }
         });
         border_down.add(panel, BorderLayout.SOUTH);
@@ -996,21 +951,17 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         panel_4.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent arg0) {
-                SwingUtilities.invokeLater(() -> {
                     int x = arg0.getX() - Px;
                     int y = arg0.getY() - Py;
                     Dimension d = ServerGuiResizable.this.getSize();
                     ServerGuiResizable.this.setSize(d.width + x, d.height + y);
-                });
             }
         });
         panel_4.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent arg0) {
-                SwingUtilities.invokeLater(() -> {
                     Px = arg0.getX();
                     Py = arg0.getY();
-                });
             }
         });
 
@@ -1039,19 +990,15 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         panel_1.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent arg0) {
-                SwingUtilities.invokeLater(() -> {
                     int x = arg0.getX() - Px;
                     Dimension d = ServerGuiResizable.this.getSize();
                     ServerGuiResizable.this.setSize(d.width + x, d.height);
-                });
             }
         });
         panel_1.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent arg0) {
-                SwingUtilities.invokeLater(() -> {
                     Px = arg0.getX();
-                });
             }
         });
         border_down.add(panel_1, BorderLayout.EAST);
@@ -1081,9 +1028,38 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         panel_5.setLayout(null);
 
         JLabel label_29 = new JLabel("");
+        label_29.addMouseListener(new MouseAdapter() {
+        	@Override
+        	public void mouseClicked(MouseEvent e) {
+        		popupMenu.pack();
+        		Point pos = new Point();
+        		Dimension size = popupMenu.getPreferredSize();
+        		pos.x = (label_29.getWidth() / 4) - size.width + 2;
+        		pos.y = (label_29.getHeight() / 4) - size.height + 2;
+        		popupMenu.show(label_29, pos.x, pos.y);
+        	}
+        });
         label_29.setIcon(new ImageIcon(Objects.requireNonNull(classLoader.getResource("Settings_22px.png"))));
         label_29.setBounds(167, 1, 22, 22);
         panel_5.add(label_29);
+        
+        popupMenu = new JPopupMenu();
+        addPopup(label_29, popupMenu);
+        
+        JMenuItem mntmConnectTo = new JMenuItem("Connect to...");
+        mntmConnectTo.addActionListener(e -> {
+            try {
+                Connection frame = new Connection(serverStat.getServerName(), executor);
+                frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                frame.setTitle("Connection Manager");
+                frame.setVisible(true);
+            }catch(Exception e1) {
+                System.err.println("[GUI-ERROR]: error duiring the creation of COnnectionTo form.");
+                System.err.println("\tException type: " + e1.getClass().getSimpleName());
+                System.err.println("\tException message: " + e1.getMessage());
+            }
+        });
+        popupMenu.add(mntmConnectTo);
 
         JPanel panel_17 = new JPanel();
         panel_17.setBackground(Color.DARK_GRAY);
@@ -1173,22 +1149,17 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         textField = new JTextField();
         textField.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
         textField.setAlignmentX(0.1f);
-        textField.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                String command = textField.getText() + "\n";
-                if (!command.isEmpty()) {
-                    SwingUtilities.invokeLater(() -> {
-                        appendToPane(">: " + command, attributeInput);
-                        textField.setText("");
-
-                        try {
-                            executor.write(command.getBytes());
-                        } catch (IOException e) {
-                            appendToPane("\n[GUI-ERROR] Console reports an Internal error on stdIn The error is: " + e + ". Resetting it to the initial stream\n",attributeError);
-                            StreamRedirector.resetStdIn();
-                        }
-                    });
-                }
+        textField.addActionListener(arg0 -> {
+            String command = textField.getText() + "\n";
+            if (!command.isEmpty()) {
+                    appendToPane(">: " + command, attributeInput);
+                    textField.setText("");
+                    try {
+                        executor.write(command.getBytes(StandardCharsets.UTF_8));
+                    } catch (IOException e) {
+                        appendToPane("\n[GUI-ERROR] Console reports an Internal error on stdIn The error is: " + e + ". Resetting it to the initial stream\n",attributeError);
+                        StreamRedirector.resetStdIn();
+                    }
             }
         });
         textField.setMargin(new Insets(2, 0, 2, 2));
@@ -1243,14 +1214,13 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
     }
 
     private void updateServerStat() {
-        SwingUtilities.invokeLater(() -> {
             lblClientOnline.setText(String.valueOf(serverStat.getClientNumber()));
             lblPostNumber.setText(String.valueOf(serverStat.getPostNumber()));
             lblTopicNumber.setText(String.valueOf(serverStat.getTopicNumber()));
-        });
     }
 
     public void setServerName() {
+        System.out.println(SwingUtilities.isEventDispatchThread());
         SwingUtilities.invokeLater(() -> {
             lblServerName.setText(serverStat.getServerName());
         });
@@ -1281,6 +1251,7 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
                 return;
             while (!quit) {
                 final String s = sc.nextLine();
+                System.out.println(SwingUtilities.isEventDispatchThread());
                 SwingUtilities.invokeLater(() -> {
                     appendToPane(s + "\n", myAttribute);
                 });
@@ -1294,6 +1265,7 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
             } else if (Thread.currentThread() == readerStdErr) {
                 StreamRedirector.resetStdErr();
             }
+            System.out.println(SwingUtilities.isEventDispatchThread());
             SwingUtilities.invokeLater(() -> {
                 appendToPane(errorMsg, attributeError);
             });
@@ -1318,4 +1290,21 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         }
 
     }
+	private static void addPopup(Component component, final JPopupMenu popup) {
+		component.addMouseListener(new MouseAdapter() {
+			public void mousePressed(MouseEvent e) {
+				if (e.isPopupTrigger()) {
+					showMenu(e);
+				}
+			}
+			public void mouseReleased(MouseEvent e) {
+				if (e.isPopupTrigger()) {
+					showMenu(e);
+				}
+			}
+			private void showMenu(MouseEvent e) {
+				popup.show(e.getComponent(), e.getX(), e.getY());
+			}
+		});
+	}
 }
