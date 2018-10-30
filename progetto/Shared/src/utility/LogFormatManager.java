@@ -22,7 +22,7 @@ final public class LogFormatManager {
         System.err.println("\tException type: " + e.getClass().getSimpleName());
         System.err.println("\tException message: " + e.getMessage());
 //        if (pedantic)
-            e.printStackTrace();
+//            e.printStackTrace();
     }
 
     public void error(final Exception e, final String msg) {
@@ -30,7 +30,7 @@ final public class LogFormatManager {
         System.err.println("\tException type: " + e.getClass().getSimpleName());
         System.err.println("\tException message: " + e.getMessage());
 //        if (pedantic)
-            e.printStackTrace();
+//            e.printStackTrace();
     }
 
     public void error(final ResponseCode r, final String msg) {
