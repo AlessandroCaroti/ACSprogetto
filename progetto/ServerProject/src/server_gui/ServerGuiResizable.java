@@ -107,10 +107,11 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         SwingUtilities.invokeLater(() -> {
             try {
                 ServerStatistic serverStat = new ServerStatistic();
-                serverStat.setServerInfo("tesr", new ConcurrentLinkedQueue<>(), "test", 0);
+                serverStat.setServerInfo("test", new ConcurrentLinkedQueue<>(), "test", 0);
                 ServerGuiResizable frame = new ServerGuiResizable(serverStat, System.out, null, null);
                 frame.setMinimumSize(new Dimension(780, 420));
                 frame.setUndecorated(true);
+                frame.setTitle("TEST");
                 frame.update();
                 frame.setVisible(true);
             } catch (Exception e) {

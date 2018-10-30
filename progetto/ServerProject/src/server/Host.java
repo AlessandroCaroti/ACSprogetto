@@ -1,10 +1,8 @@
 package server;
 
-import Events.NewAccountWindow;
 import server.utility.StreamRedirector;
 import server_gui.ServerGuiResizable;
 import server_gui.ServerStatistic;
-import utility.ServerInfo;
 import utility.infoProvider.ServerInfoProvider;
 import utility.infoProvider.ServerInfoRecover;
 
@@ -14,8 +12,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Host {
@@ -141,10 +137,6 @@ public class Host {
                         showTopic(server.getTopicList());
                         break;
                     case "add broker":
-                        if(!started) {
-                            System.out.println("Server offline!!");
-                            break;
-                        }
                         System.out.println("Vuoi cercarlo nella Lan[Y/N]?");
                         switch (sc.nextLine()){
                             case"Y":

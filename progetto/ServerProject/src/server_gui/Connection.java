@@ -11,9 +11,11 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.border.TitledBorder;
 
 import utility.ServerInfo;
+import utility.infoProvider.ServerConnectionInfo;
 import utility.infoProvider.ServerInfoRecover;
 
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
 import javax.swing.LayoutStyle.ComponentPlacement;
@@ -67,7 +69,7 @@ public class Connection extends JFrame {
 
 		setMinimumSize(new Dimension(390, 340));
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 390, 446);
+		setBounds(100, 100, 444, 446);
 		contentPane = new JPanel();
 		contentPane.setMinimumSize(new Dimension(340, 10));
 		contentPane.setBorder(null);
@@ -83,12 +85,11 @@ public class Connection extends JFrame {
 		btnNewButton_1.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
+				String name, address, port;
 
-				try {
-					executor.write("DA IMPLEMENTARE\n".getBytes(StandardCharsets.UTF_8));
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
+				name = textField_name.getText();
+				address = textField_address.getText();
+				port = textField_port.getText();
 				JFrame frame = (JFrame) SwingUtilities.windowForComponent(e.getComponent());
 				frame.setVisible(false);
 				frame.dispose();
@@ -156,9 +157,9 @@ public class Connection extends JFrame {
 		ServerList_panel.setLayout(new GridLayout(0, 1, 0, 0));
 		panel_1.setLayout(gl_panel_1);
 		
-		JLabel lblServerIp = new JLabel("Server Addres:");
+		JLabel lblServerIp = new JLabel("Registry Addres:");
 		
-		JLabel lblServerPort = new JLabel("Server port:");
+		JLabel lblServerPort = new JLabel("Registry Port:");
 		
 		textField_address = new JTextField();
 		textField_address.setColumns(10);
@@ -176,20 +177,17 @@ public class Connection extends JFrame {
 				.addGroup(gl_panel.createSequentialGroup()
 					.addGap(6)
 					.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_panel.createSequentialGroup()
-							.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
-								.addComponent(lblServerIp, GroupLayout.PREFERRED_SIZE, 117, GroupLayout.PREFERRED_SIZE)
-								.addComponent(lblServerPort, GroupLayout.PREFERRED_SIZE, 104, GroupLayout.PREFERRED_SIZE))
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
-								.addGroup(gl_panel.createSequentialGroup()
-									.addComponent(textField_port, GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE)
-									.addPreferredGap(ComponentPlacement.RELATED))
-								.addComponent(textField_address, GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE)))
-						.addGroup(gl_panel.createSequentialGroup()
-							.addComponent(lblServerName, GroupLayout.PREFERRED_SIZE, 117, GroupLayout.PREFERRED_SIZE)
-							.addGap(12)
-							.addComponent(textField_name, GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE)))
+						.addComponent(lblServerName, GroupLayout.PREFERRED_SIZE, 117, GroupLayout.PREFERRED_SIZE)
+						.addComponent(lblServerPort, GroupLayout.PREFERRED_SIZE, 104, GroupLayout.PREFERRED_SIZE)
+						.addComponent(lblServerIp))
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
+						.addComponent(textField_name, GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
+						.addGroup(Alignment.TRAILING, gl_panel.createSequentialGroup()
+							.addGroup(gl_panel.createParallelGroup(Alignment.TRAILING)
+								.addComponent(textField_address, GroupLayout.DEFAULT_SIZE, 284, Short.MAX_VALUE)
+								.addComponent(textField_port, GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE))
+							.addPreferredGap(ComponentPlacement.RELATED)))
 					.addGap(0))
 		);
 		gl_panel.setVerticalGroup(
