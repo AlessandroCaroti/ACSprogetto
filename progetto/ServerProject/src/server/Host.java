@@ -39,7 +39,6 @@ public class Host {
             "\t\tinfo\n" +
             "\t\tshow topic\n" +
             "\t\tadd broker\n" +
-            "\t\tget serverConnected\n" +
             "***********************************************";
 
 
@@ -157,10 +156,6 @@ public class Host {
                             default:
                                 System.out.println("Opzione non valida");
                         }
-                        break;
-                    case "get serverConnected":
-
-
                         break;
                     case "FATAL_ERROR":
                         fatalError_occurred(sc);
