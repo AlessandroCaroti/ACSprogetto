@@ -91,8 +91,32 @@ public class Connection extends JFrame {
 				address = textField_address.getText();
 				port = textField_port.getText();
 				JFrame frame = (JFrame) SwingUtilities.windowForComponent(e.getComponent());
-				frame.setVisible(false);
-				frame.dispose();
+				try {
+					ServerConnectionInfo.validateServerName(name);
+					ServerConnectionInfo.validateIPAddress(address);
+					ServerConnectionInfo.validatePort(port);
+
+					executor.write("add broker\n".getBytes());
+					executor.flush();
+					executor.write("N\n".getBytes());
+					executor.flush();
+					executor.write((name+"\n").getBytes());
+					executor.flush();
+					executor.write((address+"\n").getBytes());
+					executor.flush();
+					executor.write((port+"\n").getBytes());
+					executor.flush();
+
+					frame.setVisible(false);
+					frame.dispose();
+				}catch(IllegalArgumentException e1) {
+					JOptionPane.showMessageDialog(frame,
+						    e1.getMessage(),
+						    "Inane error",
+						    JOptionPane.ERROR_MESSAGE);
+				}catch (IOException e2) {
+					e2.printStackTrace();
+				}
 			}
 		});
 		GroupLayout gl_contentPane = new GroupLayout(contentPane);

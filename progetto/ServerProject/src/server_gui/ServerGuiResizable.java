@@ -1105,19 +1105,17 @@ public class ServerGuiResizable extends JFrame implements ActionListener, Runnab
         addPopup(label_29, popupMenu);
         
         JMenuItem mntmConnectTo = new JMenuItem("Connect to...");
-        mntmConnectTo.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        		try {
-            		Connection frame = new Connection(serverStat.getServerName(), executor);
-            		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-    				frame.setTitle("Connection Manager");
-    				frame.setVisible(true);
-        		}catch(Exception e1) {
-        			System.err.println("[GUI-ERROR]: error duiring the creation of COnnectionTo form.");
-        			System.err.println("\tException type: " + e1.getClass().getSimpleName());
-        	        System.err.println("\tException message: " + e1.getMessage());
-        		}
-        	}
+        mntmConnectTo.addActionListener(e -> {
+            try {
+                Connection frame = new Connection(serverStat.getServerName(), executor);
+                frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                frame.setTitle("Connection Manager");
+                frame.setVisible(true);
+            }catch(Exception e1) {
+                System.err.println("[GUI-ERROR]: error duiring the creation of COnnectionTo form.");
+                System.err.println("\tException type: " + e1.getClass().getSimpleName());
+                System.err.println("\tException message: " + e1.getMessage());
+            }
         });
         popupMenu.add(mntmConnectTo);
 
